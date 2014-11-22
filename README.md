@@ -7,6 +7,22 @@ CLI Framework is a lightweight class architecture and cli framework that is insp
 
     $ npm install cli-framework
 
+## Usage
+
+    var CLI = require('cli-Framework');
+    
+    // or
+    
+    require('cli-Framework');
+
+after that, you can use CLI class methods.
+
+    var o = {hoge: 1};
+    
+    CLI.applyIf(o, {
+        hoge: 2
+    });
+
 ## License
 
 This version of "CLI Framwrok" is licensed under the terms of the The GNU General Public License v3.0.
