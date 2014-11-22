@@ -219,6 +219,110 @@ describe("CLI", function() {
 
     });
 
+    // }}}
+    // {{{ CLI.emptyFn
+
+    describe("CLI.emptyFn", function() {
+
+        it("should return undefined without params", function() {
+            assert.equal(CLI.emptyFn(), undefined);
+        });
+
+        it("should return undefined if you pass params", function() {
+            assert.equal(CLI.emptyFn('aaaa', 'bbbbb'), undefined);
+        });
+
+    });
+
+    // }}}
+    // {{{ CLI.applyIf
+
+    describe("CLI.applyIf", function() {
+
+        var o;
+
+        it("should apply properties and return an object with an empty destination object", function() {
+
+            o = CLI.applyIf({}, {
+                foo: 'foo',
+                bar: 'bar'
+            });
+
+            assert.deepEqual(o, {
+                foo: 'foo',
+                bar: 'bar'
+            });
+
+        });
+
+        it("should not override default properties", function() {
+
+            o = CLI.applyIf({
+                foo: 'foo'
+            }, {
+                foo: 'oldFoo'
+            });
+
+            assert.deepEqual(o, {
+                foo: 'foo'
+            });
+
+        });
+
+        it("should not override default properties with mixing properties", function() {
+
+            o = CLI.applyIf({
+                foo: 1,
+                bar: 2
+            }, {
+                bar: 3,
+                baz: 4
+            });
+
+            assert.deepEqual(o, {
+                foo: 1,
+                bar: 2,
+                baz: 4
+            });
+
+        });
+
+        it("should change the reference of the object", function() {
+
+            o = {};
+
+            CLI.applyIf(o, {
+                foo: 2
+            }, {
+                foo: 1
+            });
+
+            assert.deepEqual(o, {
+                foo: 2
+            });
+
+        });
+
+        it("should return null if null is passed as first argument", function() {
+
+            assert.equal(CLI.applyIf(null, {}), null);
+
+        });
+
+        it("should return the object if second argument is no defined", function() {
+
+            o = {
+                foo: 1
+            };
+
+            assert.equal(CLI.applyIf(o), o);
+
+        });
+
+    });
+
+    // }}}
+
 });
 
 // }}}
