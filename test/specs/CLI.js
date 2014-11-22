@@ -322,6 +322,94 @@ describe("CLI", function() {
     });
 
     // }}}
+    // {{{ CLI.isArray
+
+    describe("CLI.isArray", function() {
+
+        it("should return true with empty array", function() {
+
+            assert.equal(CLI.isArray([]), true);
+
+        });
+
+        it("should return true with filled array", function() {
+
+            assert.equal(CLI.isArray([1, 2, 3, 4]), true);
+
+        });
+
+        it("should return false with boolean true", function() {
+
+            assert.equal(CLI.isArray(true), false);
+
+        });
+
+        it("should return false with boolean false", function() {
+
+            assert.equal(CLI.isArray(false), false);
+
+        });
+
+        it("should return false with string", function() {
+
+            assert.equal(CLI.isArray("foo"), false);
+
+        });
+
+        it("should return false with empty string", function() {
+
+            assert.equal(CLI.isArray(""), false);
+
+        });
+
+        it("should return false with number", function() {
+
+            assert.equal(CLI.isArray(1), false);
+
+        });
+
+        it("should return false with null", function() {
+
+            assert.equal(CLI.isArray(null), false);
+
+        });
+
+        it("should return false with undefined", function() {
+
+            assert.equal(CLI.isArray(undefined), false);
+
+        });
+
+        it("should return false with date", function() {
+
+            assert.equal(CLI.isArray(new Date()), false);
+
+        });
+
+        it("should return false with empty object", function() {
+
+            assert.equal(CLI.isArray({}), false);
+
+        });
+
+        /*
+         // TODO: after implemented to enable.
+
+        it("should return false with custom class that has a length property", function() {
+
+            var C = CLI.extend(Object, {
+                length: 1
+            });
+
+            assert.equal(CLI.isArray(new C()), false);
+
+        });
+
+       */
+
+    });
+
+    // }}}
 
 });
 
