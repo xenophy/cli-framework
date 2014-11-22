@@ -1,14 +1,5 @@
-CLI Framwrok
-============
-
-CLI Framework is a lightweight class architecture and cli framework that is inspired by the Ext JS 5.
-
-## Installation
-
-    $ npm install cli-framework
-
-## License
-
+Open Source License
+------------------------------------------------------------------------------------------
 This version of "CLI Framwrok" is licensed under the terms of the The GNU General Public License v3.0.
 
 http://www.gnu.org/licenses/gpl.html

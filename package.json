@@ -1,0 +1,28 @@
+{
+  "name": "cli-framework",
+  "version": "0.0.1",
+  "description": "This is a lightweight class architecture and cli framework that is inspired by the Ext JS 5",
+  "main": "index.js",
+  "scripts": {
+    "test": "CLI Framework test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:xenophy/cli-framework.git"
+  },
+  "keywords": [
+    "cli ext extjs class"
+  ],
+  "author": "Xenophy.CO.,LTD",
+  "license": "GPL-3.0",
+  "config": {
+      "blanket": {
+          "pattern": "lib",
+          "data-cover-never": "node_modules"
+      }
+  },
+  "dependencies": {
+      "blanket": ">=1.1.6",
+      "power-assert": ">=0.10.0"
+  }
+}
