@@ -1166,6 +1166,136 @@ describe("CLI.Util", function() {
     });
 
     // }}}
+    // {{{ CLI.isIterable
+
+    describe("CLI.isIterable", function() {
+
+        var LengthyClass = function(){},
+            ClassWithItem = function(){},
+            LengthyItemClass = function(){};
+
+        LengthyClass.prototype.length = 1;
+        ClassWithItem.prototype.item = function(){};
+        LengthyItemClass.prototype.length = 1;
+        LengthyItemClass.prototype.item = function(){};
+
+        it("should return true with an arguments object", function() {
+
+            assert.equal(CLI.isIterable(arguments), true);
+
+        });
+
+        it("should return true with empty array", function() {
+
+            assert.equal(CLI.isIterable([]), true);
+
+        });
+
+        it("should return true with filled array", function() {
+
+            assert.equal(CLI.isIterable([1, 2, 3, 4]), true);
+
+        });
+
+        it("should return false with boolean true", function() {
+
+            assert.equal(CLI.isIterable(true), false);
+
+        });
+
+        it("should return false with boolean false", function() {
+
+            assert.equal(CLI.isIterable(false), false);
+
+        });
+
+        it("should return false with string", function() {
+
+            assert.equal(CLI.isIterable("foo"), false);
+
+        });
+
+        it("should return false with empty string", function() {
+
+            assert.equal(CLI.isIterable(""), false);
+
+        });
+
+        it("should return false with number", function() {
+
+            assert.equal(CLI.isIterable(1), false);
+
+        });
+
+        it("should return false with null", function() {
+
+            assert.equal(CLI.isIterable(null), false);
+
+        });
+
+        it("should return false with undefined", function() {
+
+            assert.equal(CLI.isIterable(undefined), false);
+
+        });
+
+        it("should return false with date", function() {
+
+            assert.equal(CLI.isIterable(new Date()), false);
+
+        });
+
+        it("should return false with empty object", function() {
+
+            assert.equal(CLI.isIterable({}), false);
+
+        });
+
+        it("should return false for a function", function(){
+
+            assert.equal(CLI.isIterable(function(){}), false);
+
+        });
+
+        it('should return false for objects with a length property', function() {
+
+            assert.equal(CLI.isIterable({length:1}), false);
+
+        });
+
+        it('should return false for objects with an item property', function() {
+
+            assert.equal(CLI.isIterable({item: function(){}}), false);
+
+        });
+
+        it('should return false for objects with a length prototype property', function() {
+
+            assert.equal(CLI.isIterable(new LengthyClass()), false);
+
+        });
+
+        it('should return false for objects with an item prototype property', function() {
+
+            assert.equal(CLI.isIterable(new ClassWithItem()), false);
+
+        });
+
+        it('should return false for objects with item and length prototype properties', function() {
+
+            assert.equal(CLI.isIterable(new LengthyItemClass()), false);
+
+        });
+
+        it('should return true for arguments object', function() {
+
+            assert.equal(CLI.isIterable(arguments), true);
+
+        });
+
+    });
+
+    // }}}
 
 });
 
