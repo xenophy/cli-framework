@@ -610,376 +610,543 @@ describe("CLI.Util", function() {
     });
 
     // }}}
+    // {{{ CLI.isNumber
 
-    /*
     describe("CLI.isNumber", function() {
+
         it("should return true with zero", function() {
-            expect(CLI.isNumber(0)).toBe(true);
+
+            assert.equal(CLI.isNumber(0), CLI.isNumber(0));
+
         });
 
         it("should return true with non zero", function() {
-            expect(CLI.isNumber(4)).toBe(true);
+
+            assert.equal(CLI.isNumber(4), true);
+
         });
 
         it("should return true with negative integer", function() {
-            expect(CLI.isNumber(-3)).toBe(true);
+
+            assert.equal(CLI.isNumber(-3), true);
+
         });
 
         it("should return true with float", function() {
-            expect(CLI.isNumber(1.75)).toBe(true);
+
+            assert.equal(CLI.isNumber(1.75), true);
+
         });
 
         it("should return true with negative float", function() {
-            expect(CLI.isNumber(-4.75)).toBe(true);
+
+            assert.equal(CLI.isNumber(-4.75), true);
+
         });
 
         it("should return true with Number.MAX_VALUE", function() {
-            expect(CLI.isNumber(Number.MAX_VALUE)).toBe(true);
+
+            assert.equal(CLI.isNumber(Number.MAX_VALUE), true);
+
         });
 
         it("should return true with Number.MIN_VALUE", function() {
-            expect(CLI.isNumber(Number.MIN_VALUE)).toBe(true);
+
+            assert.equal(CLI.isNumber(Number.MIN_VALUE), true);
+
         });
 
         it("should return true with Math.PI", function() {
-            expect(CLI.isNumber(Math.PI)).toBe(true);
+
+            assert.equal(CLI.isNumber(Math.PI), true);
+
         });
 
         it("should return true with Number() contructor", function() {
-            expect(CLI.isNumber(Number('3.1'))).toBe(true);
+
+            assert.equal(CLI.isNumber(Number('3.1')), true);
+
         });
 
         it("should return false with NaN", function() {
-            expect(CLI.isNumber(Number.NaN)).toBe(false);
+
+            assert.equal(CLI.isNumber(Number.NaN), false);
+
         });
 
         it("should return false with Number.POSITIVE_INFINITY", function() {
-            expect(CLI.isNumber(Number.POSITIVE_INFINITY)).toBe(false);
+
+            assert.equal(CLI.isNumber(Number.POSITIVE_INFINITY), false);
+
         });
 
         it("should return false with Number.NEGATIVE_INFINITY", function() {
-            expect(CLI.isNumber(Number.NEGATIVE_INFINITY)).toBe(false);
+
+            assert.equal(CLI.isNumber(Number.NEGATIVE_INFINITY), false);
+
         });
 
         it("should return false with empty array", function() {
-            expect(CLI.isNumber([])).toBe(false);
+
+            assert.equal(CLI.isNumber([]), false);
+
         });
 
         it("should return false with filled array", function() {
-            expect(CLI.isNumber([1, 2, 3, 4])).toBe(false);
+
+            assert.equal(CLI.isNumber([1, 2, 3, 4]), false);
+
         });
 
         it("should return false with boolean true", function() {
-            expect(CLI.isNumber(true)).toBe(false);
+
+            assert.equal(CLI.isNumber(true), false);
+
         });
 
         it("should return false with boolean false", function() {
-            expect(CLI.isNumber(false)).toBe(false);
+
+            assert.equal(CLI.isNumber(false), false);
+
         });
 
         it("should return false with string", function() {
-            expect(CLI.isNumber("foo")).toBe(false);
+
+            assert.equal(CLI.isNumber("foo"), false);
+
         });
 
         it("should return false with empty string", function() {
-            expect(CLI.isNumber("")).toBe(false);
+
+            assert.equal(CLI.isNumber(""), false);
+
         });
 
         it("should return false with string containing a number", function() {
-            expect(CLI.isNumber("1.0")).toBe(false);
+
+            assert.equal(CLI.isNumber("1.0"), false);
+
         });
 
         it("should return false with undefined", function() {
-            expect(CLI.isNumber(undefined)).toBe(false);
+
+            assert.equal(CLI.isNumber(undefined), false);
+
         });
 
         it("should return false with date", function() {
-            expect(CLI.isNumber(new Date())).toBe(false);
+
+            assert.equal(CLI.isNumber(new Date()), false);
+
         });
 
         it("should return false with empty object", function() {
-            expect(CLI.isNumber({})).toBe(false);
+
+            assert.equal(CLI.isNumber({}), false);
+
         });
 
-        it("should return false with node list", function() {
-            expect(CLI.isNumber(document.getElementsByTagName('body'))).toBe(false);
-        });
     });
 
+    // }}}
+    // {{{ CLI.isNumeric
+
     describe("CLI.isNumeric", function() {
+
         it("should return true with zero", function() {
-            expect(CLI.isNumeric(0)).toBe(true);
+
+            assert.equal(CLI.isNumeric(0), true);
+
         });
 
         it("should return true with non zero", function() {
-            expect(CLI.isNumeric(4)).toBe(true);
+
+            assert.equal(CLI.isNumeric(4), true);
+
         });
 
         it("should return true with negative integer", function() {
-            expect(CLI.isNumeric(-3)).toBe(true);
+
+            assert.equal(CLI.isNumeric(-3), true);
+
         });
 
         it("should return true with float", function() {
-            expect(CLI.isNumeric(1.75)).toBe(true);
+
+            assert.equal(CLI.isNumeric(1.75), true);
+
         });
 
         it("should return true with negative float", function() {
-            expect(CLI.isNumeric(-4.75)).toBe(true);
+
+            assert.equal(CLI.isNumeric(-4.75), true);
+
         });
 
         it("should return true with Number.MAX_VALUE", function() {
-            expect(CLI.isNumeric(Number.MAX_VALUE)).toBe(true);
+
+            assert.equal(CLI.isNumeric(Number.MAX_VALUE), true);
+
         });
 
         it("should return true with Number.MIN_VALUE", function() {
-            expect(CLI.isNumeric(Number.MIN_VALUE)).toBe(true);
+
+            assert.equal(CLI.isNumeric(Number.MIN_VALUE), true);
+
         });
 
         it("should return true with Math.PI", function() {
-            expect(CLI.isNumeric(Math.PI)).toBe(true);
+
+            assert.equal(CLI.isNumeric(Math.PI), true);
+
         });
 
         it("should return true with Number() contructor", function() {
-            expect(CLI.isNumeric(Number('3.1'))).toBe(true);
+
+            assert.equal(CLI.isNumeric(Number('3.1')), true);
+
         });
 
         it("should return false with NaN", function() {
-            expect(CLI.isNumeric(Number.NaN)).toBe(false);
+
+            assert.equal(CLI.isNumeric(Number.NaN), false);
+
         });
 
         it("should return false with Number.POSITIVE_INFINITY", function() {
-            expect(CLI.isNumeric(Number.POSITIVE_INFINITY)).toBe(false);
+
+            assert.equal(CLI.isNumeric(Number.POSITIVE_INFINITY), false);
+
         });
 
         it("should return false with Number.NEGATIVE_INFINITY", function() {
-            expect(CLI.isNumeric(Number.NEGATIVE_INFINITY)).toBe(false);
+
+            assert.equal(CLI.isNumeric(Number.NEGATIVE_INFINITY), false);
+
         });
 
         it("should return false with empty array", function() {
-            expect(CLI.isNumeric([])).toBe(false);
+
+            assert.equal(CLI.isNumeric([]), false);
+
         });
 
         it("should return false with filled array", function() {
-            expect(CLI.isNumeric([1, 2, 3, 4])).toBe(false);
+
+            assert.equal(CLI.isNumeric([1, 2, 3, 4]), false);
+
         });
 
         it("should return false with boolean true", function() {
-            expect(CLI.isNumeric(true)).toBe(false);
+
+            assert.equal(CLI.isNumeric(true), false);
+
         });
 
         it("should return false with boolean false", function() {
-            expect(CLI.isNumeric(false)).toBe(false);
+
+            assert.equal(CLI.isNumeric(false), false);
+
         });
 
         it("should return false with string", function() {
-            expect(CLI.isNumeric("foo")).toBe(false);
+
+            assert.equal(CLI.isNumeric("foo"), false);
+
         });
 
         it("should return false with empty string", function() {
-            expect(CLI.isNumeric("")).toBe(false);
+
+            assert.equal(CLI.isNumeric(""), false);
+
         });
 
         it("should return true with string containing a number", function() {
-            expect(CLI.isNumeric("1.0")).toBe(true);
+
+            assert.equal(CLI.isNumeric("1.0"), true);
+
         });
 
         it("should return false with undefined", function() {
-            expect(CLI.isNumeric(undefined)).toBe(false);
+
+            assert.equal(CLI.isNumeric(undefined), false);
+
         });
 
         it("should return false with date", function() {
-            expect(CLI.isNumeric(new Date())).toBe(false);
+
+            assert.equal(CLI.isNumeric(new Date()), false);
+
         });
 
         it("should return false with empty object", function() {
-            expect(CLI.isNumeric({})).toBe(false);
+
+            assert.equal(CLI.isNumeric({}), false);
+
         });
 
-        it("should return false with node list", function() {
-            expect(CLI.isNumeric(document.getElementsByTagName('body'))).toBe(false);
-        });
     });
 
+    // }}}
+    // {{{ CLI.isObject
+
     describe("CLI.isObject", function() {
+
         it("should return false with empty array", function() {
-            expect(CLI.isObject([])).toBe(false);
+
+            assert.equal(CLI.isObject([]), false);
+
         });
 
         it("should return false with filled array", function() {
-            expect(CLI.isObject([1, 2, 3, 4])).toBe(false);
+
+            assert.equal(CLI.isObject([1, 2, 3, 4]), false);
+
         });
 
         it("should return false with boolean true", function() {
-            expect(CLI.isObject(true)).toBe(false);
+
+            assert.equal(CLI.isObject(true), false);
+
         });
 
         it("should return false with boolean false", function() {
-            expect(CLI.isObject(false)).toBe(false);
+
+            assert.equal(CLI.isObject(false), false);
+
         });
 
         it("should return false with string", function() {
-            expect(CLI.isObject("foo")).toBe(false);
+
+            assert.equal(CLI.isObject("foo"), false);
+
         });
 
         it("should return false with empty string", function() {
-            expect(CLI.isObject("")).toBe(false);
+
+            assert.equal(CLI.isObject(""), false);
+
         });
 
         it("should return false with number", function() {
-            expect(CLI.isObject(1)).toBe(false);
+
+            assert.equal(CLI.isObject(1), false);
+
         });
 
         it("should return false with null", function() {
-            expect(CLI.isObject(null)).toBe(false);
+
+            assert.equal(CLI.isObject(null), false);
+
         });
 
         it("should return false with undefined", function() {
-            expect(CLI.isObject(undefined)).toBe(false);
+
+            assert.equal(CLI.isObject(undefined), false);
+
         });
 
         it("should return false with date", function() {
-            expect(CLI.isObject(new Date())).toBe(false);
+
+            assert.equal(CLI.isObject(new Date()), false);
+
         });
 
         it("should return true with empty object", function() {
-            expect(CLI.isObject({})).toBe(true);
-        });
 
-        it("should return false with a DOM node", function() {
-            expect(CLI.isObject(document.body)).toBe(false);
-        });
+            assert.equal(CLI.isObject({}), true);
 
-        it("should return false with a Text node", function() {
-            expect(CLI.isObject(document.createTextNode('test'))).toBe(false);
         });
 
         it("should return true with object with properties", function() {
-            expect(CLI.isObject({
+
+            assert.equal(CLI.isObject({
                 foo: 1
-            })).toBe(true);
+            }), true);
+
         });
 
         it("should return true with object instance", function() {
+
             var stupidClass = function() {};
 
-            expect(CLI.isObject(new stupidClass())).toBe(true);
+            assert.equal(CLI.isObject(new stupidClass()), true);
         });
 
         it("should return true with new Object syntax", function() {
-            expect(CLI.isObject(new Object())).toBe(true);
+            assert.equal(CLI.isObject(new Object()), true);
         });
 
-        it("should return false with dom element", function() {
-            expect(CLI.isObject(document.body)).toBe(false);
-        });
     });
 
+    // }}}
+    // {{{ CLI.isPrimitive
+
     describe("CLI.isPrimitive", function() {
+
         it("should return true with integer", function() {
-            expect(CLI.isPrimitive(1)).toBe(true);
+
+            assert.equal(CLI.isPrimitive(1), true);
+
         });
 
         it("should return true with negative integer", function() {
-            expect(CLI.isPrimitive(-21)).toBe(true);
+
+            assert.equal(CLI.isPrimitive(-21), true);
+
         });
 
         it("should return true with float", function() {
-            expect(CLI.isPrimitive(2.1)).toBe(true);
+
+            assert.equal(CLI.isPrimitive(2.1), true);
+
         });
 
         it("should return true with negative float", function() {
-            expect(CLI.isPrimitive(-12.1)).toBe(true);
+
+            assert.equal(CLI.isPrimitive(-12.1), true);
+
         });
 
         it("should return true with Number.MAX_VALUE", function() {
-            expect(CLI.isPrimitive(Number.MAX_VALUE)).toBe(true);
+
+            assert.equal(CLI.isPrimitive(Number.MAX_VALUE), true);
+
         });
 
         it("should return true with Math.PI", function() {
-            expect(CLI.isPrimitive(Math.PI)).toBe(true);
+
+            assert.equal(CLI.isPrimitive(Math.PI), true);
+
         });
 
         it("should return true with empty string", function() {
-            expect(CLI.isPrimitive("")).toBe(true);
+
+            assert.equal(CLI.isPrimitive(""), true);
+
         });
 
         it("should return true with non empty string", function() {
-            expect(CLI.isPrimitive("foo")).toBe(true);
+
+            assert.equal(CLI.isPrimitive("foo"), true);
+
         });
 
         it("should return true with boolean true", function() {
-            expect(CLI.isPrimitive(true)).toBe(true);
+
+            assert.equal(CLI.isPrimitive(true), true);
+
         });
 
         it("should return true with boolean false", function() {
-            expect(CLI.isPrimitive(false)).toBe(true);
+
+            assert.equal(CLI.isPrimitive(false), true);
+
         });
 
         it("should return false with null", function() {
-            expect(CLI.isPrimitive(null)).toBe(false);
+
+            assert.equal(CLI.isPrimitive(null), false);
+
         });
 
         it("should return false with undefined", function() {
-            expect(CLI.isPrimitive(undefined)).toBe(false);
+
+            assert.equal(CLI.isPrimitive(undefined), false);
+
         });
 
         it("should return false with object", function() {
-            expect(CLI.isPrimitive({})).toBe(false);
+
+            assert.equal(CLI.isPrimitive({}), false);
+
         });
 
         it("should return false with object instance", function() {
+
             var stupidClass = function() {};
-            expect(CLI.isPrimitive(new stupidClass())).toBe(false);
+
+            assert.equal(CLI.isPrimitive(new stupidClass()), false);
+
         });
 
         it("should return false with array", function() {
-            expect(CLI.isPrimitive([])).toBe(false);
+
+            assert.equal(CLI.isPrimitive([]), false);
+
         });
+
     });
 
+    // }}}
+    // {{{ CLI.isString
+
     describe("CLI.isString", function() {
+
         it("should return true with empty string", function() {
-            expect(CLI.isString("")).toBe(true);
+
+            assert.equal(CLI.isString(""), true);
+
         });
 
         it("should return true with non empty string", function() {
-            expect(CLI.isString("foo")).toBe(true);
+
+            assert.equal(CLI.isString("foo"), true);
+
         });
 
         it("should return true with String() syntax", function() {
-            expect(CLI.isString(String(""))).toBe(true);
+
+            assert.equal(CLI.isString(String("")), true);
+
         });
 
-        it("should return false with new String() syntax", function() { //should return an object that wraps the primitive
-            expect(CLI.isString(new String(""))).toBe(false);
+        it("should return false with new String() syntax", function() {
+
+            //should return an object that wraps the primitive
+            assert.equal(CLI.isString(new String("")), false);
+
         });
 
         it("should return false with number", function() {
-            expect(CLI.isString(1)).toBe(false);
+
+            assert.equal(CLI.isString(1), false);
+
         });
 
         it("should return false with boolean", function() {
-            expect(CLI.isString(true)).toBe(false);
+
+            assert.equal(CLI.isString(true), false);
+
         });
 
         it("should return false with null", function() {
-            expect(CLI.isString(null)).toBe(false);
+
+            assert.equal(CLI.isString(null), false);
+
         });
 
         it("should return false with undefined", function() {
-            expect(CLI.isString(undefined)).toBe(false);
+
+            assert.equal(CLI.isString(undefined), false);
+
         });
 
         it("should return false with array", function() {
-            expect(CLI.isString([])).toBe(false);
+
+            assert.equal(CLI.isString([]), false);
+
         });
 
         it("should return false with object", function() {
-            expect(CLI.isString({})).toBe(false);
+
+            assert.equal(CLI.isString({}), false);
+
         });
+
     });
 
-   */
+    // }}}
 
 });
 
