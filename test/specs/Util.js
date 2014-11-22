@@ -610,13 +610,32 @@ describe("CLI.Util", function() {
     });
 
     // }}}
+    // {{{ CLI.isMSDate
+
+    describe("CLI.isMSDate", function() {
+
+        it("should return true with '/Date(1297246301973)/'", function() {
+
+            assert.equal(CLI.isMSDate('/Date(1297246301973)/'), true);
+
+        });
+
+        it("should return false with zero", function() {
+
+            assert.equal(CLI.isMSDate(0), false);
+
+        });
+
+
+    });
+
     // {{{ CLI.isNumber
 
     describe("CLI.isNumber", function() {
 
         it("should return true with zero", function() {
 
-            assert.equal(CLI.isNumber(0), CLI.isNumber(0));
+            assert.equal(CLI.isNumber(0), true);
 
         });
 
