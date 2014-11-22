@@ -18,7 +18,7 @@ describe("CLI", function() {
     before(function(){
 
         // require CLI
-        require('../index.js');
+        require('../../index.js');
 
     });
 

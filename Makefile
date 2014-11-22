@@ -15,9 +15,9 @@ MOCHA = mocha
 .PHONY: test
 
 test:
-	$(MOCHA) test
+	$(MOCHA) test/specs
 
 test-coverage:
-	$(MOCHA) -R html-cov test > coverage.html
+	$(MOCHA) -R html-cov test/specs > coverage.html
 
 FORCE:
