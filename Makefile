@@ -20,16 +20,22 @@ MOCHA = mocha
 # Library Dir
 LIBDIR = $(CURRENT_DIR)/lib
 
+# Specs Dir
+SPEC_DIR = $(CURRENT_DIR)/test/specs
+
 # Sources
 SRCS = $(shell find lib -type f -name '*.js')
+
+# Specs
+SPECS = $(shell find test/specs -type f -name '*.js')
 
 .PHONY: test
 
 test:
-	$(MOCHA) test/specs
+	$(MOCHA) $(SPECS)
 
 test-coverage:
-	$(MOCHA) -R html-cov test/specs > coverage.html
+	$(MOCHA) -R html-cov $(SPECS) > coverage.html
 
 jshint:
 	jshint $(SRCS)
