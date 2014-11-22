@@ -270,6 +270,9 @@ describe("CLI.Util", function() {
 
     });
 
+    // }}}
+    // {{{ CLI.isDate
+
     describe("CLI.isDate", function() {
 
         it("should return false with empty array", function() {
@@ -339,6 +342,9 @@ describe("CLI.Util", function() {
         });
 
     });
+
+    // }}}
+    // {{{ CLI.isDefined
 
     describe("CLI.isDefined", function() {
 
@@ -410,58 +416,88 @@ describe("CLI.Util", function() {
 
     });
 
-    /*
+    // }}}
+    // {{{ CLI.isEmpty
 
     describe("CLI.isEmpty", function() {
+
         it("should return true with empty array", function() {
-            expect(CLI.isEmpty([])).toBe(true);
+
+            assert.equal(CLI.isEmpty([]), true);
+
         });
 
         it("should return false with filled array", function() {
-            expect(CLI.isEmpty([1, 2, 3, 4])).toBe(false);
+
+            assert.equal(CLI.isEmpty([1, 2, 3, 4]), false);
+
         });
 
         it("should return false with boolean true", function() {
-            expect(CLI.isEmpty(true)).toBe(false);
+
+            assert.equal(CLI.isEmpty(true), false);
+
         });
 
         it("should return false with boolean false", function() {
-            expect(CLI.isEmpty(false)).toBe(false);
+
+            assert.equal(CLI.isEmpty(false), false);
+
         });
 
         it("should return false with string", function() {
-            expect(CLI.isEmpty("foo")).toBe(false);
+
+            assert.equal(CLI.isEmpty("foo"), false);
+
         });
 
         it("should return true with empty string", function() {
-            expect(CLI.isEmpty("")).toBe(true);
+
+            assert.equal(CLI.isEmpty(""), true);
+
         });
 
         it("should return true with empty string with allowBlank", function() {
-            expect(CLI.isEmpty("", true)).toBe(false);
+
+            assert.equal(CLI.isEmpty("", true), false);
+
         });
 
         it("should return false with number", function() {
-            expect(CLI.isEmpty(1)).toBe(false);
+
+            assert.equal(CLI.isEmpty(1), false);
+
         });
 
         it("should return true with null", function() {
-            expect(CLI.isEmpty(null)).toBe(true);
+
+            assert.equal(CLI.isEmpty(null), true);
+
         });
 
         it("should return true with undefined", function() {
-            expect(CLI.isEmpty(undefined)).toBe(true);
+
+            assert.equal(CLI.isEmpty(undefined), true);
+
         });
 
         it("should return false with date", function() {
-            expect(CLI.isEmpty(new Date())).toBe(false);
+
+            assert.equal(CLI.isEmpty(new Date()), false);
+
         });
 
         it("should return false with empty object", function() {
-            expect(CLI.isEmpty({})).toBe(false);
+
+            assert.equal(CLI.isEmpty({}), false);
+
         });
+
     });
 
+    // }}}
+
+    /*
     describe("CLI.isFunction", function() {
         it("should return true with anonymous function", function() {
             expect(CLI.isFunction(function(){})).toBe(true);
