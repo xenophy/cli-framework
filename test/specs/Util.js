@@ -496,107 +496,122 @@ describe("CLI.Util", function() {
     });
 
     // }}}
+    // {{{ CLI.isFunction"
 
-    /*
     describe("CLI.isFunction", function() {
+
         it("should return true with anonymous function", function() {
-            expect(CLI.isFunction(function(){})).toBe(true);
+
+            assert.equal(CLI.isFunction(function(){}), true);
+
         });
 
         it("should return true with new Function syntax", function() {
-            expect(CLI.isFunction(CLI.functionFactory('return "";'))).toBe(true);
+
+            assert.equal(CLI.isFunction(CLI.functionFactory('return "";')), true);
+
         });
 
         it("should return true with static function", function() {
-            expect(CLI.isFunction(CLI.emptyFn)).toBe(true);
+
+            assert.equal(CLI.isFunction(CLI.emptyFn), true);
+
         });
 
         it("should return true with instance function", function() {
+
             var stupidClass = function() {},
                 testObject;
+
             stupidClass.prototype.testMe = function() {};
             testObject = new stupidClass();
 
-            expect(CLI.isFunction(testObject.testMe)).toBe(true);
+            assert.equal(CLI.isFunction(testObject.testMe), true);
+
         });
 
         it("should return true with function on object", function() {
+
             var o = {
                 fn: function() {
                 }
             };
 
-            expect(CLI.isFunction(o.fn)).toBe(true);
+            assert.equal(CLI.isFunction(o.fn), true);
+
         });
 
         it("should return false with empty array", function() {
-            expect(CLI.isFunction([])).toBe(false);
+
+            assert.equal(CLI.isFunction([]), false);
+
         });
 
         it("should return false with filled array", function() {
-            expect(CLI.isFunction([1, 2, 3, 4])).toBe(false);
+
+            assert.equal(CLI.isFunction([1, 2, 3, 4]), false);
+
         });
 
         it("should return false with boolean true", function() {
-            expect(CLI.isFunction(true)).toBe(false);
+
+            assert.equal(CLI.isFunction(true), false);
+
         });
 
         it("should return false with boolean false", function() {
-            expect(CLI.isFunction(false)).toBe(false);
+
+            assert.equal(CLI.isFunction(false), false);
+
         });
 
         it("should return false with string", function() {
-            expect(CLI.isFunction("foo")).toBe(false);
+
+            assert.equal(CLI.isFunction("foo"), false);
+
         });
 
         it("should return false with empty string", function() {
-            expect(CLI.isFunction("")).toBe(false);
+
+            assert.equal(CLI.isFunction(""), false);
+
         });
 
         it("should return false with number", function() {
-            expect(CLI.isFunction(1)).toBe(false);
+
+            assert.equal(CLI.isFunction(1), false);
+
         });
 
         it("should return false with null", function() {
-            expect(CLI.isFunction(null)).toBe(false);
+
+            assert.equal(CLI.isFunction(null), false);
+
         });
 
         it("should return false with undefined", function() {
-            expect(CLI.isFunction(undefined)).toBe(false);
+
+            assert.equal(CLI.isFunction(undefined), false);
+
         });
 
         it("should return false with date", function() {
-            expect(CLI.isFunction(new Date())).toBe(false);
+
+            assert.equal(CLI.isFunction(new Date()), false);
+
         });
 
         it("should return false with empty object", function() {
-            expect(CLI.isFunction({})).toBe(false);
+
+            assert.equal(CLI.isFunction({}), false);
+
         });
 
-        it("should return false with node list", function() {
-            expect(CLI.isFunction(document.getElementsByTagName('body'))).toBe(false);
-        });
-        
-        it("should return true with a function from a document where Ext isn't loaded", function() {
-            var iframe = document.createElement('iframe'),
-                win, doc;
-
-            iframe.src = 'about:blank';
-            document.body.appendChild(iframe);
-            
-            doc = iframe.contentDocument ? iframe.contentDocument : (iframe.contentWindow.document || iframe.document);
-            win = iframe.contentWindow || iframe.window;
-            
-            doc.open();
-            doc.write('<html><head><script type="text/javascript">function customFn() {}</script></head><body></body></html>');
-            doc.close();
-            
-            expect(CLI.isFunction(win.customFn)).toBe(true);
-            document.body.removeChild(iframe);
-            iframe = doc = win = null;
-        });
     });
 
+    // }}}
+
+    /*
     describe("CLI.isNumber", function() {
         it("should return true with zero", function() {
             expect(CLI.isNumber(0)).toBe(true);
