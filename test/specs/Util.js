@@ -340,61 +340,77 @@ describe("CLI.Util", function() {
 
     });
 
-    /*
     describe("CLI.isDefined", function() {
 
         it("should return true with empty array", function() {
-            expect(CLI.isDefined([])).toBe(true);
+
+            assert.equal(CLI.isDefined([]), true);
+
         });
 
         it("should return true with filled array", function() {
-            expect(CLI.isDefined([1, 2, 3, 4])).toBe(true);
+
+            assert.equal(CLI.isDefined([1, 2, 3, 4]), true);
+
         });
 
         it("should return true with boolean true", function() {
-            expect(CLI.isDefined(true)).toBe(true);
+
+            assert.equal(CLI.isDefined(true), true);
+
         });
 
         it("should return true with boolean false", function() {
-            expect(CLI.isDefined(false)).toBe(true);
+
+            assert.equal(CLI.isDefined(false), true);
+
         });
 
         it("should return true with string", function() {
-            expect(CLI.isDefined("foo")).toBe(true);
+
+            assert.equal(CLI.isDefined("foo"), true);
+
         });
 
         it("should return true with empty string", function() {
-            expect(CLI.isDefined("")).toBe(true);
+
+            assert.equal(CLI.isDefined(""), true);
+
         });
 
         it("should return true with number", function() {
-            expect(CLI.isDefined(1)).toBe(true);
+
+            assert.equal(CLI.isDefined(1), true);
+
         });
 
         it("should return true with null", function() {
-            expect(CLI.isDefined(null)).toBe(true);
+
+            assert.equal(CLI.isDefined(null), true);
+
         });
 
         it("should return false with undefined", function() {
-            expect(CLI.isDefined(undefined)).toBe(false);
+
+            assert.equal(CLI.isDefined(undefined), false);
+
         });
 
         it("should return true with date", function() {
-            expect(CLI.isDefined(new Date())).toBe(true);
+
+            assert.equal(CLI.isDefined(new Date()), true);
+
         });
 
         it("should return true with empty object", function() {
-            expect(CLI.isDefined({})).toBe(true);
+
+            assert.equal(CLI.isDefined({}), true);
+
         });
 
-        it("should return true with node list", function() {
-            expect(CLI.isDefined(document.getElementsByTagName('body'))).toBe(true);
-        });
-
-        it("should return true with element", function() {
-           expect(CLI.isDefined(document.body)).toBe(true);
-        });
     });
+
+    /*
 
     describe("CLI.isEmpty", function() {
         it("should return true with empty array", function() {
