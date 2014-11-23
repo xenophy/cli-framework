@@ -1585,6 +1585,82 @@ describe("CLI.Util", function() {
     });
 
     // }}}
+    // {{{ CLI.clone
+
+    describe("CLI.clone", function() {
+
+        var clone;
+
+        afterEach(function() {
+            clone = null;
+        });
+
+        it("should clone an array", function() {
+
+            var array = [2,'5',[1,3,4]];
+
+            clone = CLI.clone(array);
+
+            assert.deepEqual(clone, array);
+            assert.notEqual(clone, array);
+
+        });
+
+        it("should clone an object", function() {
+
+            var object = {
+                fn: function() {
+                    return 1;
+                },
+                b: 2
+            };
+
+            clone = CLI.clone(object);
+
+            assert.deepEqual(clone, object);
+            assert.notEqual(clone, object);
+
+        });
+
+        it("should clone a date", function() {
+
+            var date = new Date();
+
+            clone = CLI.clone(date);
+
+            assert.deepEqual(clone, date);
+            assert.notEqual(clone, date);
+
+        });
+
+        it("should return null for null items", function() {
+
+            assert.equal(CLI.clone(null), null);
+
+        });
+
+        it("should return undefined for undefined items", function() {
+
+            assert.equal(CLI.clone(undefined), undefined);
+
+        });
+
+        it("should not copy CLI.enumerable properties onto cloned object", function() {
+
+            assert.equal(CLI.clone({}).hasOwnProperty('toString'), false);
+
+        });
+
+        it("should copy same-named CLI.enumerable property onto cloned object", function() {
+
+            assert.equal(CLI.clone({toString: true}).hasOwnProperty('toString'), true);
+            assert.equal(CLI.clone({toString: true}).hasOwnProperty('valueOf'), false);
+
+        });
+
+    });
+
+    // }}}
 
 });
 
