@@ -11,5 +11,6 @@ node_modules
 
 ### CLI Framework ###
 coverage.html
+.docstemp
 
 # EOF
