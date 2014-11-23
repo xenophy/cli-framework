@@ -1,6 +1,6 @@
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 
-/**
+/*!
  * This file is part of CLI Framework
  */
 
@@ -9,7 +9,7 @@
 var assert = require('power-assert');
 
 // }}}
-// {{{ CLI.Util
+// {{{ CLI.Object
 
 describe("CLI.Object", function() {
 
