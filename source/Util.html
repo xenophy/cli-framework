@@ -310,7 +310,7 @@
         // {{{ valueFrom
 
 <span id='global-method-valueFrom'>        /**
-</span>         * Returns the given value itself if it&#39;s not empty, as described in {@link Ext#isEmpty}; returns the default
+</span>         * Returns the given value itself if it&#39;s not empty, as described in {@link CLI#isEmpty}; returns the default
          * value (second argument) otherwise.
          *
          * @param {Object} value The value to test.
@@ -328,14 +328,14 @@
 <span id='global-method-override'>        /**
 </span>         * Overrides members of the specified `target` with the given values.
          *
-         * If the `target` is a class declared using {@link Ext#define CLI.define}, the
+         * If the `target` is a class declared using {@link CLI#define CLI.define}, the
          * `override` method of that class is called (see {@link CLI.Base#override}) given
          * the `overrides`.
          *
          * If the `target` is a function, it is assumed to be a constructor and the contents
-         * of `overrides` are applied to its `prototype` using {@link Ext#apply CLI.apply}.
+         * of `overrides` are applied to its `prototype` using {@link CLI#apply CLI.apply}.
          *
-         * If the `target` is an instance of a class declared using {@link Ext#define CLI.define},
+         * If the `target` is an instance of a class declared using {@link CLI#define CLI.define},
          * the `overrides` are applied to only that instance. In this case, methods are
          * specially processed to allow them to use {@link CLI.Base#callParent}.
          *
@@ -350,9 +350,9 @@
          *      });
          *
          * If the `target` is none of these, the `overrides` are applied to the `target`
-         * using {@link Ext#apply CLI.apply}.
+         * using {@link CLI#apply CLI.apply}.
          *
-         * Please refer to {@link Ext#define CLI.define} and {@link CLI.Base#override} for
+         * Please refer to {@link CLI#define CLI.define} and {@link CLI.Base#override} for
          * further details.
          *
          * @param {Object} target The target to override.
