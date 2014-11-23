@@ -41,8 +41,10 @@
 
         // {{{ applyIf
 
-<span id='global-method-applyIf'>        /**
-</span>         * Copies all the properties of config to object if they don&#39;t already exist.
+<span id='CLI-method-applyIf'>        /**
+</span>         * @method applyIf
+         * @member CLI
+         * Copies all the properties of config to object if they don&#39;t already exist.
          * @param {Object} object The receiver of the properties
          * @param {Object} config The source of the properties
          * @return {Object} returns obj
@@ -100,8 +102,10 @@
         // }}}
         // {{{ isArray
 
-<span id='global-method-isArray'>        /**
-</span>         * Returns `true` if the passed value is a JavaScript Array, `false` otherwise.
+<span id='CLI-method-isArray'>        /**
+</span>         * @method isArray
+         * @member CLI
+         * Returns `true` if the passed value is a JavaScript Array, `false` otherwise.
          *
          * @param {Object} target The target to test.
          * @return {Boolean}
@@ -112,8 +116,10 @@
         // }}}
         // {{{ isDate
 
-<span id='global-method-isDate'>        /**
-</span>         * Returns `true` if the passed value is a JavaScript Date object, `false` otherwise.
+<span id='CLI-method-isDate'>        /**
+</span>         * @method isDate
+         * @member CLI
+         * Returns `true` if the passed value is a JavaScript Date object, `false` otherwise.
          * @param {Object} object The object to test.
          * @return {Boolean}
          */
@@ -124,8 +130,10 @@
         // }}}
         // {{{ isEmpty
 
-<span id='global-method-isEmpty'>        /**
-</span>         * Returns true if the passed value is empty, false otherwise. The value is deemed to be empty if it is either:
+<span id='CLI-method-isEmpty'>        /**
+</span>         * @method isEmpty
+         * @member CLI
+         * Returns true if the passed value is empty, false otherwise. The value is deemed to be empty if it is either:
          *
          * - `null`
          * - `undefined`
@@ -143,8 +151,10 @@
         // }}}
         // {{{ isMSDate
 
-<span id='global-method-isMSDate'>        /**
-</span>         * Returns &#39;true&#39; if the passed value is a String that matches the MS Date JSON
+<span id='CLI-method-isMSDate'>        /**
+</span>         * @method isMSDate
+         * @member CLI
+         * Returns &#39;true&#39; if the passed value is a String that matches the MS Date JSON
          * encoding format.
          * @param {String} value The string to test.
          * @return {Boolean}
@@ -174,8 +184,10 @@
         // }}}
         // {{{ isPrimitive
 
-<span id='global-method-isPrimitive'>        /**
-</span>         * Returns `true` if the passed value is a JavaScript &#39;primitive&#39;, a string, number
+<span id='CLI-method-isPrimitive'>        /**
+</span>         * @method isPrimitive
+         * @member CLI
+         * Returns `true` if the passed value is a JavaScript &#39;primitive&#39;, a string, number
          * or boolean.
          * @param {Object} value The value to test.
          * @return {Boolean}
@@ -190,8 +202,10 @@
         // }}}
         // {{{ isFunction
 
-<span id='global-method-isFunction'>        /**
-</span>         * Returns `true` if the passed value is a JavaScript Function, `false` otherwise.
+<span id='CLI-method-isFunction'>        /**
+</span>         * @method isFunction
+         * @member CLI
+         * Returns `true` if the passed value is a JavaScript Function, `false` otherwise.
          * @param {Object} value The value to test.
          * @return {Boolean}
          * @method
@@ -203,6 +217,13 @@
         // }}}
         // {{{ isNumber
 
+<span id='CLI-method-isNumber'>        /**
+</span>         * @method isNumber
+         * @member CLI
+         * Returns `true` if the passed value is a number. Returns `false` for non-finite numbers.
+         * @param {Object} value The value to test.
+         * @return {Boolean}
+         */
         isNumber: function(value) {
             return typeof value === &#39;number&#39; &amp;&amp; isFinite(value);
         },
@@ -210,8 +231,10 @@
         // }}}
         // {{{ isNumeric
 
-<span id='global-method-isNumeric'>        /**
-</span>         * Validates that a value is numeric.
+<span id='CLI-method-isNumeric'>        /**
+</span>         * @method isNumeric
+         * @member CLI
+         * Validates that a value is numeric.
          * @param {Object} value Examples: 1, &#39;1&#39;, &#39;2.34&#39;
          * @return {Boolean} True if numeric, false otherwise
          */
@@ -222,8 +245,10 @@
         // }}}
         // {{{ isString
 
-<span id='global-method-isString'>        /**
-</span>         * Returns `true `if the passed value is a string.
+<span id='CLI-method-isString'>        /**
+</span>         * @method isString
+         * @member CLI
+         * Returns `true `if the passed value is a string.
          * @param {Object} value The value to test.
          * @return {Boolean}
          */
@@ -234,8 +259,10 @@
         // }}}
         // {{{ isBoolean
 
-<span id='global-method-isBoolean'>        /**
-</span>         * Returns `true` if the passed value is a boolean.
+<span id='CLI-method-isBoolean'>        /**
+</span>         * @method isBoolean
+         * @member CLI
+         * Returns `true` if the passed value is a boolean.
          *
          * @param {Object} value The value to test.
          * @return {Boolean}
@@ -247,8 +274,10 @@
         // }}}
         // {{{ isDefined
 
-<span id='global-method-isDefined'>        /**
-</span>         * Returns `true` if the passed value is defined.
+<span id='CLI-method-isDefined'>        /**
+</span>         * @method isDefined
+         * @member CLI
+         * Returns `true` if the passed value is defined.
          * @param {Object} value The value to test.
          * @return {Boolean}
          */
@@ -259,8 +288,10 @@
         // }}}
         // {{{ isIterable
 
-<span id='global-method-isIterable'>        /**
-</span>         * Returns `true` if the passed value is iterable, that is, if elements of it are addressable using array
+<span id='CLI-method-isIterable'>        /**
+</span>         * @method isIterable
+         * @member CLI
+         * Returns `true` if the passed value is iterable, that is, if elements of it are addressable using array
          * notation with numeric indices, `false` otherwise.
          *
          * Arrays and function `arguments` objects are iterable. Also HTML collections such as `NodeList` and `HTMLCollection&#39;
@@ -285,8 +316,10 @@
         // }}}
         // {{{ now
 
-<span id='global-method-now'>        /**
-</span>         * Returns the current timestamp.
+<span id='CLI-method-now'>        /**
+</span>         * @method now
+         * @member CLI
+         * Returns the current timestamp.
          * @return {Number} Milliseconds since UNIX epoch.
          * @method
          */
@@ -309,8 +342,10 @@
         // }}}
         // {{{ valueFrom
 
-<span id='global-method-valueFrom'>        /**
-</span>         * Returns the given value itself if it&#39;s not empty, as described in {@link CLI#isEmpty}; returns the default
+<span id='CLI-method-valueFrom'>        /**
+</span>         * @method valueFrom
+         * @member CLI
+         * Returns the given value itself if it&#39;s not empty, as described in {@link CLI#isEmpty}; returns the default
          * value (second argument) otherwise.
          *
          * @param {Object} value The value to test.
@@ -325,7 +360,7 @@
         // }}}
         // {{{ override
 
-<span id='global-method-override'>        /**
+<span id='CLI-method-override'>        /**
 </span>         * Overrides members of the specified `target` with the given values.
          *
          * If the `target` is a class declared using {@link CLI#define CLI.define}, the
@@ -358,6 +393,7 @@
          * @param {Object} target The target to override.
          * @param {Object} overrides The properties to add or replace on `target`.
          * @method override
+         * @member CLI
          */
         override: function (target, overrides) {
 
@@ -413,8 +449,10 @@
         // }}}
         // {{{ clone
 
-<span id='global-method-clone'>        /**
-</span>         * Clone simple variables including array, {}-like objects, DOM nodes and Date without keeping the old reference.
+<span id='CLI-method-clone'>        /**
+</span>         * @method clone
+         * @member CLI
+         * Clone simple variables including array, {}-like objects, DOM nodes and Date without keeping the old reference.
          * A reference for the object itself is returned if it&#39;s not a direct decendant of Object. For model cloning,
          * see {@link CLI.data.Model#copy Model.copy}.
          *
