@@ -44,6 +44,6 @@ docs:
 	jsduck $(CURRENT_DIR)/lib --output docs
 	cd $(CURRENT_DIR)/lib
 	git commit -a -m "Re:Generate Documentation."
-	git push origin/gh-pages
+	git push origin gh-pages
 
 FORCE:
