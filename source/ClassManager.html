@@ -23,12 +23,213 @@
 
 <span id='CLI-ClassManager'>/**
 </span> * @class CLI.ClassManager
+ *
+ * CLI.ClassManager manages all classes and handles mapping from string class name to
+ * actual class objects throughout the whole framework. It is not generally accessed directly, rather through
+ * these convenient shorthands:
+ *
+ * - {@link CLI#define CLI.define}
+ * - {@link CLI#create CLI.create}
+ * - {@link CLI#widget CLI.widget}
+ * - {@link CLI#getClass CLI.getClass}
+ * - {@link CLI#getClassName CLI.getClassName}
+ *
+ * # Basic syntax:
+ *
+ *     CLI.define(className, properties);
+ *
+ * in which `properties` is an object represent a collection of properties that apply to the class. See
+ * {@link CLI.ClassManager#create} for more detailed instructions.
+ *
+ *     CLI.define(&#39;Person&#39;, {
+ *          name: &#39;Unknown&#39;,
+ *
+ *          constructor: function(name) {
+ *              if (name) {
+ *                  this.name = name;
+ *              }
+ *          },
+ *
+ *          eat: function(foodType) {
+ *              alert(&quot;I&#39;m eating: &quot; + foodType);
+ *
+ *              return this;
+ *          }
+ *     });
+ *
+ *     var aaron = new Person(&quot;Aaron&quot;);
+ *     aaron.eat(&quot;Sandwich&quot;); // alert(&quot;I&#39;m eating: Sandwich&quot;);
+ *
+ * CLI.Class has a powerful set of extensible {@link CLI.Class#registerPreprocessor pre-processors} which takes care of
+ * everything related to class creation, including but not limited to inheritance, mixins, configuration, statics, etc.
+ *
+ * # Inheritance:
+ *
+ *     CLI.define(&#39;Developer&#39;, {
+ *          extend: &#39;Person&#39;,
+ *
+ *          constructor: function(name, isGeek) {
+ *              this.isGeek = isGeek;
+ *
+ *              // Apply a method from the parent class&#39; prototype
+ *              this.callParent([name]);
+ *          },
+ *
+ *          code: function(language) {
+ *              alert(&quot;I&#39;m coding in: &quot; + language);
+ *
+ *              this.eat(&quot;Bugs&quot;);
+ *
+ *              return this;
+ *          }
+ *     });
+ *
+ *     var jacky = new Developer(&quot;Jacky&quot;, true);
+ *     jacky.code(&quot;JavaScript&quot;); // alert(&quot;I&#39;m coding in: JavaScript&quot;);
+ *                               // alert(&quot;I&#39;m eating: Bugs&quot;);
+ *
+ * See {@link CLI.Base#callParent} for more details on calling superclass&#39; methods
+ *
+ * # Mixins:
+ *
+ *     CLI.define(&#39;CanPlayGuitar&#39;, {
+ *          playGuitar: function() {
+ *             alert(&quot;F#...G...D...A&quot;);
+ *          }
+ *     });
+ *
+ *     CLI.define(&#39;CanComposeSongs&#39;, {
+ *          composeSongs: function() { ... }
+ *     });
+ *
+ *     CLI.define(&#39;CanSing&#39;, {
+ *          sing: function() {
+ *              alert(&quot;For he&#39;s a jolly good fellow...&quot;)
+ *          }
+ *     });
+ *
+ *     CLI.define(&#39;Musician&#39;, {
+ *          extend: &#39;Person&#39;,
+ *
+ *          mixins: {
+ *              canPlayGuitar: &#39;CanPlayGuitar&#39;,
+ *              canComposeSongs: &#39;CanComposeSongs&#39;,
+ *              canSing: &#39;CanSing&#39;
+ *          }
+ *     })
+ *
+ *     CLI.define(&#39;CoolPerson&#39;, {
+ *          extend: &#39;Person&#39;,
+ *
+ *          mixins: {
+ *              canPlayGuitar: &#39;CanPlayGuitar&#39;,
+ *              canSing: &#39;CanSing&#39;
+ *          },
+ *
+ *          sing: function() {
+ *              alert(&quot;Ahem....&quot;);
+ *
+ *              this.mixins.canSing.sing.call(this);
+ *
+ *              alert(&quot;[Playing guitar at the same time...]&quot;);
+ *
+ *              this.playGuitar();
+ *          }
+ *     });
+ *
+ *     var me = new CoolPerson(&quot;Jacky&quot;);
+ *
+ *     me.sing(); // alert(&quot;Ahem...&quot;);
+ *                // alert(&quot;For he&#39;s a jolly good fellow...&quot;);
+ *                // alert(&quot;[Playing guitar at the same time...]&quot;);
+ *                // alert(&quot;F#...G...D...A&quot;);
+ *
+ * # Config:
+ *
+ *     CLI.define(&#39;SmartPhone&#39;, {
+ *          config: {
+ *              hasTouchScreen: false,
+ *              operatingSystem: &#39;Other&#39;,
+ *              price: 500
+ *          },
+ *
+ *          isExpensive: false,
+ *
+ *          constructor: function(config) {
+ *              this.initConfig(config);
+ *          },
+ *
+ *          applyPrice: function(price) {
+ *              this.isExpensive = (price &gt; 500);
+ *
+ *              return price;
+ *          },
+ *
+ *          applyOperatingSystem: function(operatingSystem) {
+ *              if (!(/^(iOS|Android|BlackBerry)$/i).test(operatingSystem)) {
+ *                  return &#39;Other&#39;;
+ *              }
+ *
+ *              return operatingSystem;
+ *          }
+ *     });
+ *
+ *     var iPhone = new SmartPhone({
+ *          hasTouchScreen: true,
+ *          operatingSystem: &#39;iOS&#39;
+ *     });
+ *
+ *     iPhone.getPrice(); // 500;
+ *     iPhone.getOperatingSystem(); // &#39;iOS&#39;
+ *     iPhone.getHasTouchScreen(); // true;
+ *
+ *     iPhone.isExpensive; // false;
+ *     iPhone.setPrice(600);
+ *     iPhone.getPrice(); // 600
+ *     iPhone.isExpensive; // true;
+ *
+ *     iPhone.setOperatingSystem(&#39;AlienOS&#39;);
+ *     iPhone.getOperatingSystem(); // &#39;Other&#39;
+ *
+ * # Statics:
+ *
+ *     CLI.define(&#39;Computer&#39;, {
+ *          statics: {
+ *              factory: function(brand) {
+ *                 // &#39;this&#39; in static methods refer to the class itself
+ *                  return new this(brand);
+ *              }
+ *          },
+ *
+ *          constructor: function() { ... }
+ *     });
+ *
+ *     var dellComputer = Computer.factory(&#39;Dell&#39;);
+ *
+ * Also see {@link CLI.Base#statics} and {@link CLI.Base#self} for more details on accessing
+ * static properties within class methods
+ *
+ * @singleton
  */
 
 (function() {
 
     &quot;use strict&quot;;
 
+    CLI.ClassManager = (function(Class, alias, arraySlice, arrayFrom, global) {
+        // @define CLI.ClassManager
+        // @require CLI.Inventory
+        // @require CLI.Class
+        // @require CLI.Function
+        // @require CLI.Array
+
+        var Manager;
+
+
+
+        return Manager;
+
+    }(CLI.Class, CLI.Function.alias, Array.prototype.slice, CLI.Array.from, CLI.global));
 
 })();
 
