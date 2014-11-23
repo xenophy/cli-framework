@@ -15,7 +15,7 @@ describe("CLI.Util", function() {
 
     // {{{ before
 
-    before(function(){
+    before(function() {
 
         // require CLI
         require('../../index.js');
@@ -502,7 +502,7 @@ describe("CLI.Util", function() {
 
         it("should return true with anonymous function", function() {
 
-            assert.equal(CLI.isFunction(function(){}), true);
+            assert.equal(CLI.isFunction(function() {}), true);
 
         });
 
@@ -1170,14 +1170,14 @@ describe("CLI.Util", function() {
 
     describe("CLI.isIterable", function() {
 
-        var LengthyClass = function(){},
-            ClassWithItem = function(){},
-            LengthyItemClass = function(){};
+        var LengthyClass = function() {},
+            ClassWithItem = function() {},
+            LengthyItemClass = function() {};
 
         LengthyClass.prototype.length = 1;
-        ClassWithItem.prototype.item = function(){};
+        ClassWithItem.prototype.item = function() {};
         LengthyItemClass.prototype.length = 1;
-        LengthyItemClass.prototype.item = function(){};
+        LengthyItemClass.prototype.item = function() {};
 
         it("should return true with an arguments object", function() {
 
@@ -1251,9 +1251,9 @@ describe("CLI.Util", function() {
 
         });
 
-        it("should return false for a function", function(){
+        it("should return false for a function", function() {
 
-            assert.equal(CLI.isIterable(function(){}), false);
+            assert.equal(CLI.isIterable(function() {}), false);
 
         });
 
@@ -1265,7 +1265,7 @@ describe("CLI.Util", function() {
 
         it('should return false for objects with an item property', function() {
 
-            assert.equal(CLI.isIterable({item: function(){}}), false);
+            assert.equal(CLI.isIterable({item: function() {}}), false);
 
         });
 
@@ -1560,7 +1560,31 @@ describe("CLI.Util", function() {
     });
 
     // }}}
+    // {{{ CLI.override
 
+    describe("CLI.override", function() {
+
+        var Dude,
+            extApplySpy;
+
+        beforeEach(function() {
+            var sinon = require('sinon');
+            Dude = function() {}; // avoid to directly override Object class
+            extApplySpy = sinon.spy(CLI, "apply");
+        });
+
+        it("should apply override", function() {
+
+            var override = {foo: true};
+
+            CLI.override(Dude, override);
+
+            assert.deepEqual(extApplySpy.withArgs(Dude.prototype).returnValues[0], override);
+        });
+
+    });
+
+    // }}}
 
 });
 
