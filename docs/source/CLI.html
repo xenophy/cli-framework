@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/* jshint -W053 */
+
+<span id='global-property-'>/**
+</span> * This file is part of CLI Framework
+ */
+
+// define CLI
+var CLI = CLI || {};
+
+// get start time
+CLI._startTime = Date.now();
+
+(function() {
+
+    &quot;use strict&quot;;
+
+    var emptyFn     = function () {},
+        privateFn   = function () {};
+
+    emptyFn.$nullFn = emptyFn.$emptyFn = privateFn.$nullFn = true;
+    privateFn.$privacy = &#39;framework&#39;;
+
+    // set global object
+    CLI.global = global;
+
+    // {{{ apply
+
+    CLI.apply = function(object, config, defaults) {
+
+        if (defaults) {
+            CLI.apply(object, defaults);
+        }
+
+        if (object &amp;&amp; config &amp;&amp; typeof config === &#39;object&#39;) {
+
+            var i, j, k;
+
+            for (i in config) {
+                object[i] = config[i];
+            }
+
+        }
+
+        return object;
+    };
+
+    // }}}
+    // {{{ define CLI class
+
+    CLI.apply(CLI, {
+
+        // {{{ emptyFn
+
+        emptyFn: emptyFn,
+
+        // }}}
+        // {{{ privateFn
+
+        privateFn: privateFn,
+
+        // }}}
+        // {{{ frameworkStartTime
+
+        frameStartTime: CLI._startTime,
+
+        // }}}
+        // {{{ emptyString
+
+        emptyString: new String()
+
+        // }}}
+
+    });
+
+    // }}}
+    // {{{ set CLI class instance to global
+
+    global.CLI = module.exports = CLI;
+
+    // }}}
+    // {{{ append CLI methods and define classes
+
+    [
+        &#39;./Util.js&#39;,
+        &#39;./lang/Array.js&#39;,
+        &#39;./lang/Date.js&#39;,
+        &#39;./lang/Function.js&#39;,
+        &#39;./lang/Number.js&#39;,
+        &#39;./lang/Object.js&#39;,
+        &#39;./lang/String.js&#39;,
+        &#39;./class/Base.js&#39;,
+        &#39;./class/Class.js&#39;,
+        &#39;./class/ClassManager.js&#39;,
+        &#39;./class/Config.js&#39;,
+        &#39;./class/Configurator.js&#39;,
+        &#39;./class/Inventory.js&#39;,
+        &#39;./class/Loader.js&#39;,
+        &#39;./class/Mixin.js&#39;
+
+    ].forEach(function(file) {
+        require(file);
+    });
+
+    // }}}
+
+})();
+
+/*
+ * Local variables:
+ * tab-width: 4
+ * c-basic-offset: 4
+ * c-hanging-comment-ender-p: nil
+ * End:
+ */
+</pre>
+</body>
+</html>

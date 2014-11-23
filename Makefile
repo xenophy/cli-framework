@@ -42,8 +42,6 @@ jshint:
 
 docs:
 	jsduck $(CURRENT_DIR)/lib --output docs
-	cd $(CURRENT_DIR)/lib
-	git commit -a -m "Re:Generate Documentation."
-	git push origin gh-pages
+	cd $(CURRENT_DIR)/lib; git add *; git commit -a -m "Re:Generate Documentation."; git push origin gh-pages
 
 FORCE:
