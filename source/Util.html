@@ -41,6 +41,12 @@
 
         // {{{ applyIf
 
+<span id='global-method-applyIf'>        /**
+</span>         * Copies all the properties of config to object if they don&#39;t already exist.
+         * @param {Object} object The receiver of the properties
+         * @param {Object} config The source of the properties
+         * @return {Object} returns obj
+         */
         applyIf: function(object, config) {
 
             var property;
@@ -59,6 +65,19 @@
         // }}}
         // {{{ iterate
 
+<span id='Ext-method-iterate'>        /**
+</span>         * @method iterate
+         * @member Ext
+         * Iterates either an array or an object. This method delegates to
+         * {@link CLI.Array#each CLI.Array.each} if the given value is iterable, and {@link CLI.Object#each CLI.Object.each} otherwise.
+         *
+         * @param {Object/Array} object The object or array to be iterated.
+         * @param {Function} fn The function to be called for each iteration. See and {@link CLI.Array#each CLI.Array.each} and
+         * {@link CLI.Object#each CLI.Object.each} for detailed lists of arguments passed to this function depending on the given object
+         * type that is being iterated.
+         * @param {Object} [scope] The scope (`this` reference) in which the specified function is executed.
+         * Defaults to the object being iterated itself.
+         */
         iterate: function(object, fn, scope) {
 
             if (CLI.isEmpty(object)) {
@@ -81,11 +100,23 @@
         // }}}
         // {{{ isArray
 
+<span id='global-method-isArray'>        /**
+</span>         * Returns `true` if the passed value is a JavaScript Array, `false` otherwise.
+         *
+         * @param {Object} target The target to test.
+         * @return {Boolean}
+         * @method
+         */
         isArray: Array.isArray,
 
         // }}}
         // {{{ isDate
 
+<span id='global-method-isDate'>        /**
+</span>         * Returns `true` if the passed value is a JavaScript Date object, `false` otherwise.
+         * @param {Object} object The object to test.
+         * @return {Boolean}
+         */
         isDate: function(value) {
             return toString.call(value) === &#39;[object Date]&#39;;
         },
@@ -93,6 +124,18 @@
         // }}}
         // {{{ isEmpty
 
+<span id='global-method-isEmpty'>        /**
+</span>         * Returns true if the passed value is empty, false otherwise. The value is deemed to be empty if it is either:
+         *
+         * - `null`
+         * - `undefined`
+         * - a zero-length array
+         * - a zero-length string (Unless the `allowEmptyString` parameter is set to `true`)
+         *
+         * @param {Object} value The value to test.
+         * @param {Boolean} [allowEmptyString=false] `true` to allow empty strings.
+         * @return {Boolean}
+         */
         isEmpty: function(value, allowEmptyString) {
             return (value == null) || (!allowEmptyString ? value === &#39;&#39; : false) || (CLI.isArray(value) &amp;&amp; value.length === 0);
         },
@@ -100,6 +143,12 @@
         // }}}
         // {{{ isMSDate
 
+<span id='global-method-isMSDate'>        /**
+</span>         * Returns &#39;true&#39; if the passed value is a String that matches the MS Date JSON
+         * encoding format.
+         * @param {String} value The string to test.
+         * @return {Boolean}
+         */
         isMSDate: function(value) {
 
             if (!CLI.isString(value)) {
@@ -112,6 +161,12 @@
         // }}}
         // {{{ isObject
 
+<span id='global-method-isObject'>        /**
+</span>         * Returns `true` if the passed value is a JavaScript Object, `false` otherwise.
+         * @param {Object} value The value to test.
+         * @return {Boolean}
+         * @method
+         */
         isObject: function(value) {
             return toString.call(value) === &#39;[object Object]&#39;;
         },
@@ -119,6 +174,12 @@
         // }}}
         // {{{ isPrimitive
 
+<span id='global-method-isPrimitive'>        /**
+</span>         * Returns `true` if the passed value is a JavaScript &#39;primitive&#39;, a string, number
+         * or boolean.
+         * @param {Object} value The value to test.
+         * @return {Boolean}
+         */
         isPrimitive: function(value) {
 
             var type = typeof value;
@@ -129,6 +190,12 @@
         // }}}
         // {{{ isFunction
 
+<span id='global-method-isFunction'>        /**
+</span>         * Returns `true` if the passed value is a JavaScript Function, `false` otherwise.
+         * @param {Object} value The value to test.
+         * @return {Boolean}
+         * @method
+         */
         isFunction: function(value) {
             return !!value &amp;&amp; typeof value === &#39;function&#39;;
         },
@@ -143,6 +210,11 @@
         // }}}
         // {{{ isNumeric
 
+<span id='global-method-isNumeric'>        /**
+</span>         * Validates that a value is numeric.
+         * @param {Object} value Examples: 1, &#39;1&#39;, &#39;2.34&#39;
+         * @return {Boolean} True if numeric, false otherwise
+         */
         isNumeric: function(value) {
             return !isNaN(parseFloat(value)) &amp;&amp; isFinite(value);
         },
@@ -150,6 +222,11 @@
         // }}}
         // {{{ isString
 
+<span id='global-method-isString'>        /**
+</span>         * Returns `true `if the passed value is a string.
+         * @param {Object} value The value to test.
+         * @return {Boolean}
+         */
         isString: function(value) {
             return typeof value === &#39;string&#39;;
         },
@@ -157,6 +234,12 @@
         // }}}
         // {{{ isBoolean
 
+<span id='global-method-isBoolean'>        /**
+</span>         * Returns `true` if the passed value is a boolean.
+         *
+         * @param {Object} value The value to test.
+         * @return {Boolean}
+         */
         isBoolean: function(value) {
             return typeof value === &#39;boolean&#39;;
         },
@@ -164,6 +247,11 @@
         // }}}
         // {{{ isDefined
 
+<span id='global-method-isDefined'>        /**
+</span>         * Returns `true` if the passed value is defined.
+         * @param {Object} value The value to test.
+         * @return {Boolean}
+         */
         isDefined: function(value) {
             return typeof value !== &#39;undefined&#39;;
         },
@@ -171,6 +259,16 @@
         // }}}
         // {{{ isIterable
 
+<span id='global-method-isIterable'>        /**
+</span>         * Returns `true` if the passed value is iterable, that is, if elements of it are addressable using array
+         * notation with numeric indices, `false` otherwise.
+         *
+         * Arrays and function `arguments` objects are iterable. Also HTML collections such as `NodeList` and `HTMLCollection&#39;
+         * are iterable.
+         *
+         * @param {Object} value The value to test
+         * @return {Boolean}
+         */
         isIterable: function(value) {
 
             if (!value || typeof value.length !== &#39;number&#39; || typeof value === &#39;string&#39; || CLI.isFunction(value)) {
@@ -187,11 +285,19 @@
         // }}}
         // {{{ now
 
+<span id='global-method-now'>        /**
+</span>         * Returns the current timestamp.
+         * @return {Number} Milliseconds since UNIX epoch.
+         * @method
+         */
         now: Date.now,
 
         // }}}
         // {{{ functionFactory
 
+<span id='global-method-functionFactory'>        /**
+</span>         * @private
+         */
         functionFactory: function() {
 
             var args = Array.prototype.slice.call(arguments),
@@ -203,6 +309,15 @@
         // }}}
         // {{{ valueFrom
 
+<span id='global-method-valueFrom'>        /**
+</span>         * Returns the given value itself if it&#39;s not empty, as described in {@link Ext#isEmpty}; returns the default
+         * value (second argument) otherwise.
+         *
+         * @param {Object} value The value to test.
+         * @param {Object} defaultValue The value to return if the original value is empty.
+         * @param {Boolean} [allowBlank=false] `true` to allow zero length strings to qualify as non-empty.
+         * @return {Object} value, if non-empty, else defaultValue.
+         */
         valueFrom: function(value, defaultValue, allowBlank){
             return CLI.isEmpty(value, allowBlank) ? defaultValue : value;
         },
@@ -210,6 +325,40 @@
         // }}}
         // {{{ override
 
+<span id='global-method-override'>        /**
+</span>         * Overrides members of the specified `target` with the given values.
+         *
+         * If the `target` is a class declared using {@link Ext#define CLI.define}, the
+         * `override` method of that class is called (see {@link CLI.Base#override}) given
+         * the `overrides`.
+         *
+         * If the `target` is a function, it is assumed to be a constructor and the contents
+         * of `overrides` are applied to its `prototype` using {@link Ext#apply CLI.apply}.
+         *
+         * If the `target` is an instance of a class declared using {@link Ext#define CLI.define},
+         * the `overrides` are applied to only that instance. In this case, methods are
+         * specially processed to allow them to use {@link CLI.Base#callParent}.
+         *
+         *      var panel = new CLI.Panel({ ... });
+         *
+         *      CLI.override(panel, {
+         *          initComponent: function () {
+         *              // extra processing...
+         *
+         *              this.callParent();
+         *          }
+         *      });
+         *
+         * If the `target` is none of these, the `overrides` are applied to the `target`
+         * using {@link Ext#apply CLI.apply}.
+         *
+         * Please refer to {@link Ext#define CLI.define} and {@link CLI.Base#override} for
+         * further details.
+         *
+         * @param {Object} target The target to override.
+         * @param {Object} overrides The properties to add or replace on `target`.
+         * @method override
+         */
         override: function (target, overrides) {
 
             if (target.$isClass) {
@@ -264,6 +413,14 @@
         // }}}
         // {{{ clone
 
+<span id='global-method-clone'>        /**
+</span>         * Clone simple variables including array, {}-like objects, DOM nodes and Date without keeping the old reference.
+         * A reference for the object itself is returned if it&#39;s not a direct decendant of Object. For model cloning,
+         * see {@link CLI.data.Model#copy Model.copy}.
+         *
+         * @param {Object} item The variable to clone
+         * @return {Object} clone
+         */
         clone: function(item) {
 
             if (item === null || item === undefined) {
@@ -306,6 +463,25 @@
         // }}}
         // {{{ typeOf
 
+<span id='Ext-method-typeOf'>        /**
+</span>         * @method typeOf
+         * @member Ext
+         * Returns the type of the given variable in string format. List of possible values are:
+         *
+         * - `undefined`: If the given value is `undefined`
+         * - `null`: If the given value is `null`
+         * - `string`: If the given value is a string
+         * - `number`: If the given value is a number
+         * - `boolean`: If the given value is a boolean value
+         * - `date`: If the given value is a `Date` object
+         * - `function`: If the given value is a function reference
+         * - `object`: If the given value is an object
+         * - `array`: If the given value is an array
+         * - `regexp`: If the given value is a regular expression
+         *
+         * @param {Object} value
+         * @return {String}
+         */
         typeOf: (function () {
 
             var nonWhitespaceRe = /\S/,
