@@ -223,6 +223,9 @@
         // @require CLI.Function
         // @require CLI.Array
 
+
+        var makeCtor = CLI.Class.makeCtor;
+
         var isNonBrowser = typeof window === &#39;undefined&#39;;
 
         var Manager = CLI.apply(new CLI.Inventory(), {
