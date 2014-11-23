@@ -22,14 +22,49 @@
  */
 
 <span id='CLI-Base'>/**
-</span> *
- * @class CLI.Base
+</span> * @class CLI.Base
+ *
+ * The root of all classes created with {@link CLI#define}.
+ *
+ * CLI.Base is the building block of all CLI classes. All classes in CLI inherit from CLI.Base.
+ * All prototype and static members of this class are inherited by all other classes.
  */
 
 (function() {
 
     &quot;use strict&quot;;
 
+    CLI.Base = (function(flexSetter) {
+        // @define CLI.Base
+        // @require CLI.Util
+        // @require CLI.Version
+        // @require CLI.Configurator
+        // @uses CLI.ClassManager
+
+        var Base = function(){},
+            BasePrototype = Base.prototype;
+
+        CLI.apply(Base, {
+
+            // {{{ $className
+
+<span id='CLI-Base-property-S-className'>            /**
+</span>             * @private
+             */
+            $className: &#39;CLI.Base&#39;,
+
+            // }}}
+            // {{{ $isClass
+
+            $isClass: true,
+
+            // }}}
+
+        });
+
+        return Base;
+
+    }(CLI.Function.flexSetter));
 
 })();
 
