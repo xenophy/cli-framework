@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/* jshint eqnull:true */
+
+<span id='global-property-'>/**
+</span> * This file is part of CLI Framework
+ */
+
+(function() {
+
+    &quot;use strict&quot;;
+
+    var objectPrototype = Object.prototype,
+        toString        = objectPrototype.toString,
+        iterableRe      = /\[object\s*(?:Array|Arguments|\w*Collection|\w*List|HTML\s+document\.all\s+class)\]/,
+        MSDateRe        = /^\\?\/Date\(([-+])?(\d+)(?:[+-]\d{4})?\)\\?\/$/,
+        callOverrideParent = function () {
+
+            var method = callOverrideParent.caller.caller;
+
+            return method.$owner.prototype[method.$name].apply(this, arguments);
+        };
+
+    CLI.apply(CLI, {
+
+        // {{{ applyIf
+
+        applyIf: function(object, config) {
+
+            var property;
+
+            if (object) {
+                for (property in config) {
+                    if (object[property] === undefined) {
+                        object[property] = config[property];
+                    }
+                }
+            }
+
+            return object;
+        },
+
+        // }}}
+        // {{{ iterate
+
+        iterate: function(object, fn, scope) {
+
+            if (CLI.isEmpty(object)) {
+                return;
+            }
+
+            if (scope === undefined) {
+                scope = object;
+            }
+
+            if (CLI.isIterable(object)) {
+                CLI.Array.each.call(CLI.Array, object, fn, scope);
+            }
+            else {
+                CLI.Object.each.call(CLI.Object, object, fn, scope);
+            }
+
+        },
+
+        // }}}
+        // {{{ isArray
+
+        isArray: Array.isArray,
+
+        // }}}
+        // {{{ isDate
+
+        isDate: function(value) {
+            return toString.call(value) === &#39;[object Date]&#39;;
+        },
+
+        // }}}
+        // {{{ isEmpty
+
+        isEmpty: function(value, allowEmptyString) {
+            return (value == null) || (!allowEmptyString ? value === &#39;&#39; : false) || (CLI.isArray(value) &amp;&amp; value.length === 0);
+        },
+
+        // }}}
+        // {{{ isMSDate
+
+        isMSDate: function(value) {
+
+            if (!CLI.isString(value)) {
+                return false;
+            }
+
+            return MSDateRe.test(value);
+        },
+
+        // }}}
+        // {{{ isObject
+
+        isObject: function(value) {
+            return toString.call(value) === &#39;[object Object]&#39;;
+        },
+
+        // }}}
+        // {{{ isPrimitive
+
+        isPrimitive: function(value) {
+
+            var type = typeof value;
+
+            return type === &#39;string&#39; || type === &#39;number&#39; || type === &#39;boolean&#39;;
+        },
+
+        // }}}
+        // {{{ isFunction
+
+        isFunction: function(value) {
+            return !!value &amp;&amp; typeof value === &#39;function&#39;;
+        },
+
+        // }}}
+        // {{{ isNumber
+
+        isNumber: function(value) {
+            return typeof value === &#39;number&#39; &amp;&amp; isFinite(value);
+        },
+
+        // }}}
+        // {{{ isNumeric
+
+        isNumeric: function(value) {
+            return !isNaN(parseFloat(value)) &amp;&amp; isFinite(value);
+        },
+
+        // }}}
+        // {{{ isString
+
+        isString: function(value) {
+            return typeof value === &#39;string&#39;;
+        },
+
+        // }}}
+        // {{{ isBoolean
+
+        isBoolean: function(value) {
+            return typeof value === &#39;boolean&#39;;
+        },
+
+        // }}}
+        // {{{ isDefined
+
+        isDefined: function(value) {
+            return typeof value !== &#39;undefined&#39;;
+        },
+
+        // }}}
+        // {{{ isIterable
+
+        isIterable: function(value) {
+
+            if (!value || typeof value.length !== &#39;number&#39; || typeof value === &#39;string&#39; || CLI.isFunction(value)) {
+                return false;
+            }
+
+            if (value.hasOwnProperty(&#39;length&#39;) &amp;&amp; !value.propertyIsEnumerable(&#39;length&#39;)) {
+                return true;
+            }
+
+            return iterableRe.test(toString.call(value));
+        },
+
+        // }}}
+        // {{{ now
+
+        now: Date.now,
+
+        // }}}
+        // {{{ functionFactory
+
+        functionFactory: function() {
+
+            var args = Array.prototype.slice.call(arguments),
+                ln;
+
+            return Function.prototype.constructor.apply(Function.prototype, args);
+        },
+
+        // }}}
+        // {{{ valueFrom
+
+        valueFrom: function(value, defaultValue, allowBlank){
+            return CLI.isEmpty(value, allowBlank) ? defaultValue : value;
+        },
+
+        // }}}
+        // {{{ override
+
+        override: function (target, overrides) {
+
+            if (target.$isClass) {
+
+                target.override(overrides);
+
+            } else if (typeof target == &#39;function&#39;) {
+
+                CLI.apply(target.prototype, overrides);
+
+            } else {
+
+                var owner = target.self,
+                    name, value;
+
+                if (owner &amp;&amp; owner.$isClass) { // if (instance of CLI.define&#39;d class)
+
+                    for (name in overrides) {
+
+                        if (overrides.hasOwnProperty(name)) {
+
+                            value = overrides[name];
+
+                            if (typeof value === &#39;function&#39;) {
+
+                                if (owner.$className) {
+                                    value.displayName = owner.$className + &#39;#&#39; + name;
+                                }
+
+                                value.$name = name;
+                                value.$owner = owner;
+                                value.$previous = target.hasOwnProperty(name)
+                                    ? target[name] // already hooked, so call previous hook
+                                    : callOverrideParent; // calls by name on prototype
+                            }
+
+                            target[name] = value;
+                        }
+                    }
+
+                } else {
+
+                    CLI.apply(target, overrides);
+
+                }
+
+            }
+
+            return target;
+        },
+
+        // }}}
+        // {{{ clone
+
+        clone: function(item) {
+
+            if (item === null || item === undefined) {
+                return item;
+            }
+
+            var type = toString.call(item),
+                i, j, k, clone, key;
+
+            // Date
+            if (type === &#39;[object Date]&#39;) {
+                return new Date(item.getTime());
+            }
+
+            // Array
+            if (type === &#39;[object Array]&#39;) {
+                i = item.length;
+
+                clone = [];
+
+                while (i--) {
+                    clone[i] = CLI.clone(item[i]);
+                }
+            }
+
+            // Object
+            else if (type === &#39;[object Object]&#39; &amp;&amp; item.constructor === Object) {
+
+                clone = {};
+
+                for (key in item) {
+                    clone[key] = CLI.clone(item[key]);
+                }
+
+            }
+
+            return clone || item;
+        },
+
+        // }}}
+        // {{{ typeOf
+
+        typeOf: (function () {
+
+            var nonWhitespaceRe = /\S/,
+                toString = Object.prototype.toString,
+                typeofTypes = {
+                    number: 1,
+                    string: 1,
+                    &#39;boolean&#39;: 1,
+                    &#39;undefined&#39;: 1
+                },
+                toStringTypes = {
+                    &#39;[object Array]&#39;  : &#39;array&#39;,
+                    &#39;[object Date]&#39;   : &#39;date&#39;,
+                    &#39;[object Boolean]&#39;: &#39;boolean&#39;,
+                    &#39;[object Number]&#39; : &#39;number&#39;,
+                    &#39;[object RegExp]&#39; : &#39;regexp&#39;
+                };
+
+            return function(value) {
+
+                if (value === null) {
+                    return &#39;null&#39;;
+                }
+
+                var type = typeof value,
+                    ret, typeToString;
+
+                if (typeofTypes[type]) {
+                    return type;
+                }
+
+                ret = toStringTypes[typeToString = toString.call(value)];
+
+                if (ret) {
+                    return ret;
+                }
+
+                if (type === &#39;function&#39;) {
+                    return &#39;function&#39;;
+                }
+
+                if (type === &#39;object&#39;) {
+                    return &#39;object&#39;;
+                }
+
+                // TODO: implemented after, enable
+                /*
+                CLI.Error.raise({
+                    sourceClass: &#39;Ext&#39;,
+                    sourceMethod: &#39;typeOf&#39;,
+                    msg: &#39;Failed to determine the type of &quot;&#39; + value + &#39;&quot;.&#39;
+                });
+               */
+
+                return typeToString;
+            };
+
+        }()),
+
+        // }}}
+
+    });
+
+})();
+
+/*
+ * Local variables:
+ * tab-width: 4
+ * c-basic-offset: 4
+ * c-hanging-comment-ender-p: nil
+ * End:
+ */
+</pre>
+</body>
+</html>
