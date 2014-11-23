@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/* jshint -W053 */
+
+<span id='CLI'>/**
+</span> * This file is part of CLI Framework
+ *
+ * @class CLI
+ * @singleton
+ */
+
+// define CLI
+var CLI = CLI || {};
+
+// get start time
+CLI._startTime = Date.now();
+
+(function() {
+
+    &quot;use strict&quot;;
+
+    var emptyFn     = function () {},
+        privateFn   = function () {};
+
+    emptyFn.$nullFn = emptyFn.$emptyFn = privateFn.$nullFn = true;
+    privateFn.$privacy = &#39;framework&#39;;
+
+    // set global object
+    CLI.global = global;
+
+    // {{{ apply
+
+<span id='CLI-method-apply'>    /**
+</span>     * Copies all the properties of `config` to the specified `object`. There are two levels
+     * of defaulting supported:
+     * 
+     *      CLI.apply(obj, { a: 1 }, { a: 2 });
+     *      //obj.a === 1
+     * 
+     *      CLI.apply(obj, {  }, { a: 2 });
+     *      //obj.a === 2
+     * 
+     * Note that if recursive merging and cloning without referencing the original objects
+     * or arrays is needed, use {@link CLI.Object#merge} instead.
+     * 
+     * @param {Object} object The receiver of the properties.
+     * @param {Object} config The primary source of the properties.
+     * @param {Object} [defaults] An object that will also be applied for default values.
+     * @return {Object} returns `object`.
+     */
+    CLI.apply = function(object, config, defaults) {
+
+        if (defaults) {
+            CLI.apply(object, defaults);
+        }
+
+        if (object &amp;&amp; config &amp;&amp; typeof config === &#39;object&#39;) {
+
+            var i, j, k;
+
+            for (i in config) {
+                object[i] = config[i];
+            }
+
+        }
+
+        return object;
+    };
+
+    // }}}
+    // {{{ define CLI class
+
+    CLI.apply(CLI, {
+
+        // {{{ emptyFn
+
+<span id='CLI-property-emptyFn'>        /**
+</span>         * @property {Function}
+         * A reusable empty function.
+         */
+        emptyFn: emptyFn,
+
+        // }}}
+        // {{{ privateFn
+
+<span id='CLI-property-privateFn'>        /**
+</span>         * @property {Function}
+         * A reusable empty function for use as `privates` members.
+         *
+         *      CLI.define(&#39;MyClass&#39;, {
+         *          nothing: CLI.emptyFn,
+         *
+         *          privates: {
+         *              privateNothing: CLI.privateFn
+         *          }
+         *      });
+         *
+         */
+        privateFn: privateFn,
+
+        // }}}
+        // {{{ emptyString
+
+<span id='CLI-property-emptyString'>        /**
+</span>         * A zero length string which will pass a truth test. Useful for passing to methods
+         * which use a truth test to reject &lt;i&gt;falsy&lt;/i&gt; values where a string value must be cleared.
+         */
+        emptyString: new String()
+
+        // }}}
+
+    });
+
+    // }}}
+    // {{{ set CLI class instance to global
+
+    global.CLI = module.exports = CLI;
+
+    // }}}
+    // {{{ append CLI methods and define classes
+
+    [
+        &#39;./Util.js&#39;,
+        &#39;./lang/Array.js&#39;,
+        &#39;./lang/Date.js&#39;,
+        &#39;./lang/Function.js&#39;,
+        &#39;./lang/Number.js&#39;,
+        &#39;./lang/Object.js&#39;,
+        &#39;./lang/String.js&#39;,
+        &#39;./class/Base.js&#39;,
+        &#39;./class/Class.js&#39;,
+        &#39;./class/ClassManager.js&#39;,
+        &#39;./class/Config.js&#39;,
+        &#39;./class/Configurator.js&#39;,
+        &#39;./class/Inventory.js&#39;,
+        &#39;./class/Loader.js&#39;,
+        &#39;./class/Mixin.js&#39;
+
+    ].forEach(function(file) {
+        require(file);
+    });
+
+    // }}}
+
+})();
+
+/*
+ * Local variables:
+ * tab-width: 4
+ * c-basic-offset: 4
+ * c-hanging-comment-ender-p: nil
+ * End:
+ */
+</pre>
+</body>
+</html>
