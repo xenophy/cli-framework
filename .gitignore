@@ -10,6 +10,8 @@ npm-debug.log
 node_modules
 
 ### CLI Framework ###
+/docs
 coverage.html
+
 
 # EOF

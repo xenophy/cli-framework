@@ -29,7 +29,7 @@ SRCS = $(shell find lib -type f -name '*.js')
 # Specs
 SPECS = $(shell find test/specs -type f -name '*.js')
 
-.PHONY: test
+.PHONY: test jshint docs
 
 test:
 	$(MOCHA) $(SPECS)
@@ -39,5 +39,11 @@ test-coverage:
 
 jshint:
 	jshint $(SRCS)
+
+docs:
+	jsduck $(CURRENT_DIR)/lib --output docs
+	cd $(CURRENT_DIR)/lib
+	git commit -a -m "Re:Generate Documentation."
+	git push origin gh-pages
 
 FORCE:
