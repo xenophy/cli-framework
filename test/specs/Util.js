@@ -1651,10 +1651,90 @@ describe("CLI.Util", function() {
 
         });
 
-        it("should copy same-named CLI.enumerable property onto cloned object", function() {
+    });
 
-            assert.equal(CLI.clone({toString: true}).hasOwnProperty('toString'), true);
-            assert.equal(CLI.clone({toString: true}).hasOwnProperty('valueOf'), false);
+    // }}}
+    // {{{ CLI.typeOf
+
+    describe("CLI.typeOf", function() {
+
+        it("should return null", function() {
+
+            assert.equal(CLI.typeOf(null), 'null');
+
+        });
+
+        it("should return undefined", function() {
+
+            assert.equal(CLI.typeOf(undefined), 'undefined');
+            assert.equal(CLI.typeOf(global.someWeirdPropertyThatDoesntExist), 'undefined');
+
+        });
+
+        it("should return string", function() {
+
+            assert.equal(CLI.typeOf(''), 'string');
+            assert.equal(CLI.typeOf('something'), 'string');
+            assert.equal(CLI.typeOf('1.2'), 'string');
+
+        });
+
+        it("should return number", function() {
+
+            assert.equal(CLI.typeOf(1), 'number');
+            assert.equal(CLI.typeOf(1.2), 'number');
+            assert.equal(CLI.typeOf(new Number(1.2)), 'number');
+
+        });
+
+        it("should return boolean", function() {
+
+            assert.equal(CLI.typeOf(true), 'boolean');
+            assert.equal(CLI.typeOf(false), 'boolean');
+            assert.equal(CLI.typeOf(new Boolean(true)), 'boolean');
+
+        });
+
+        it("should return array", function() {
+
+            assert.equal(CLI.typeOf([1,2,3]), 'array');
+            assert.equal(CLI.typeOf(new Array(1,2,3)), 'array');
+
+        });
+
+        it("should return function", function() {
+
+            assert.equal(CLI.typeOf(function(){}), 'function');
+            assert.equal(CLI.typeOf(new Function()), 'function');
+            assert.equal(CLI.typeOf(Object), 'function');
+            assert.equal(CLI.typeOf(Array), 'function');
+            assert.equal(CLI.typeOf(Number), 'function');
+            assert.equal(CLI.typeOf(Function), 'function');
+            assert.equal(CLI.typeOf(Boolean), 'function');
+            assert.equal(CLI.typeOf(String), 'function');
+            assert.equal(CLI.typeOf(Date), 'function');
+            assert.equal(CLI.typeOf(CLI.typeOf), 'function');
+
+        });
+
+        it("should return regexp", function() {
+
+            assert.equal(CLI.typeOf(/test/), 'regexp');
+            assert.equal(CLI.typeOf(new RegExp('test')), 'regexp');
+
+        });
+
+        it("should return date", function() {
+
+            assert.equal(CLI.typeOf(new Date()), 'date');
+
+        });
+
+        it("should return object", function() {
+
+            assert.equal(CLI.typeOf({some: 'stuff'}), 'object');
+            assert.equal(CLI.typeOf(new Object()), 'object');
+            assert.equal(CLI.typeOf(global), 'object');
 
         });
 
