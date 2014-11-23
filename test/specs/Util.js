@@ -1296,6 +1296,151 @@ describe("CLI.Util", function() {
     });
 
     // }}}
+    // {{{ CLI.iterate
+
+    describe("CLI.iterate", function() {
+
+        var sinon = require('sinon');
+        var itFn;
+
+        beforeEach(function() {
+            itFn = sinon.stub();
+        });
+
+        describe("iterate object", function() {
+
+            var o;
+
+            beforeEach(function() {
+                o = {
+                    n1: 11,
+                    n2: 13,
+                    n3: 18
+                };
+            });
+
+            describe("if itFn does not return false", function() {
+
+                beforeEach(function() {
+                    CLI.iterate(o, itFn);
+                });
+
+                it("should call the iterate function 3 times", function () {
+
+                    assert.equal(itFn.callCount, 3);
+
+                });
+
+                it("should call the iterate function with correct arguments", function () {
+
+                    assert.deepEqual(itFn.args[0], ["n1", 11, o]);
+                    assert.deepEqual(itFn.args[1], ["n2", 13, o]);
+                    assert.deepEqual(itFn.args[2], ["n3", 18, o]);
+
+                });
+            });
+
+            describe("if itFn return false", function() {
+
+                beforeEach(function() {
+                    itFn.onCall(0).returns(false);
+                    CLI.iterate(o, itFn);
+                });
+
+                it("should stop iteration if function return false", function() {
+
+                    itFn.onCall(0).returns(false);
+                    assert.equal(itFn.args.length, 1);
+                });
+
+            });
+
+        });
+
+        describe("do nothing on an empty object", function() {
+
+            var o;
+
+            beforeEach(function() {
+
+                o = {};
+                CLI.iterate(o, itFn);
+
+            });
+
+            it("should not call the iterate function", function () {
+
+                assert.equal(itFn.called, false);
+
+            });
+
+        });
+
+        describe("iterate array", function() {
+
+            var arr;
+
+            beforeEach(function() {
+                arr = [6, 7, 8, 9];
+            });
+
+            describe("if itFn does not return false", function() {
+
+                beforeEach(function() {
+                    CLI.iterate(arr, itFn);
+                });
+
+                it("should call the iterate function 4 times", function () {
+
+                    assert.equal(itFn.callCount, 4);
+
+                });
+
+                it("should call the iterate function with correct arguments", function () {
+
+                    assert.deepEqual(itFn.args[0], [6, 0, arr]);
+                    assert.deepEqual(itFn.args[1], [7, 1, arr]);
+                    assert.deepEqual(itFn.args[2], [8, 2, arr]);
+                    assert.deepEqual(itFn.args[3], [9, 3, arr]);
+
+                });
+
+            });
+
+            describe("if itFn return false", function() {
+
+                beforeEach(function() {
+                    itFn.onCall(0).returns(false);
+                    CLI.iterate(arr, itFn);
+                });
+
+                it("should stop iteration if function return false", function() {
+
+                    itFn.onCall(0).returns(false);
+
+                    assert.equal(itFn.callCount, 1);
+
+                });
+            });
+
+        });
+
+        describe("do nothing on an empty array", function() {
+
+            var arr;
+
+            beforeEach(function() {
+                arr = [];
+                CLI.iterate(arr, itFn);
+            });
+
+            it("should not call the iterate function", function () {
+                assert.equal(itFn.called, false);
+            });
+
+        });
+
+    });
 
 });
 
