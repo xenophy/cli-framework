@@ -16,13 +16,16 @@
   "author": "Xenophy.CO.,LTD",
   "license": "GPL-3.0",
   "config": {
-      "blanket": {
-          "pattern": "lib",
-          "data-cover-never": "node_modules"
-      }
+    "blanket": {
+      "pattern": "lib",
+      "data-cover-never": "node_modules"
+    }
   },
   "dependencies": {
-      "blanket": ">=1.1.6",
-      "power-assert": ">=0.10.0"
+  },
+  "devDependencies": {
+    "blanket": ">=1.1.6",
+    "power-assert": ">=0.10.0",
+    "sinon": ">=1.12.1"
   }
 }
