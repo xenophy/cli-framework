@@ -1442,6 +1442,126 @@ describe("CLI.Util", function() {
 
     });
 
+    // }}}
+    // {{{ CLI.valueFrom
+
+    describe("CLI.valueFrom", function() {
+
+        var value, defaultValue;
+
+        describe("with allowBlank", function() {
+
+            describe("and an empty string", function() {
+
+                it("should return the value", function() {
+
+                    assert.equal(CLI.valueFrom('', 'aaa', true), '');
+
+                });
+
+            });
+
+            describe("and a string", function() {
+
+                it("should return the value", function() {
+
+                    assert.equal(CLI.valueFrom('bbb', 'aaa', true), 'bbb')
+
+                });
+
+            });
+
+            describe("and an undefined value", function() {
+
+                it("should return the default value", function() {
+
+                    assert.equal(CLI.valueFrom(undefined, 'aaa', true), 'aaa');
+
+                });
+
+            });
+
+            describe("and a null value", function() {
+
+                it("should return the default value", function() {
+
+                    assert.equal(CLI.valueFrom(null, 'aaa', true), 'aaa');
+
+                });
+
+            });
+
+            describe("and a 0 value", function() {
+
+                it("should return the value", function() {
+
+                    assert.equal(CLI.valueFrom(0, 'aaa', true), 0);
+
+                });
+
+            });
+
+        });
+
+        describe("without allowBlank", function() {
+
+            describe("and an empty string", function() {
+
+                it("should return the default value", function() {
+
+                    assert.equal(CLI.valueFrom('', 'aaa'), 'aaa');
+
+                });
+
+            });
+
+            describe("and a string", function() {
+
+                it("should return the value", function() {
+
+                    assert.equal(CLI.valueFrom('bbb', 'aaa'), 'bbb');
+
+                });
+
+            });
+
+            describe("and an undefined value", function() {
+
+                it("should return the default value", function() {
+
+                    assert.equal(CLI.valueFrom(undefined, 'aaa'), 'aaa');
+
+                });
+
+            });
+
+            describe("and a null value", function() {
+
+                it("should return the default value", function() {
+
+                    assert.equal(CLI.valueFrom(null, 'aaa'), 'aaa');
+
+                });
+
+            });
+
+            describe("and a 0 value", function() {
+
+                it("should return the value", function() {
+
+                    assert.equal(CLI.valueFrom(0, 'aaa'), 0);
+
+                });
+
+            });
+
+        });
+
+    });
+
+    // }}}
+
+
 });
 
 // }}}
