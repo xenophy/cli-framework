@@ -203,59 +203,82 @@ describe("CLI.Base", function() {
         });
 
         // }}}
+        // {{{ two increments of backward compatibility
 
-
-        /*
         describe('two increments of backward compatibility', function () {
+
             beforeEach(function () {
                 declareClass('5');
             });
 
             it("should activate just two blocks", function() {
+
                 var obj = new cls();
                 var s = obj.foo();
-                expect(s).toBe('abc');
+
+                assert.equal(s, 'abc');
+
             });
 
             it("should install error shim from old block", function() {
+
                 var obj = new cls();
                 var s = 'No exception';
-                
-                // Silence console error
-                spyOn(CLI, 'log');
 
+                beginSilent();
                 try {
                     obj.bar();
                 } catch (e) {
                     s = e.message;
                 }
-                expect(s).toBe('"#bar" is deprecated. Please use "foo" instead.');
+                endSilent();
+
+                assert.equal(s, '"#bar" is deprecated. Please use "foo" instead.');
+
             });
+
         });
 
+        // }}}
+        // {{{ full backward compatibility
+
         describe('full backward compatibility', function () {
+
             beforeEach(function () {
                 declareClass('4.2');
             });
 
             it("should activate all three blocks", function() {
+
                 var obj = new cls();
                 var s = obj.foo();
-                expect(s).toBe('abcd');
+
+                assert.equal(s, 'abcd');
+
             });
 
             it("should install alias", function() {
+
                 var obj = new cls();
                 var s = obj.bar();
-                expect(s).toBe('abcd');
+
+                assert.equal(s, 'abcd');
+
             });
+
         });
-       */
+
+        // }}}
+
     });
 
-    /*
+    // }}}
+    // {{{ borrow
+
     describe("borrow", function() {
+
         beforeEach(function() {
+
             CLI.define("spec.Foo", {
                 a: function() {
                     return 'foo a';
@@ -267,28 +290,36 @@ describe("CLI.Base", function() {
                     return 'foo c';
                 }
             });
+
             CLI.define("spec.Bar", {
                 a: function() {
                     return 'bar a';
                 }
             });
+
         });
 
         afterEach(function() {
             CLI.undefine('spec.Foo');
             CLI.undefine('spec.Bar');
         });
-        
+
         it("should borrow methods", function() {
+
             spec.Bar.borrow(spec.Foo, ['b', 'c']);
-            
+
             var bar = new spec.Bar();
-            expect(bar.a()).toEqual('bar a');
-            expect(bar.b()).toEqual('foo b');
-            expect(bar.c()).toEqual('foo c');
+
+            assert.equal(bar.a(), 'bar a');
+            assert.equal(bar.b(), 'foo b');
+            assert.equal(bar.c(), 'foo c');
         });
+
     });
 
+    // }}}
+
+    /*
     
     describe("createAlias", function() {
         var o;
