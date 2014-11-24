@@ -41,7 +41,7 @@ describe("CLI.Base", function() {
             delete CLI.compatVersions.foo;
         });
 
-        function declareClass (compatVersion) {
+        function declareClass(compatVersion) {
 
             CLI.setCompatVersion('foo', compatVersion);
 
@@ -86,7 +86,47 @@ describe("CLI.Base", function() {
 
             });
 
-        }
+        };
+
+        var org_console = {};
+
+        function beginSilent() {
+
+            org_console.log = global.console.log;
+            org_console.info = global.console.info;
+            org_console.warn = global.console.warn;
+            org_console.error = global.console.error;
+            org_console.dir = global.console.dir;
+            org_console.time = global.console.time;
+            org_console.timeEnd = global.console.timeEnd;
+            org_console.trace = global.console.trace;
+            org_console.assert = global.console.assert;
+
+            global.console.log = CLI.emptyFn;
+            global.console.info = CLI.emptyFn;
+            global.console.warn = CLI.emptyFn;
+            global.console.error = CLI.emptyFn;
+            global.console.dir = CLI.emptyFn;
+            global.console.time = CLI.emptyFn;
+            global.console.timeEnd = CLI.emptyFn;
+            global.console.trace = CLI.emptyFn;
+            global.console.assert = CLI.emptyFn;
+
+        };
+
+        function endSilent() {
+
+            global.console.log = org_console.log;
+            global.console.info = org_console.info;
+            global.console.warn = org_console.warn;
+            global.console.error = org_console.error;
+            global.console.dir = org_console.dir;
+            global.console.time = org_console.time;
+            global.console.timeEnd = org_console.timeEnd;
+            global.console.trace = org_console.trace;
+            global.console.assert = org_console.assert;
+
+        };
 
         // {{{ no backward compatibility
 
@@ -105,60 +145,67 @@ describe("CLI.Base", function() {
 
             });
 
-            /*
             it("should install error shim from old block", function() {
 
                 var obj = new cls();
                 var s = 'No exception';
 
-                // Silence console error
-                // spyOn(CLI, 'log');
-
+                beginSilent();
                 try {
                     console.dir(obj);
                     obj.bar();
                 } catch (e) {
                     s = e.message;
                 }
+                endSilent();
 
                 assert.equal(s, '"#bar" is deprecated. Please use "foo" instead.');
 
             });
-           */
 
         });
 
         // }}}
-
-        /*
+        // {{{ one increment of backward compatibility
 
         describe('one increment of backward compatibility', function () {
+
             beforeEach(function () {
                 declareClass('5.1');
             });
 
             it("should activate just one block", function() {
+
                 var obj = new cls();
                 var s = obj.foo();
-                expect(s).toBe('ab');
+
+                assert.equal(s, 'ab');
+
             });
 
             it("should install error shim from old block", function() {
+
                 var obj = new cls();
                 var s = 'No exception';
 
-                // Silence console error
-                spyOn(CLI, 'log');
-
+                beginSilent();
                 try {
                     obj.bar();
                 } catch (e) {
                     s = e.message;
                 }
-                expect(s).toBe('"#bar" is deprecated. Please use "foo" instead.');
+                endSilent();
+
+                assert.equal(s, '"#bar" is deprecated. Please use "foo" instead.');
+
             });
+
         });
 
+        // }}}
+
+
+        /*
         describe('two increments of backward compatibility', function () {
             beforeEach(function () {
                 declareClass('5');
