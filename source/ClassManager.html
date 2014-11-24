@@ -217,18 +217,16 @@
     &quot;use strict&quot;;
 
     CLI.ClassManager = (function(Class, alias, arraySlice, arrayFrom, global) {
-        // @define CLI.ClassManager
-        // @require CLI.Inventory
-        // @require CLI.Class
-        // @require CLI.Function
-        // @require CLI.Array
-
 
         var makeCtor = CLI.Class.makeCtor;
 
         var isNonBrowser = typeof window === &#39;undefined&#39;;
 
+        // {{{ Manager
+
         var Manager = CLI.apply(new CLI.Inventory(), {
+
+            // {{{ classes
 
 <span id='CLI-ClassManager-property-classes'>            /**
 </span>             * @property {Object} classes
@@ -237,6 +235,9 @@
              * @private
              */
             classes: {},
+
+            // }}}
+            // {{{ classState
 
             classState: {
                 /*
@@ -252,10 +253,16 @@
                  */
             },
 
+            // }}}
+            // {{{ existCache
+
 <span id='CLI-ClassManager-property-existCache'>            /**
 </span>             * @private
              */
             existCache: {},
+
+            // }}}
+            // {{{ namespaceRewrites
 
 <span id='CLI-ClassManager-property-namespaceRewrites'>            /**
 </span>             * @private
@@ -265,14 +272,32 @@
                 to: CLI
             }],
 
-<span id='CLI-ClassManager-property-enableNamespaceParseCache'>            /** @private */
-</span>            enableNamespaceParseCache: true,
+            // }}}
+            // {{{ enableNamespaceParseCache
 
-<span id='CLI-ClassManager-property-namespaceParseCache'>            /** @private */
-</span>            namespaceParseCache: {},
+<span id='CLI-ClassManager-property-enableNamespaceParseCache'>            /**
+</span>             * @private
+             */
+            enableNamespaceParseCache: true,
 
-<span id='CLI-ClassManager-property-instantiators'>            /** @private */
-</span>            instantiators: [],
+            // }}}
+            // {{{ namespaceParseCache
+
+<span id='CLI-ClassManager-property-namespaceParseCache'>            /**
+</span>             * @private
+             */
+            namespaceParseCache: {},
+
+            // }}}
+            // {{{ instantiators
+
+<span id='CLI-ClassManager-property-instantiators'>            /**
+</span>             * @private
+             */
+            instantiators: [],
+
+            // }}}
+            // {{{ isCreated
 
 <span id='CLI-ClassManager-method-isCreated'>            /**
 </span>             * Checks if a class has already been created.
@@ -281,13 +306,12 @@
              * @return {Boolean} exist
              */
             isCreated: function(className) {
+
                 var i, ln, part, root, parts;
 
-                //&lt;debug error&gt;
                 if (typeof className !== &#39;string&#39; || className.length &lt; 1) {
                     throw new Error(&quot;[CLI.ClassManager] Invalid classname, must be a string and must not be empty&quot;);
                 }
-                //&lt;/debug&gt;
 
                 if (Manager.classes[className] || Manager.existCache[className]) {
                     return true;
@@ -297,166 +321,241 @@
                 parts = Manager.parseNamespace(className);
 
                 for (i = 0, ln = parts.length; i &lt; ln; i++) {
+
                     part = parts[i];
 
                     if (typeof part !== &#39;string&#39;) {
+
                         root = part;
+
                     } else {
+
                         if (!root || !root[part]) {
                             return false;
                         }
 
                         root = root[part];
                     }
-                }
+                }isNonBrowser
 
                 Manager.triggerCreated(className);
 
                 return true;
             },
 
+            // }}}
+            // {{{ createdListeners
+
 <span id='CLI-ClassManager-property-createdListeners'>            /**
 </span>             * @private
              */
             createdListeners: [],
+
+            // }}}
+            // {{{ nameCreatedListeners
 
 <span id='CLI-ClassManager-property-nameCreatedListeners'>            /**
 </span>             * @private
              */
             nameCreatedListeners: {},
 
+            // }}}
+            // {{{ existsListeners
+
 <span id='CLI-ClassManager-property-existsListeners'>            /**
 </span>             * @private
              */
             existsListeners: [],
+
+            // }}}
+            // {{{ nameExistsListeners
 
 <span id='CLI-ClassManager-property-nameExistsListeners'>            /**
 </span>             * @private
              */
             nameExistsListeners: {},
 
+            // }}}
+            // {{{ triggerCreated
+
 <span id='CLI-ClassManager-method-triggerCreated'>            /**
 </span>             * @private
              */
             triggerCreated: function (className) {
+
                 if(!Manager.existCache[className]) {
                     Manager.triggerExists(className);
                 }
+
                 Manager.classState[className] += 20;
                 Manager.notify(className, Manager.createdListeners, Manager.nameCreatedListeners);
+
             },
+
+            // }}}
+            // {{{ onCreated
 
 <span id='CLI-ClassManager-method-onCreated'>            /**
 </span>             * @private
              */
             onCreated: function(fn, scope, className) {
+
                 Manager.addListener(fn, scope, className, Manager.createdListeners, Manager.nameCreatedListeners);
+
             },
+
+            // }}}
+            // {{{ triggerExists
 
 <span id='CLI-ClassManager-method-triggerExists'>            /**
 </span>             * @private
              */
             triggerExists: function (className, state) {
+
                 Manager.existCache[className] = state || 1;
                 Manager.classState[className] += 20;
                 Manager.notify(className, Manager.existsListeners, Manager.nameExistsListeners);
+
             },
+
+            // }}}
+            // {{{ onExists
 
 <span id='CLI-ClassManager-method-onExists'>            /**
 </span>             * @private
              */
             onExists: function(fn, scope, className) {
+
                 Manager.addListener(fn, scope, className, Manager.existsListeners, Manager.nameExistsListeners);
+
             },
+
+            // }}}
+            // {{{ notify
 
 <span id='CLI-ClassManager-method-notify'>            /**
 </span>             * @private
              */
             notify: function (className, listeners, nameListeners) {
+
                 var alternateNames = Manager.getAlternatesByName(className),
-                names = [className],
-                i, ln, j, subLn, listener, name;
+                    names = [className],
+                    i, ln, j, subLn, listener, name;
 
                 for (i = 0,ln = listeners.length; i &lt; ln; i++) {
+
                     listener = listeners[i];
                     listener.fn.call(listener.scope, className);
+
                 }
 
                 while (names) {
+
                     for (i = 0,ln = names.length; i &lt; ln; i++) {
+
                         name = names[i];
                         listeners = nameListeners[name];
 
                         if (listeners) {
+
                             for (j = 0,subLn = listeners.length; j &lt; subLn; j++) {
+
                                 listener = listeners[j];
                                 listener.fn.call(listener.scope, name);
+
                             }
+
                             delete nameListeners[name];
                         }
+
                     }
 
                     names = alternateNames; // for 2nd pass (if needed)
                     alternateNames = null; // no 3rd pass
                 }
+
             },
+
+            // }}}
+            // {{{ addListener
 
 <span id='CLI-ClassManager-method-addListener'>            /**
 </span>             * @private
              */
             addListener: function(fn, scope, className, listeners, nameListeners) {
+
                 if (CLI.isArray(className)) {
+
                     fn = CLI.Function.createBarrier(className.length, fn, scope);
+
                     for (i = 0; i &lt; className.length; i++) {
+
                         this.addListener(fn, null, className[i], listeners, nameListeners);
+
                     }
+
                     return;
                 }
+
                 var i,
-                listener = {
-                    fn: fn,
-                    scope: scope
-                };
+                    listener = {
+                        fn: fn,
+                        scope: scope
+                    };
 
                 if (className) {
+
                     if (this.isCreated(className)) {
+
                         fn.call(scope, className);
                         return;
+
                     }
 
                     if (!nameListeners[className]) {
+
                         nameListeners[className] = [];
+
                     }
 
                     nameListeners[className].push(listener);
-                }
-                else {
+
+                } else {
+
                     listeners.push(listener);
+
                 }
+
             },
+
+            // }}}
+            // {{{ parseNamespace
 
 <span id='CLI-ClassManager-method-parseNamespace'>            /**
 </span>             * Supports namespace rewriting.
              * @private
              */
             parseNamespace: function(namespace) {
-                //&lt;debug error&gt;
+
                 if (typeof namespace !== &#39;string&#39;) {
                     throw new Error(&quot;[CLI.ClassManager] Invalid namespace, must be a string&quot;);
                 }
-                //&lt;/debug&gt;
 
                 var cache = this.namespaceParseCache,
-                parts,
-                rewrites,
-                root,
-                name,
-                rewrite, from, to, i, ln;
+                    parts,
+                    rewrites,
+                    root,
+                    name,
+                    rewrite, from, to, i, ln;
 
                 if (this.enableNamespaceParseCache) {
+
                     if (cache.hasOwnProperty(namespace)) {
+
                         return cache[namespace];
+
                     }
+
                 }
 
                 parts = [];
@@ -465,11 +564,13 @@
                 name = namespace;
 
                 for (i = 0, ln = rewrites.length; i &lt; ln; i++) {
+
                     rewrite = rewrites[i];
                     from = rewrite.from;
                     to = rewrite.to;
 
                     if (name === from || name.substring(0, from.length) === from) {
+
                         name = name.substring(from.length);
 
                         if (typeof to !== &#39;string&#39;) {
@@ -487,11 +588,16 @@
                 parts = parts.concat(name.split(&#39;.&#39;));
 
                 if (this.enableNamespaceParseCache) {
+
                     cache[namespace] = parts;
+
                 }
 
                 return parts;
             },
+
+            // }}}
+            // {{{ setNamespace
 
 <span id='CLI-ClassManager-method-setNamespace'>            /**
 </span>             * Creates a namespace and assign the `value` to the created object.
@@ -504,18 +610,21 @@
              * @param {Object} value
              */
             setNamespace: function(name, value) {
+
                 var root = global,
-                parts = this.parseNamespace(name),
-                ln = parts.length - 1,
-                leaf = parts[ln],
-                i, part;
+                    parts = this.parseNamespace(name),
+                    ln = parts.length - 1,
+                    leaf = parts[ln],
+                    i, part;
 
                 for (i = 0; i &lt; ln; i++) {
+
                     part = parts[i];
 
                     if (typeof part !== &#39;string&#39;) {
                         root = part;
                     } else {
+
                         if (!root[part]) {
                             root[part] = {};
                         }
@@ -529,23 +638,32 @@
                 return root[leaf];
             },
 
+            // }}}
+            // {{{ createNamespaces
+
 <span id='CLI-ClassManager-method-createNamespaces'>            /**
 </span>             * The new CLI.ns, supports namespace rewriting.
              * @private
              */
             createNamespaces: function() {
+
                 var root = global,
-                parts, part, i, j, ln, subLn;
+                    parts, part, i, j, ln, subLn;
 
                 for (i = 0, ln = arguments.length; i &lt; ln; i++) {
+
                     parts = this.parseNamespace(arguments[i]);
 
                     for (j = 0, subLn = parts.length; j &lt; subLn; j++) {
+
                         part = parts[j];
 
                         if (typeof part !== &#39;string&#39;) {
+
                             root = part;
+
                         } else {
+
                             if (!root[part]) {
                                 root[part] = {};
                             }
@@ -558,6 +676,9 @@
                 return root;
             },
 
+            // }}}
+            // {{{ set
+
 <span id='CLI-ClassManager-method-set'>            /**
 </span>             * Sets a name reference to a class.
              *
@@ -566,8 +687,9 @@
              * @return {CLI.ClassManager} this
              */
             set: function (name, value) {
+
                 var me = this,
-                targetName = me.getName(value);
+                    targetName = me.getName(value);
 
                 me.classes[name] = me.setNamespace(name, value);
 
@@ -578,6 +700,9 @@
                 return this;
             },
 
+            // }}}
+            // {{{ get
+
 <span id='CLI-ClassManager-method-get'>            /**
 </span>             * Retrieve a class by its name.
              *
@@ -585,10 +710,11 @@
              * @return {CLI.Class} class
              */
             get: function(name) {
+
                 var classes = this.classes,
-                root,
-                parts,
-                part, i, ln;
+                    root,
+                    parts,
+                    part, i, ln;
 
                 if (classes[name]) {
                     return classes[name];
@@ -598,11 +724,15 @@
                 parts = this.parseNamespace(name);
 
                 for (i = 0, ln = parts.length; i &lt; ln; i++) {
+
                     part = parts[i];
 
                     if (typeof part !== &#39;string&#39;) {
+
                         root = part;
+
                     } else {
+
                         if (!root || !root[part]) {
                             return null;
                         }
@@ -614,6 +744,9 @@
                 return root;
             },
 
+            // }}}
+            // {{{ addNameAliasMappings
+
 <span id='CLI-ClassManager-method-addNameAliasMappings'>            /**
 </span>             * Adds a batch of class name to alias mappings.
              * @param {Object} aliases The set of mappings of the form.
@@ -622,6 +755,9 @@
             addNameAliasMappings: function(aliases) {
                 this.addAlias(aliases);
             },
+
+            // }}}
+            // {{{ addNameAlternateMappings
 
 <span id='CLI-ClassManager-method-addNameAlternateMappings'>            /**
 </span>             *
@@ -632,6 +768,9 @@
                 this.addAlternate(alternates);
             },
 
+            // }}}
+            // {{{ getByAlias
+
 <span id='CLI-ClassManager-method-getByAlias'>            /**
 </span>             * Get a reference to the class by its alias.
              *
@@ -641,6 +780,9 @@
             getByAlias: function(alias) {
                 return this.get(this.getNameByAlias(alias));
             },
+
+            // }}}
+            // {{{ getName
 
 <span id='CLI-ClassManager-method-getName'>            /**
 </span>             * Get the name of the class by its reference or its instance. This is
@@ -654,6 +796,9 @@
             getName: function(object) {
                 return object &amp;&amp; object.$className || &#39;&#39;;
             },
+
+            // }}}
+            // {{{ getClass
 
 <span id='CLI-ClassManager-method-getClass'>            /**
 </span>             * Get the class of the provided object; returns null if it&#39;s not an instance
@@ -671,83 +816,104 @@
                 return object &amp;&amp; object.self || null;
             },
 
+            // }}}
+            // {{{ create
+
 <span id='CLI-ClassManager-method-create'>            /**
 </span>             * Defines a class.
-             * @deprecated Use {@link CLI#define} instead, as that also supports creating overrides.
              * @private
              */
             create: function(className, data, createdFn) {
-                //&lt;debug error&gt;
+
                 if (className != null &amp;&amp; typeof className !== &#39;string&#39;) {
                     throw new Error(&quot;[CLI.define] Invalid class name &#39;&quot; + className + &quot;&#39; specified, must be a non-empty string&quot;);
                 }
-                //&lt;/debug&gt;
 
                 var ctor = makeCtor(className);
+
                 if (typeof data === &#39;function&#39;) {
                     data = data(ctor);
                 }
 
-                //&lt;debug&gt;
                 if (className) {
+
                     if(Manager.classes[className]) {
                         CLI.log.warn(&quot;[CLI.define] Duplicate class name &#39;&quot; + className + &quot;&#39; specified, must be a non-empty string&quot;);
                     }
+
                     ctor.displayName = className;
+
                 }
-                //&lt;/debug&gt;
 
                 data.$className = className;
 
                 return new Class(ctor, data, function() {
+
                     var postprocessorStack = data.postprocessors || Manager.defaultPostprocessors,
-                    registeredPostprocessors = Manager.postprocessors,
-                    postprocessors = [],
-                    postprocessor, i, ln, j, subLn, postprocessorProperties, postprocessorProperty;
+                        registeredPostprocessors = Manager.postprocessors,
+                        postprocessors = [],
+                        postprocessor, i, ln, j, subLn, postprocessorProperties, postprocessorProperty;
 
                     delete data.postprocessors;
 
                     for (i = 0,ln = postprocessorStack.length; i &lt; ln; i++) {
+
                         postprocessor = postprocessorStack[i];
 
                         if (typeof postprocessor === &#39;string&#39;) {
+
                             postprocessor = registeredPostprocessors[postprocessor];
                             postprocessorProperties = postprocessor.properties;
 
                             if (postprocessorProperties === true) {
+
                                 postprocessors.push(postprocessor.fn);
-                            }
-                            else if (postprocessorProperties) {
+
+                            } else if (postprocessorProperties) {
+
                                 for (j = 0,subLn = postprocessorProperties.length; j &lt; subLn; j++) {
+
                                     postprocessorProperty = postprocessorProperties[j];
 
                                     if (data.hasOwnProperty(postprocessorProperty)) {
+
                                         postprocessors.push(postprocessor.fn);
                                         break;
+
                                     }
+
                                 }
+
                             }
-                        }
-                        else {
+
+                        } else {
+
                             postprocessors.push(postprocessor);
+
                         }
+
                     }
 
                     data.postprocessors = postprocessors;
                     data.createdFn = createdFn;
                     Manager.processCreate(className, this, data);
+
                 });
+
             },
 
-            processCreate: function(className, cls, clsData){
+            // }}}
+            // {{{ processCreate
+
+            processCreate: function(className, cls, clsData) {
+
                 var me = this,
-                postprocessor = clsData.postprocessors.shift(),
-                createdFn = clsData.createdFn;
+                    postprocessor = clsData.postprocessors.shift(),
+                    createdFn = clsData.createdFn;
 
                 if (!postprocessor) {
-                    //&lt;debug&gt;
+
                     CLI.classSystemMonitor &amp;&amp; CLI.classSystemMonitor(className, &#39;CLI.ClassManager#classCreated&#39;, arguments);
-                    //&lt;/debug&gt;
 
                     if (className) {
                         me.set(className, cls);
@@ -770,102 +936,114 @@
                 }
             },
 
+            // }}}
+            // {{{ createOverride
+
             createOverride: function (className, data, createdFn) {
+
                 var me = this,
-                overriddenClassName = data.override,
-                requires = data.requires,
-                uses = data.uses,
-                mixins = data.mixins,
-                mixinsIsArray,
-                compat = data.compatibility,
-                depedenciesLoaded,
-                classReady = function () {
-                    var cls, dependencies, i, key, temp;
+                    overriddenClassName = data.override,
+                    requires = data.requires,
+                    uses = data.uses,
+                    mixins = data.mixins,
+                    mixinsIsArray,
+                    compat = data.compatibility,
+                    depedenciesLoaded,
+                    classReady = function () {
 
-                    if (!depedenciesLoaded) {
-                        dependencies = requires ? requires.slice(0) : [];
+                        var cls, dependencies, i, key, temp;
 
-                        if (mixins) {
-                            if (!(mixinsIsArray = mixins instanceof Array)) {
-                                for (key in mixins) {
-                                    if (CLI.isString(cls = mixins[key])) {
-                                        dependencies.push(cls);
+                        if (!depedenciesLoaded) {
+
+                            dependencies = requires ? requires.slice(0) : [];
+
+                            if (mixins) {
+                                if (!(mixinsIsArray = mixins instanceof Array)) {
+                                    for (key in mixins) {
+                                        if (CLI.isString(cls = mixins[key])) {
+                                            dependencies.push(cls);
+                                        }
+                                    }
+                                } else {
+                                    for (i = 0, temp = mixins.length; i &lt; temp; ++i) {
+                                        if (CLI.isString(cls = mixins[i])) {
+                                            dependencies.push(cls);
+                                        }
                                     }
                                 }
-                            } else {
-                                for (i = 0, temp = mixins.length; i &lt; temp; ++i) {
-                                    if (CLI.isString(cls = mixins[i])) {
-                                        dependencies.push(cls);
-                                    }
+                            }
+
+                            depedenciesLoaded = true;
+
+                            if (dependencies.length) {
+                                // Since the override is going to be used (its target class is
+                                // now created), we need to fetch the required classes for the
+                                // override and call us back once they are loaded:
+                                CLI.require(dependencies, classReady);
+                                return;
+                            }
+                            // else we have no dependencies, so proceed
+                        }
+
+                        // transform mixin class names into class references, This
+                        // loop can handle both the array and object forms of
+                        // mixin definitions
+                        if (mixinsIsArray) {
+                            for (i = 0, temp = mixins.length; i &lt; temp; ++i) {
+                                if (CLI.isString(cls = mixins[i])) {
+                                    mixins[i] = CLI.ClassManager.get(cls);
+                                }
+                            }
+                        } else if (mixins) {
+                            for (key in mixins) {
+                                if (CLI.isString(cls = mixins[key])) {
+                                    mixins[key] = CLI.ClassManager.get(cls);
                                 }
                             }
                         }
 
-                        depedenciesLoaded = true;
-                        if (dependencies.length) {
-                            // Since the override is going to be used (its target class is
-                            // now created), we need to fetch the required classes for the
-                            // override and call us back once they are loaded:
-                            CLI.require(dependencies, classReady);
-                            return;
+                        // The target class and the required classes for this override are
+                        // ready, so we can apply the override now:
+                        cls = me.get(overriddenClassName);
+
+                        // We don&#39;t want to apply these:
+                        delete data.override;
+                        delete data.compatibility;
+                        delete data.requires;
+                        delete data.uses;
+
+                        CLI.override(cls, data);
+
+                        // This pushes the overridding file itself into CLI.Loader.history
+                        // Hence if the target class never exists, the overriding file will
+                        // never be included in the build.
+                        me.triggerCreated(className);
+
+                        if (uses) {
+                            // This &quot;hides&quot; from the Cmd auto-dependency scanner since
+                            // the reference is circular (Loader requires us).
+                            CLI[&#39;Loader&#39;].addUsedClasses(uses); // get these classes too!
                         }
-                        // else we have no dependencies, so proceed
-                    }
 
-                    // transform mixin class names into class references, This
-                    // loop can handle both the array and object forms of
-                    // mixin definitions
-                    if (mixinsIsArray) {
-                        for (i = 0, temp = mixins.length; i &lt; temp; ++i) {
-                            if (CLI.isString(cls = mixins[i])) {
-                                mixins[i] = CLI.ClassManager.get(cls);
-                            }
+                        if (createdFn) {
+                            createdFn.call(cls, cls); // last but not least!
                         }
-                    } else if (mixins) {
-                        for (key in mixins) {
-                            if (CLI.isString(cls = mixins[key])) {
-                                mixins[key] = CLI.ClassManager.get(cls);
-                            }
-                        }
-                    }
-
-                    // The target class and the required classes for this override are
-                    // ready, so we can apply the override now:
-                    cls = me.get(overriddenClassName);
-
-                    // We don&#39;t want to apply these:
-                    delete data.override;
-                    delete data.compatibility;
-                    delete data.requires;
-                    delete data.uses;
-
-                    CLI.override(cls, data);
-
-                    // This pushes the overridding file itself into CLI.Loader.history
-                    // Hence if the target class never exists, the overriding file will
-                    // never be included in the build.
-                    me.triggerCreated(className);
-
-                    if (uses) {
-                        // This &quot;hides&quot; from the Cmd auto-dependency scanner since
-                        // the reference is circular (Loader requires us).
-                        CLI[&#39;Loader&#39;].addUsedClasses(uses); // get these classes too!
-                    }
-
-                    if (createdFn) {
-                        createdFn.call(cls, cls); // last but not least!
-                    }
-                };
+                    };
 
                 me.triggerExists(className, 2);
 
                 if (!compat || CLI.checkVersion(compat)) {
+
                     // Override the target class right after it&#39;s created
                     me.onCreated(classReady, me, overriddenClassName);
+
                 }
 
                 return me;
             },
+
+            // }}}
+            // {{{ instantiateByAlias
 
 <span id='CLI-ClassManager-method-instantiateByAlias'>            /**
 </span>             * Instantiate a class by its alias. This is usually invoked by the
@@ -883,36 +1061,22 @@
              * @return {Object} instance
              */
             instantiateByAlias: function() {
-                var alias = arguments[0],
-                args = arraySlice.call(arguments),
-                className = this.getNameByAlias(alias);
 
-                //&lt;debug error&gt;
+                var alias = arguments[0],
+                    args = arraySlice.call(arguments),
+                    className = this.getNameByAlias(alias);
+
                 if (!className) {
                     throw new Error(&quot;[CLI.createByAlias] Unrecognized alias: &quot; + alias);
                 }
-                //&lt;/debug&gt;
 
                 args[0] = className;
 
                 return CLI.create.apply(CLI, args);
             },
 
-            //&lt;deprecated since=5.0&gt;
-<span id='CLI-ClassManager-method-instantiate'>            /**
-</span>             * Instantiate a class by either full name, alias or alternate name
-             * @param {String} name
-             * @param {Mixed} args Additional arguments after the name will be passed to the class&#39; constructor.
-             * @return {Object} instance
-             * @deprecated 5.0 Use CLI.create() instead.
-             */
-            instantiate: function() {
-                //&lt;debug&gt;
-                CLI.log.warn(&#39;CLI.ClassManager.instantiate() is deprecated.  Use CLI.create() instead.&#39;);
-                //&lt;/debug&gt;
-                return CLI.create.apply(CLI, arguments);
-            },
-            //&lt;/deprecated&gt;
+            // }}}
+            // {{{ dynInstantiate
 
 <span id='CLI-ClassManager-method-dynInstantiate'>            /**
 </span>             * @private
@@ -923,1117 +1087,1238 @@
                 args = arrayFrom(args, true);
                 args.unshift(name);
 
-            return CLI.create.apply(CLI, args);
-        },
+                return CLI.create.apply(CLI, args);
+            },
 
-<span id='CLI-ClassManager-method-getInstantiator'>        /**
-</span>         * @private
-         * @param length
-         */
-        getInstantiator: function(length) {
-            var instantiators = this.instantiators,
-                instantiator,
-                i,
-                args;
+            // }}}
+            // {{{ getInstantiator
 
-            instantiator = instantiators[length];
+<span id='CLI-ClassManager-method-getInstantiator'>            /**
+</span>             * @private
+             * @param length
+             */
+            getInstantiator: function(length) {
 
-            if (!instantiator) {
-                i = length;
-                args = [];
+                var instantiators = this.instantiators,
+                    instantiator,
+                    i,
+                    args;
 
-                for (i = 0; i &lt; length; i++) {
-                    args.push(&#39;a[&#39; + i + &#39;]&#39;);
-                }
+                instantiator = instantiators[length];
 
-                instantiator = instantiators[length] = new Function(&#39;c&#39;, &#39;a&#39;, &#39;return new c(&#39; + args.join(&#39;,&#39;) + &#39;)&#39;);
-                //&lt;debug&gt;
-                instantiator.displayName = &quot;CLI.create&quot; + length;
-                //&lt;/debug&gt;
-            }
+                if (!instantiator) {
 
-            return instantiator;
-        },
+                    i = length;
+                    args = [];
 
-<span id='CLI-ClassManager-property-postprocessors'>        /**
-</span>         * @private
-         */
-        postprocessors: {},
-
-<span id='CLI-ClassManager-property-defaultPostprocessors'>        /**
-</span>         * @private
-         */
-        defaultPostprocessors: [],
-
-<span id='CLI-ClassManager-method-registerPostprocessor'>        /**
-</span>         * Register a post-processor function.
-         *
-         * @private
-         * @param {String} name
-         * @param {Function} postprocessor
-         */
-        registerPostprocessor: function(name, fn, properties, position, relativeTo) {
-            if (!position) {
-                position = &#39;last&#39;;
-            }
-
-            if (!properties) {
-                properties = [name];
-            }
-
-            this.postprocessors[name] = {
-                name: name,
-                properties: properties || false,
-                fn: fn
-            };
-
-            this.setDefaultPostprocessorPosition(name, position, relativeTo);
-
-            return this;
-        },
-
-<span id='CLI-ClassManager-method-setDefaultPostprocessors'>        /**
-</span>         * Set the default post processors array stack which are applied to every class.
-         *
-         * @private
-         * @param {String/Array} postprocessors The name of a registered post processor or an array of registered names.
-         * @return {CLI.ClassManager} this
-         */
-        setDefaultPostprocessors: function(postprocessors) {
-            this.defaultPostprocessors = arrayFrom(postprocessors);
-
-            return this;
-        },
-
-<span id='CLI-ClassManager-method-setDefaultPostprocessorPosition'>        /**
-</span>         * Insert this post-processor at a specific position in the stack, optionally relative to
-         * any existing post-processor
-         *
-         * @private
-         * @param {String} name The post-processor name. Note that it needs to be registered with
-         * {@link CLI.ClassManager#registerPostprocessor} before this
-         * @param {String} offset The insertion position. Four possible values are:
-         * &#39;first&#39;, &#39;last&#39;, or: &#39;before&#39;, &#39;after&#39; (relative to the name provided in the third argument)
-         * @param {String} relativeName
-         * @return {CLI.ClassManager} this
-         */
-        setDefaultPostprocessorPosition: function(name, offset, relativeName) {
-            var defaultPostprocessors = this.defaultPostprocessors,
-                index;
-
-            if (typeof offset === &#39;string&#39;) {
-                if (offset === &#39;first&#39;) {
-                    defaultPostprocessors.unshift(name);
-
-                    return this;
-                }
-                else if (offset === &#39;last&#39;) {
-                    defaultPostprocessors.push(name);
-
-                    return this;
-                }
-
-                offset = (offset === &#39;after&#39;) ? 1 : -1;
-            }
-
-            index = CLI.Array.indexOf(defaultPostprocessors, relativeName);
-
-            if (index !== -1) {
-                CLI.Array.splice(defaultPostprocessors, Math.max(0, index + offset), 0, name);
-            }
-
-            return this;
-        }
-    });
-    
-    //&lt;feature classSystem.alias&gt;
-<span id='CLI-Class-cfg-alias'>    /**
-</span>     * @cfg {String/String[]} alias
-     * @member CLI.Class
-     * List of short aliases for class names. An alias consists of a namespace and a name concatenated by a period as &amp;#60;namespace&amp;#62;.&amp;#60;name&amp;#62;
-     *
-     *  - **namespace** - The namespace describes what kind of alias this is and must be all lowercase.
-     *  - **name** - The name of the alias which allows the lazy-instantiation via the alias. The name shouldn&#39;t contain any periods.
-     *
-     * A list of namespaces and the usages are:
-     *
-     *  - **feature** - {@link CLI.grid.Panel Grid} features
-     *  - **plugin** - Plugins
-     *  - **store** - {@link CLI.data.Store}
-     *  - **widget** - Components
-     *
-     * Most useful for defining xtypes for widgets:
-     *
-     *     CLI.define(&#39;MyApp.CoolPanel&#39;, {
-     *         extend: &#39;CLI.panel.Panel&#39;,
-     *         alias: [&#39;widget.coolpanel&#39;],
-     *         title: &#39;Yeah!&#39;
-     *     });
-     *
-     *     // Using CLI.create
-     *     CLI.create(&#39;widget.coolpanel&#39;);
-     *
-     *     // Using the shorthand for defining widgets by xtype
-     *     CLI.widget(&#39;panel&#39;, {
-     *         items: [
-     *             {xtype: &#39;coolpanel&#39;, html: &#39;Foo&#39;},
-     *             {xtype: &#39;coolpanel&#39;, html: &#39;Bar&#39;}
-     *         ]
-     *     });
-     */
-    Manager.registerPostprocessor(&#39;alias&#39;, function(name, cls, data) {
-        //&lt;debug&gt;
-        CLI.classSystemMonitor &amp;&amp; CLI.classSystemMonitor(name, &#39;CLI.ClassManager#aliasPostProcessor&#39;, arguments);
-        //&lt;/debug&gt;
-        
-        var aliases = CLI.Array.from(data.alias),
-            i, ln;
-
-        for (i = 0,ln = aliases.length; i &lt; ln; i++) {
-            alias = aliases[i];
-
-            this.addAlias(cls, alias);
-        }
-
-    }, [&#39;xtype&#39;, &#39;alias&#39;]);
-    //&lt;/feature&gt;
-
-    //&lt;feature classSystem.singleton&gt;
-<span id='CLI-Class-cfg-singleton'>    /**
-</span>     * @cfg {Boolean} singleton
-     * @member CLI.Class
-     * When set to true, the class will be instantiated as singleton.  For example:
-     *
-     *     CLI.define(&#39;Logger&#39;, {
-     *         singleton: true,
-     *         log: function(msg) {
-     *             console.log(msg);
-     *         }
-     *     });
-     *
-     *     Logger.log(&#39;Hello&#39;);
-     */
-    Manager.registerPostprocessor(&#39;singleton&#39;, function(name, cls, data, fn) {
-        //&lt;debug&gt;
-        CLI.classSystemMonitor &amp;&amp; CLI.classSystemMonitor(name, &#39;CLI.ClassManager#singletonPostProcessor&#39;, arguments);
-        //&lt;/debug&gt;
-        
-        if (data.singleton) {
-            fn.call(this, name, new cls(), data);
-        }
-        else {
-            return true;
-        }
-        return false;
-    });
-    //&lt;/feature&gt;
-
-    //&lt;feature classSystem.alternateClassName&gt;
-<span id='CLI-Class-cfg-alternateClassName'>    /**
-</span>     * @cfg {String/String[]} alternateClassName
-     * @member CLI.Class
-     * Defines alternate names for this class.  For example:
-     *
-     *     CLI.define(&#39;Developer&#39;, {
-     *         alternateClassName: [&#39;Coder&#39;, &#39;Hacker&#39;],
-     *         code: function(msg) {
-     *             alert(&#39;Typing... &#39; + msg);
-     *         }
-     *     });
-     *
-     *     var joe = CLI.create(&#39;Developer&#39;);
-     *     joe.code(&#39;stackoverflow&#39;);
-     *
-     *     var rms = CLI.create(&#39;Hacker&#39;);
-     *     rms.code(&#39;hack hack&#39;);
-     */
-    Manager.registerPostprocessor(&#39;alternateClassName&#39;, function(name, cls, data) {
-        //&lt;debug&gt;
-        CLI.classSystemMonitor &amp;&amp; CLI.classSystemMonitor(name, &#39;CLI.ClassManager#alternateClassNamePostprocessor&#39;, arguments);
-        //&lt;/debug&gt;
-        
-        var alternates = data.alternateClassName,
-            i, ln, alternate;
-
-        if (!(alternates instanceof Array)) {
-            alternates = [alternates];
-        }
-
-        for (i = 0, ln = alternates.length; i &lt; ln; i++) {
-            alternate = alternates[i];
-
-            //&lt;debug error&gt;
-            if (typeof alternate !== &#39;string&#39;) {
-                throw new Error(&quot;[CLI.define] Invalid alternate of: &#39;&quot; + alternate + &quot;&#39; for class: &#39;&quot; + name + &quot;&#39;; must be a valid string&quot;);
-            }
-            //&lt;/debug&gt;
-
-            this.set(alternate, cls);
-        }
-    });
-    //&lt;/feature&gt;
-
-<span id='CLI-ClassManager-cfg-debugHooks'>    /**
-</span>     * @cfg {Object} debugHooks
-     * A collection of diagnostic methods to decorate the real methods of the class. These
-     * methods are applied as an `override` if this class has debug enabled as defined by
-     * `CLI.isDebugEnabled`.
-     *
-     * These will be automatically removed by the Sencha Cmd compiler for production builds.
-     *
-     * Example usage:
-     *
-     *      CLI.define(&#39;Foo.bar.Class&#39;, {
-     *          foo: function (a, b, c) {
-     *              ...
-     *          },
-     *
-     *          bar: function (a, b) {
-     *              ...
-     *              return 42;
-     *          },
-     *
-     *          debugHooks: {
-     *              foo: function (a, b, c) {
-     *                  // check arguments...
-     *                  return this.callParent(arguments);
-     *              }
-     *          }
-     *      });
-     *
-     * If you specify a `$enabled` property in the `debugHooks` object that will be used
-     * as the default enabled state for the hooks. If the `{@link CLI#manifest}` contains
-     * a `debug` object of if `{@link CLI#debugConfig}` is specified, the `$enabled` flag
-     * will override its &quot;*&quot; value.
-     */
-    Manager.registerPostprocessor(&#39;debugHooks&#39;, function(name, Class, data) {
-        //&lt;debug&gt;
-        CLI.classSystemMonitor &amp;&amp; CLI.classSystemMonitor(Class, &#39;CLI.Class#debugHooks&#39;, arguments);
-
-        if (CLI.isDebugEnabled(Class.$className, data.debugHooks.$enabled)) {
-            delete data.debugHooks.$enabled;
-            CLI.override(Class, data.debugHooks);
-        }
-        //&lt;/debug&gt;
-
-        // may already have an instance here in the case of singleton
-        var target = Class.isInstance ? Class.self : Class;
-
-        delete target.prototype.debugHooks;
-    });
-
-<span id='CLI-ClassManager-cfg-deprecated'>    /**
-</span>     * @cfg {Object} deprecated
-     * The object given has properties that describe the versions at which the deprecations
-     * apply.
-     *
-     * The purpose of the `deprecated` declaration is to enable development mode to give
-     * suitable error messages when deprecated methods or properties are used. Methods can
-     * always be injected to provide this feedback, but properties can only be handled on
-     * some browsers (those that support `Object.defineProperty`).
-     *
-     * In some cases, deprecated methods can be restored to their previous behavior or
-     * added back if they have been removed.
-     *
-     * The structure of a `deprecated` declaration is this:
-     *
-     *      CLI.define(&#39;Foo.bar.Class&#39;, {
-     *          ...
-     *
-     *          deprecated: {
-     *              // Optional package name - default is the framework (ext or touch)
-     *              name: &#39;foobar&#39;,
-     *
-     *              &#39;5.0&#39;: {
-     *                  methods: {
-     *                      // Throws: &#39;&quot;removedMethod&quot; is deprecated.&#39;
-     *                      removedMethod: null,
-     *
-     *                      // Throws: &#39;&quot;oldMethod&quot; is deprecated. Please use &quot;newMethod&quot; instead.&#39;
-     *                      oldMethod: &#39;newMethod&#39;,
-     *
-     *                      // When this block is enabled, this method is applied as an
-     *                      // override. Otherwise you get same as &quot;removeMethod&quot;.
-     *                      method: function () {
-     *                          // Do what v5 &quot;method&quot; did. If &quot;method&quot; exists in newer
-     *                          // versions callParent can call it. If 5.1 has &quot;method&quot;
-     *                          // then it would be next in line, otherwise 5.2 and last
-     *                          // would be the current class.
-     *                      },
-     *
-     *                      moreHelpful: {
-     *                          message: &#39;Something helpful to do instead.&#39;,
-     *                          fn: function () {
-     *                              // The v5 &quot;moreHelpful&quot; method to use when enabled.
-     *                          }
-     *                      }
-     *                  },
-     *                  properties: {
-     *                      // Throws: &#39;&quot;removedProp&quot; is deprecated.&#39;
-     *                      removedProp: null,
-     *
-     *                      // Throws: &#39;&quot;oldProp&quot; is deprecated. Please use &quot;newProp&quot; instead.&#39;
-     *                      oldProp: &#39;newProp&#39;,
-     *
-     *                      helpful: {
-     *                          message: &#39;Something helpful message about what to do.&#39;
-     *                      }
-     *                      ...
-     *                  },
-     *                  statics: {
-     *                      methods: {
-     *                          ...
-     *                      },
-     *                      properties: {
-     *                          ...
-     *                      },
-     *                  }
-     *              },
-     *
-     *              &#39;5.1&#39;: {
-     *                  ...
-     *              },
-     *
-     *              &#39;5.2&#39;: {
-     *                  ...
-     *              }
-     *          }
-     *      });
-     *
-     * The primary content of `deprecated` are the version number keys. These indicate
-     * a version number where methods or properties were deprecated. These versions are
-     * compared to the version reported by `CLI.getCompatVersion` to determine the action
-     * to take for each &quot;block&quot;.
-     *
-     * When the compatibility version is set to a value less than a version number key,
-     * that block is said to be &quot;enabled&quot;. For example, if a method was deprecated in
-     * version 5.0 but the desired compatibility level is 4.2 then the block is used to
-     * patch methods and (to some degree) restore pre-5.0 compatibility.
-     *
-     * When multiple active blocks have the same method name, each method is applied as
-     * an override in reverse order of version. In the above example, if a method appears
-     * in the &quot;5.0&quot;, &quot;5.1&quot; and &quot;5.2&quot; blocks then the &quot;5.2&quot; method is applied as an override
-     * first, followed by the &quot;5.1&quot; method and finally the &quot;5.0&quot; method. This means that
-     * the `callParent` from the &quot;5.0&quot; method calls the &quot;5.1&quot; method which calls the
-     * &quot;5.2&quot; method which can (if applicable) call the current version.
-     */
-    Manager.registerPostprocessor(&#39;deprecated&#39;, function(name, Class, data) {
-        //&lt;debug&gt;
-        CLI.classSystemMonitor &amp;&amp; CLI.classSystemMonitor(Class, &#39;CLI.Class#deprecated&#39;, arguments);
-        //&lt;/debug&gt;
-
-        // may already have an instance here in the case of singleton
-        var target = Class.isInstance ? Class.self : Class;
-        target.addDeprecations(data.deprecated);
-
-        delete target.prototype.deprecated;
-    });
-
-    CLI.apply(CLI, {
-<span id='CLI-method-create'>        /**
-</span>         * Instantiate a class by either full name, alias or alternate name.
-         *
-         * If {@link CLI.Loader} is {@link CLI.Loader#setConfig enabled} and the class has
-         * not been defined yet, it will attempt to load the class via synchronous loading.
-         *
-         * For example, all these three lines return the same result:
-         *
-         *      // xtype
-         *      var window = CLI.create({
-         *          xtype: &#39;window&#39;,
-         *          width: 600,
-         *          height: 800,
-         *          ...
-         *      });
-         *
-         *      // alias
-         *      var window = CLI.create(&#39;widget.window&#39;, {
-         *          width: 600,
-         *          height: 800,
-         *          ...
-         *      });
-         *
-         *      // alternate name
-         *      var window = CLI.create(&#39;CLI.Window&#39;, {
-         *          width: 600,
-         *          height: 800,
-         *          ...
-         *      });
-         *
-         *      // full class name
-         *      var window = CLI.create(&#39;CLI.window.Window&#39;, {
-         *          width: 600,
-         *          height: 800,
-         *          ...
-         *      });
-         *
-         *      // single object with xclass property:
-         *      var window = CLI.create({
-         *          xclass: &#39;CLI.window.Window&#39;, // any valid value for &#39;name&#39; (above)
-         *          width: 600,
-         *          height: 800,
-         *          ...
-         *      });
-         *
-         * @param {String} [name] The class name or alias. Can be specified as `xclass`
-         * property if only one object parameter is specified.
-         * @param {Object...} [args] Additional arguments after the name will be passed to
-         * the class&#39; constructor.
-         * @return {Object} instance
-         * @member CLI
-         * @method create
-         */
-        create: function () {
-            var name = arguments[0],
-                nameType = typeof name,
-                args = arraySlice.call(arguments, 1),
-                cls;
-
-            if (nameType === &#39;function&#39;) {
-                cls = name;
-            } else {
-                if (nameType !== &#39;string&#39; &amp;&amp; args.length === 0) {
-                    args = [name];
-                    if (!(name = name.xclass)) {
-                        name = args[0].xtype;
-                        if (name) {
-                            name = &#39;widget.&#39; + name;
-                        }
+                    for (i = 0; i &lt; length; i++) {
+                        args.push(&#39;a[&#39; + i + &#39;]&#39;);
                     }
+
+                    instantiator = instantiators[length] = new Function(&#39;c&#39;, &#39;a&#39;, &#39;return new c(&#39; + args.join(&#39;,&#39;) + &#39;)&#39;);
+                    instantiator.displayName = &quot;CLI.create&quot; + length;
                 }
 
-                //&lt;debug&gt;
-                if (typeof name !== &#39;string&#39; || name.length &lt; 1) {
-                    throw new Error(&quot;[CLI.create] Invalid class name or alias &#39;&quot; + name +
-                                    &quot;&#39; specified, must be a non-empty string&quot;);
+                return instantiator;
+            },
+
+            // }}}
+            // {{{ postprocessors
+
+<span id='CLI-ClassManager-property-postprocessors'>            /**
+</span>             * @private
+             */
+            postprocessors: {},
+
+            // }}}
+            // {{{ defaultPostprocessors
+
+<span id='CLI-ClassManager-property-defaultPostprocessors'>            /**
+</span>             * @private
+             */
+            defaultPostprocessors: [],
+
+            // }}}
+            // {{{ registerPostprocessor
+
+<span id='CLI-ClassManager-method-registerPostprocessor'>            /**
+</span>             * Register a post-processor function.
+             *
+             * @private
+             * @param {String} name
+             * @param {Function} postprocessor
+             */
+            registerPostprocessor: function(name, fn, properties, position, relativeTo) {
+
+                if (!position) {
+                    position = &#39;last&#39;;
                 }
-                //&lt;/debug&gt;
 
-                name = Manager.resolveName(name);
-                cls = Manager.get(name);
+                if (!properties) {
+                    properties = [name];
+                }
+
+                this.postprocessors[name] = {
+                    name: name,
+                    properties: properties || false,
+                    fn: fn
+                };
+
+                this.setDefaultPostprocessorPosition(name, position, relativeTo);
+
+                return this;
+            },
+
+            // }}}
+            // {{{ setDefaultPostprocessors
+
+<span id='CLI-ClassManager-method-setDefaultPostprocessors'>            /**
+</span>             * Set the default post processors array stack which are applied to every class.
+             *
+             * @private
+             * @param {String/Array} postprocessors The name of a registered post processor or an array of registered names.
+             * @return {CLI.ClassManager} this
+             */
+            setDefaultPostprocessors: function(postprocessors) {
+
+                this.defaultPostprocessors = arrayFrom(postprocessors);
+
+                return this;
+            },
+
+            // }}}
+            // {{{ setDefaultPostprocessorPosition
+
+<span id='CLI-ClassManager-method-setDefaultPostprocessorPosition'>            /**
+</span>             * Insert this post-processor at a specific position in the stack, optionally relative to
+             * any existing post-processor
+             *
+             * @private
+             * @param {String} name The post-processor name. Note that it needs to be registered with
+             * {@link CLI.ClassManager#registerPostprocessor} before this
+             * @param {String} offset The insertion position. Four possible values are:
+             * &#39;first&#39;, &#39;last&#39;, or: &#39;before&#39;, &#39;after&#39; (relative to the name provided in the third argument)
+             * @param {String} relativeName
+             * @return {CLI.ClassManager} this
+             */
+            setDefaultPostprocessorPosition: function(name, offset, relativeName) {
+
+                var defaultPostprocessors = this.defaultPostprocessors,
+                    index;
+
+                if (typeof offset === &#39;string&#39;) {
+
+                    if (offset === &#39;first&#39;) {
+
+                        defaultPostprocessors.unshift(name);
+
+                        return this;
+
+                    } else if (offset === &#39;last&#39;) {
+
+                        defaultPostprocessors.push(name);
+
+                        return this;
+                    }
+
+                    offset = (offset === &#39;after&#39;) ? 1 : -1;
+                }
+
+                index = CLI.Array.indexOf(defaultPostprocessors, relativeName);
+
+                if (index !== -1) {
+                    CLI.Array.splice(defaultPostprocessors, Math.max(0, index + offset), 0, name);
+                }
+
+                return this;
             }
 
-            // Still not existing at this point, try to load it via synchronous mode as the last resort
-            if (!cls) {
-                //&lt;debug&gt;
-                //&lt;if nonBrowser&gt;
-                !isNonBrowser &amp;&amp;
-                //&lt;/if&gt;
-                CLI.log.warn(&quot;[CLI.Loader] Synchronously loading &#39;&quot; + name + &quot;&#39;; consider adding &quot; +
-                     &quot;CLI.require(&#39;&quot; + name + &quot;&#39;) above CLI.onReady&quot;);
-                //&lt;/debug&gt;
+            // }}}
 
-                CLI.syncRequire(name);
+        });
 
-                cls = Manager.get(name);
-            }
+        // }}}
+        // {{{ alias
 
-            //&lt;debug&gt;
-            if (!cls) {
-                throw new Error(&quot;[CLI.create] Unrecognized class name / alias: &quot; + name);
-            }
-
-            if (typeof cls !== &#39;function&#39;) {
-                throw new Error(&quot;[CLI.create] Singleton &#39;&quot; + name + &quot;&#39; cannot be instantiated.&quot;);
-            }
-            //&lt;/debug&gt;
-
-            return Manager.getInstantiator(args.length)(cls, args);
-        },
-
-<span id='CLI-method-widget'>        /**
-</span>         * Convenient shorthand to create a widget by its xtype or a config object.
+<span id='CLI-Class-cfg-alias'>        /**
+</span>         * @cfg {String/String[]} alias
+         * @member CLI.Class
+         * List of short aliases for class names. An alias consists of a namespace and a name concatenated by a period as &amp;#60;namespace&amp;#62;.&amp;#60;name&amp;#62;
          *
-         *      var button = CLI.widget(&#39;button&#39;); // Equivalent to CLI.create(&#39;widget.button&#39;);
+         *  - **namespace** - The namespace describes what kind of alias this is and must be all lowercase.
+         *  - **name** - The name of the alias which allows the lazy-instantiation via the alias. The name shouldn&#39;t contain any periods.
          *
-         *      var panel = CLI.widget(&#39;panel&#39;, { // Equivalent to CLI.create(&#39;widget.panel&#39;)
-         *          title: &#39;Panel&#39;
-         *      });
+         * A list of namespaces and the usages are:
          *
-         *      var grid = CLI.widget({
-         *          xtype: &#39;grid&#39;,
-         *          ...
-         *      });
+         *  - **feature** - {@link CLI.grid.Panel Grid} features
+         *  - **plugin** - Plugins
+         *  - **store** - {@link CLI.data.Store}
+         *  - **widget** - Components
          *
-         * If a {@link CLI.Component component} instance is passed, it is simply returned.
+         * Most useful for defining xtypes for widgets:
          *
-         * @member CLI
-         * @param {String} [name] The xtype of the widget to create.
-         * @param {Object} [config] The configuration object for the widget constructor.
-         * @return {Object} The widget instance
-         */
-        widget: function(name, config) {
-            // forms:
-            //      1: (xtype)
-            //      2: (xtype, config)
-            //      3: (config)
-            //      4: (xtype, component)
-            //      5: (component)
-            //      
-            var xtype = name,
-                alias, className, T;
-
-            if (typeof xtype !== &#39;string&#39;) { // if (form 3 or 5)
-                // first arg is config or component
-                config = name; // arguments[0]
-                xtype = config.xtype;
-                className = config.xclass;
-            } else {
-                config = config || {};
-            }
-
-            if (config.isComponent) {
-                return config;
-            }
-
-            if (!className) {
-                alias = &#39;widget.&#39; + xtype;
-                className = Manager.getNameByAlias(alias);
-            }
-
-            // this is needed to support demand loading of the class
-            if (className) {
-                T = Manager.get(className);
-            }
-
-            if (!T) {
-                return CLI.create(className || alias, config);
-            }
-            return new T(config);
-        },
-
-<span id='CLI-method-createByAlias'>        /**
-</span>         * @inheritdoc CLI.ClassManager#instantiateByAlias
-         * @member CLI
-         * @method createByAlias
-         */
-        createByAlias: alias(Manager, &#39;instantiateByAlias&#39;),
-
-<span id='CLI-method-define'>        /**
-</span>         * Defines a class or override. A basic class is defined like this:
-         *
-         *      CLI.define(&#39;My.awesome.Class&#39;, {
-         *          someProperty: &#39;something&#39;,
-         *
-         *          someMethod: function(s) {
-         *              alert(s + this.someProperty);
-         *          }
-         *
-         *          ...
-         *      });
-         *
-         *      var obj = new My.awesome.Class();
-         *
-         *      obj.someMethod(&#39;Say &#39;); // alerts &#39;Say something&#39;
-         *
-         * To create an anonymous class, pass `null` for the `className`:
-         *
-         *      CLI.define(null, {
-         *          constructor: function () {
-         *              // ...
-         *          }
-         *      });
-         *
-         * In some cases, it is helpful to create a nested scope to contain some private
-         * properties. The best way to do this is to pass a function instead of an object
-         * as the second parameter. This function will be called to produce the class
-         * body:
-         *
-         *      CLI.define(&#39;MyApp.foo.Bar&#39;, function () {
-         *          var id = 0;
-         *
-         *          return {
-         *              nextId: function () {
-         *                  return ++id;
-         *              }
-         *          };
-         *      });
-         * 
-         * _Note_ that when using override, the above syntax will not override successfully, because
-         * the passed function would need to be executed first to determine whether or not the result 
-         * is an override or defining a new object. As such, an alternative syntax that immediately 
-         * invokes the function can be used:
-         * 
-         *      CLI.define(&#39;MyApp.override.BaseOverride&#39;, function () {
-         *          var counter = 0;
-         *
-         *          return {
-         *              override: &#39;CLI.Component&#39;,
-         *              logId: function () {
-         *                  console.log(++counter, this.id);
-         *              }
-         *          };
-         *      }());
-         * 
-         *
-         * When using this form of `CLI.define`, the function is passed a reference to its
-         * class. This can be used as an efficient way to access any static properties you
-         * may have:
-         *
-         *      CLI.define(&#39;MyApp.foo.Bar&#39;, function (Bar) {
-         *          return {
-         *              statics: {
-         *                  staticMethod: function () {
-         *                      // ...
-         *                  }
-         *              },
-         *
-         *              method: function () {
-         *                  return Bar.staticMethod();
-         *              }
-         *          };
-         *      });
-         *
-         * To define an override, include the `override` property. The content of an
-         * override is aggregated with the specified class in order to extend or modify
-         * that class. This can be as simple as setting default property values or it can
-         * extend and/or replace methods. This can also extend the statics of the class.
-         *
-         * One use for an override is to break a large class into manageable pieces.
-         *
-         *      // File: /src/app/Panel.js
-         *
-         *      CLI.define(&#39;My.app.Panel&#39;, {
-         *          extend: &#39;CLI.panel.Panel&#39;,
-         *          requires: [
-         *              &#39;My.app.PanelPart2&#39;,
-         *              &#39;My.app.PanelPart3&#39;
-         *          ]
-         *
-         *          constructor: function (config) {
-         *              this.callParent(arguments); // calls CLI.panel.Panel&#39;s constructor
-         *              //...
-         *          },
-         *
-         *          statics: {
-         *              method: function () {
-         *                  return &#39;abc&#39;;
-         *              }
-         *          }
-         *      });
-         *
-         *      // File: /src/app/PanelPart2.js
-         *      CLI.define(&#39;My.app.PanelPart2&#39;, {
-         *          override: &#39;My.app.Panel&#39;,
-         *
-         *          constructor: function (config) {
-         *              this.callParent(arguments); // calls My.app.Panel&#39;s constructor
-         *              //...
-         *          }
-         *      });
-         *
-         * Another use of overrides is to provide optional parts of classes that can be
-         * independently required. In this case, the class may even be unaware of the
-         * override altogether.
-         *
-         *      CLI.define(&#39;My.ux.CoolTip&#39;, {
-         *          override: &#39;CLI.tip.ToolTip&#39;,
-         *
-         *          constructor: function (config) {
-         *              this.callParent(arguments); // calls CLI.tip.ToolTip&#39;s constructor
-         *              //...
-         *          }
-         *      });
-         *
-         * The above override can now be required as normal.
-         *
-         *      CLI.define(&#39;My.app.App&#39;, {
-         *          requires: [
-         *              &#39;My.ux.CoolTip&#39;
-         *          ]
-         *      });
-         *
-         * Overrides can also contain statics:
-         *
-         *      CLI.define(&#39;My.app.BarMod&#39;, {
-         *          override: &#39;CLI.foo.Bar&#39;,
-         *
-         *          statics: {
-         *              method: function (x) {
-         *                  return this.callParent([x * 2]); // call CLI.foo.Bar.method
-         *              }
-         *          }
-         *      });
-         * 
-         * Starting in version 4.2.2, overrides can declare their `compatibility` based
-         * on the framework version or on versions of other packages. For details on the
-         * syntax and options for these checks, see `CLI.checkVersion`.
-         * 
-         * The simplest use case is to test framework version for compatibility:
-         * 
-         *      CLI.define(&#39;App.overrides.grid.Panel&#39;, {
-         *          override: &#39;CLI.grid.Panel&#39;,
-         *
-         *          compatibility: &#39;4.2.2&#39;, // only if framework version is 4.2.2
-         *
-         *          //...
-         *      });
-         * 
-         * An array is treated as an OR, so if any specs match, the override is
-         * compatible.
-         * 
-         *      CLI.define(&#39;App.overrides.some.Thing&#39;, {
-         *          override: &#39;Foo.some.Thing&#39;,
-         *
-         *          compatibility: [
-         *              &#39;4.2.2&#39;,
-         *              &#39;foo@1.0.1-1.0.2&#39;
-         *          ],
-         *
-         *          //...
-         *      });
-         * 
-         * To require that all specifications match, an object can be provided:
-         * 
-         *      CLI.define(&#39;App.overrides.some.Thing&#39;, {
-         *          override: &#39;Foo.some.Thing&#39;,
-         *
-         *          compatibility: {
-         *              and: [
-         *                  &#39;4.2.2&#39;,
-         *                  &#39;foo@1.0.1-1.0.2&#39;
-         *              ]
-         *          },
-         *
-         *          //...
-         *      });
-         * 
-         * Because the object form is just a recursive check, these can be nested:
-         * 
-         *      CLI.define(&#39;App.overrides.some.Thing&#39;, {
-         *          override: &#39;Foo.some.Thing&#39;,
-         *
-         *          compatibility: {
-         *              and: [
-         *                  &#39;4.2.2&#39;,  // exactly version 4.2.2 of the framework *AND*
-         *                  {
-         *                      // either (or both) of these package specs:
-         *                      or: [
-         *                          &#39;foo@1.0.1-1.0.2&#39;,
-         *                          &#39;bar@3.0+&#39;
-         *                      ]
-         *                  }
-         *              ]
-         *          },
-         *
-         *          //...
-         *      });
-         *
-         * IMPORTANT: An override is only included in a build if the class it overrides is
-         * required. Otherwise, the override, like the target class, is not included. In
-         * Sencha Cmd v4, the `compatibility` declaration can likewise be used to remove
-         * incompatible overrides from a build.
-         *
-         * @param {String} className The class name to create in string dot-namespaced format, for example:
-         * &#39;My.very.awesome.Class&#39;, &#39;FeedViewer.plugin.CoolPager&#39;
-         * It is highly recommended to follow this simple convention:
-         *  - The root and the class name are &#39;CamelCased&#39;
-         *  - Everything else is lower-cased
-         * Pass `null` to create an anonymous class.
-         * @param {Object} data The key - value pairs of properties to apply to this class. Property names can be of any valid
-         * strings, except those in the reserved listed below:
-         *  - `mixins`
-         *  - `statics`
-         *  - `config`
-         *  - `alias`
-         *  - `xtype` (for {@link CLI.Component Components} only)
-         *  - `self`
-         *  - `singleton`
-         *  - `alternateClassName`
-         *  - `override`
-         *
-         * @param {Function} [createdFn] Callback to execute after the class is created, the execution scope of which
-         * (`this`) will be the newly created class itself.
-         * @return {CLI.Base}
-         * @member CLI
-         */
-        define: function (className, data, createdFn) {
-            //&lt;debug&gt;
-            CLI.classSystemMonitor &amp;&amp; CLI.classSystemMonitor(className, &#39;ClassManager#define&#39;, arguments);
-            //&lt;/debug&gt;
-            
-            if (data.override) {
-                Manager.classState[className] = 20;
-                return Manager.createOverride.apply(Manager, arguments);
-            }
-
-            Manager.classState[className] = 10;
-            return Manager.create.apply(Manager, arguments);
-        },
-
-<span id='CLI-ClassManager-method-undefine'>        /**
-</span>         * Undefines a class defined using the #define method. Typically used
-         * for unit testing where setting up and tearing down a class multiple
-         * times is required.  For example:
-         * 
-         *     // define a class
-         *     CLI.define(&#39;Foo&#39;, {
-         *        ...
+         *     CLI.define(&#39;MyApp.CoolPanel&#39;, {
+         *         extend: &#39;CLI.panel.Panel&#39;,
+         *         alias: [&#39;widget.coolpanel&#39;],
+         *         title: &#39;Yeah!&#39;
          *     });
-         *     
-         *     // run test
-         *     
-         *     // undefine the class
-         *     CLI.undefine(&#39;Foo&#39;);
-         * @param {String} className The class name to undefine in string dot-namespaced format.
-         * @private
-         */
-        undefine: function(className) {
-            //&lt;debug&gt;
-            CLI.classSystemMonitor &amp;&amp; CLI.classSystemMonitor(className, &#39;CLI.ClassManager#undefine&#39;, arguments);
-            //&lt;/debug&gt;
-        
-            var classes = Manager.classes,
-                parts, partCount, namespace, i;
-
-            delete Manager.namespaceParseCache[className];
-            delete classes[className];
-            delete Manager.existCache[className];
-            delete Manager.classState[className];
-
-            Manager.removeName(className);
-
-            parts  = Manager.parseNamespace(className);
-            partCount = parts.length - 1;
-            namespace = parts[0];
-
-            for (i = 1; i &lt; partCount; i++) {
-                namespace = namespace[parts[i]];
-                if (!namespace) {
-                    return;
-                }
-            }
-
-            // Old IE blows up on attempt to delete window property
-            try {
-                delete namespace[parts[partCount]];
-            }
-            catch (e) {
-                namespace[parts[partCount]] = undefined;
-            }
-        },
-
-<span id='CLI-method-getClassName'>        /**
-</span>         * @inheritdoc CLI.ClassManager#getName
-         * @member CLI
-         * @method getClassName
-         */
-        getClassName: alias(Manager, &#39;getName&#39;),
-
-<span id='CLI-ClassManager-method-getDisplayName'>        /**
-</span>         * Returns the displayName property or className or object. When all else fails, returns &quot;Anonymous&quot;.
-         * @param {Object} object
-         * @return {String}
-         */
-        getDisplayName: function(object) {
-            if (object) {
-                if (object.displayName) {
-                    return object.displayName;
-                }
-
-                if (object.$name &amp;&amp; object.$class) {
-                    return CLI.getClassName(object.$class) + &#39;#&#39; + object.$name;
-                }
-
-                if (object.$className) {
-                    return object.$className;
-                }
-            }
-
-            return &#39;Anonymous&#39;;
-        },
-
-<span id='CLI-method-getClass'>        /**
-</span>         * @inheritdoc CLI.ClassManager#getClass
-         * @member CLI
-         * @method getClass
-         */
-        getClass: alias(Manager, &#39;getClass&#39;),
-
-<span id='CLI-method-namespace'>        /**
-</span>         * Creates namespaces to be used for scoping variables and classes so that they are not global.
-         * Specifying the last node of a namespace implicitly creates all other nodes. Usage:
          *
-         *     CLI.namespace(&#39;Company&#39;, &#39;Company.data&#39;);
+         *     // Using CLI.create
+         *     CLI.create(&#39;widget.coolpanel&#39;);
          *
-         *     // equivalent and preferable to the above syntax
-         *     CLI.ns(&#39;Company.data&#39;);
-         *
-         *     Company.Widget = function() { ... };
-         *
-         *     Company.data.CustomStore = function(config) { ... };
-         *
-         * @param {String...} namespaces
-         * @return {Object} The namespace object.
-         * (If multiple arguments are passed, this will be the last namespace created)
-         * @member CLI
-         * @method namespace
+         *     // Using the shorthand for defining widgets by xtype
+         *     CLI.widget(&#39;panel&#39;, {
+         *         items: [
+         *             {xtype: &#39;coolpanel&#39;, html: &#39;Foo&#39;},
+         *             {xtype: &#39;coolpanel&#39;, html: &#39;Bar&#39;}
+         *         ]
+         *     });
          */
-        namespace: alias(Manager, &#39;createNamespaces&#39;)
-    });
+        Manager.registerPostprocessor(&#39;alias&#39;, function(name, cls, data) {
 
-<span id='CLI-method-createWidget'>    /**
-</span>     * Old name for {@link CLI#widget}.
-     * @deprecated Use {@link CLI#widget} instead.
-     * @method createWidget
-     * @member CLI
-     * @private
-     */
-    CLI.createWidget = CLI.widget;
+            CLI.classSystemMonitor &amp;&amp; CLI.classSystemMonitor(name, &#39;CLI.ClassManager#aliasPostProcessor&#39;, arguments);
 
-<span id='CLI-method-ns'>    /**
-</span>     * Convenient alias for {@link CLI#namespace CLI.namespace}.
-     * @inheritdoc CLI#namespace
-     * @member CLI
-     * @method ns
-     */
-    CLI.ns = CLI.namespace;
+            var aliases = CLI.Array.from(data.alias),
+                i, ln;
 
-    Class.registerPreprocessor(&#39;className&#39;, function(cls, data) {
-        if (&#39;$className&#39; in data) {
-            cls.$className = data.$className;
-            //&lt;debug&gt;
-            cls.displayName = cls.$className;
-            //&lt;/debug&gt;
-        }
-        
-        //&lt;debug&gt;
-        CLI.classSystemMonitor &amp;&amp; CLI.classSystemMonitor(cls, &#39;CLI.ClassManager#classNamePreprocessor&#39;, arguments);
-        //&lt;/debug&gt;
-    }, true, &#39;first&#39;);
+            for (i = 0,ln = aliases.length; i &lt; ln; i++) {
 
-    Class.registerPreprocessor(&#39;alias&#39;, function(cls, data) {
-        //&lt;debug&gt;
-        CLI.classSystemMonitor &amp;&amp; CLI.classSystemMonitor(cls, &#39;CLI.ClassManager#aliasPreprocessor&#39;, arguments);
-        //&lt;/debug&gt;
-        
-        var prototype = cls.prototype,
-            xtypes = arrayFrom(data.xtype),
-            aliases = arrayFrom(data.alias),
-            widgetPrefix = &#39;widget.&#39;,
-            widgetPrefixLength = widgetPrefix.length,
-            xtypesChain = Array.prototype.slice.call(prototype.xtypesChain || []),
-            xtypesMap = CLI.merge({}, prototype.xtypesMap || {}),
-            i, ln, alias, xtype;
+                alias = aliases[i];
 
-        for (i = 0,ln = aliases.length; i &lt; ln; i++) {
-            alias = aliases[i];
-
-            //&lt;debug error&gt;
-            if (typeof alias !== &#39;string&#39; || alias.length &lt; 1) {
-                throw new Error(&quot;[CLI.define] Invalid alias of: &#39;&quot; + alias + &quot;&#39; for class: &#39;&quot; + name + &quot;&#39;; must be a valid string&quot;);
+                this.addAlias(cls, alias);
             }
-            //&lt;/debug&gt;
 
-            if (alias.substring(0, widgetPrefixLength) === widgetPrefix) {
-                xtype = alias.substring(widgetPrefixLength);
-                CLI.Array.include(xtypes, xtype);
+        }, [&#39;xtype&#39;, &#39;alias&#39;]);
+
+        // }}}
+        // {{{ singleton
+
+<span id='CLI-Class-cfg-singleton'>        /**
+</span>         * @cfg {Boolean} singleton
+         * @member CLI.Class
+         * When set to true, the class will be instantiated as singleton.  For example:
+         *
+         *     CLI.define(&#39;Logger&#39;, {
+         *         singleton: true,
+         *         log: function(msg) {
+         *             console.log(msg);
+         *         }
+         *     });
+         *
+         *     Logger.log(&#39;Hello&#39;);
+         */
+        Manager.registerPostprocessor(&#39;singleton&#39;, function(name, cls, data, fn) {
+
+            CLI.classSystemMonitor &amp;&amp; CLI.classSystemMonitor(name, &#39;CLI.ClassManager#singletonPostProcessor&#39;, arguments);
+
+            if (data.singleton) {
+
+                fn.call(this, name, new cls(), data);
+
+            } else {
+
+                return true;
+
             }
-        }
 
-        cls.xtype = data.xtype = xtypes[0];
-        data.xtypes = xtypes;
+            return false;
+        });
 
-        for (i = 0,ln = xtypes.length; i &lt; ln; i++) {
-            xtype = xtypes[i];
+        // }}}
+        // {{{ alternateClassName
 
-            if (!xtypesMap[xtype]) {
-                xtypesMap[xtype] = true;
-                xtypesChain.push(xtype);
+<span id='CLI-Class-cfg-alternateClassName'>        /**
+</span>         * @cfg {String/String[]} alternateClassName
+         * @member CLI.Class
+         * Defines alternate names for this class.  For example:
+         *
+         *     CLI.define(&#39;Developer&#39;, {
+         *         alternateClassName: [&#39;Coder&#39;, &#39;Hacker&#39;],
+         *         code: function(msg) {
+         *             alert(&#39;Typing... &#39; + msg);
+         *         }
+         *     });
+         *
+         *     var joe = CLI.create(&#39;Developer&#39;);
+         *     joe.code(&#39;stackoverflow&#39;);
+         *
+         *     var rms = CLI.create(&#39;Hacker&#39;);
+         *     rms.code(&#39;hack hack&#39;);
+         */
+        Manager.registerPostprocessor(&#39;alternateClassName&#39;, function(name, cls, data) {
+
+            CLI.classSystemMonitor &amp;&amp; CLI.classSystemMonitor(name, &#39;CLI.ClassManager#alternateClassNamePostprocessor&#39;, arguments);
+
+            var alternates = data.alternateClassName,
+                i, ln, alternate;
+
+            if (!(alternates instanceof Array)) {
+                alternates = [alternates];
             }
-        }
 
-        data.xtypesChain = xtypesChain;
-        data.xtypesMap = xtypesMap;
+            for (i = 0, ln = alternates.length; i &lt; ln; i++) {
 
-        CLI.Function.interceptAfter(data, &#39;onClassCreated&#39;, function() {
-            //&lt;debug&gt;
-            CLI.classSystemMonitor &amp;&amp; CLI.classSystemMonitor(cls, &#39;CLI.ClassManager#aliasPreprocessor#afterClassCreated&#39;, arguments);
-            //&lt;/debug&gt;
-        
-            var mixins = prototype.mixins,
-                key, mixin;
+                alternate = alternates[i];
 
-            for (key in mixins) {
-                if (mixins.hasOwnProperty(key)) {
-                    mixin = mixins[key];
-
-                    xtypes = mixin.xtypes;
-
-                    if (xtypes) {
-                        for (i = 0,ln = xtypes.length; i &lt; ln; i++) {
-                            xtype = xtypes[i];
-
-                            if (!xtypesMap[xtype]) {
-                                xtypesMap[xtype] = true;
-                                xtypesChain.push(xtype);
-                            }
-                        }
-                    }
+                if (typeof alternate !== &#39;string&#39;) {
+                    throw new Error(&quot;[CLI.define] Invalid alternate of: &#39;&quot; + alternate + &quot;&#39; for class: &#39;&quot; + name + &quot;&#39;; must be a valid string&quot;);
                 }
+
+                this.set(alternate, cls);
             }
         });
 
-        for (i = 0,ln = xtypes.length; i &lt; ln; i++) {
-            xtype = xtypes[i];
+        // }}}
+        // {{{ debugHooks
 
-            //&lt;debug error&gt;
-            if (typeof xtype !== &#39;string&#39; || xtype.length &lt; 1) {
-                throw new Error(&quot;[CLI.define] Invalid xtype of: &#39;&quot; + xtype + &quot;&#39; for class: &#39;&quot; + name + &quot;&#39;; must be a valid non-empty string&quot;);
+<span id='CLI-ClassManager-cfg-debugHooks'>        /**
+</span>         * @cfg {Object} debugHooks
+         * A collection of diagnostic methods to decorate the real methods of the class. These
+         * methods are applied as an `override` if this class has debug enabled as defined by
+         * `CLI.isDebugEnabled`.
+         *
+         * These will be automatically removed by the Sencha Cmd compiler for production builds.
+         *
+         * Example usage:
+         *
+         *      CLI.define(&#39;Foo.bar.Class&#39;, {
+         *          foo: function (a, b, c) {
+         *              ...
+         *          },
+         *
+         *          bar: function (a, b) {
+         *              ...
+         *              return 42;
+         *          },
+         *
+         *          debugHooks: {
+         *              foo: function (a, b, c) {
+         *                  // check arguments...
+         *                  return this.callParent(arguments);
+         *              }
+         *          }
+         *      });
+         *
+         * If you specify a `$enabled` property in the `debugHooks` object that will be used
+         * as the default enabled state for the hooks. If the `{@link CLI#manifest}` contains
+         * a `debug` object of if `{@link CLI#debugConfig}` is specified, the `$enabled` flag
+         * will override its &quot;*&quot; value.
+         */
+        Manager.registerPostprocessor(&#39;debugHooks&#39;, function(name, Class, data) {
+
+            CLI.classSystemMonitor &amp;&amp; CLI.classSystemMonitor(Class, &#39;CLI.Class#debugHooks&#39;, arguments);
+
+            if (CLI.isDebugEnabled(Class.$className, data.debugHooks.$enabled)) {
+
+                delete data.debugHooks.$enabled;
+                CLI.override(Class, data.debugHooks);
+
             }
-            //&lt;/debug&gt;
 
-            CLI.Array.include(aliases, widgetPrefix + xtype);
-        }
+            // may already have an instance here in the case of singleton
+            var target = Class.isInstance ? Class.self : Class;
 
-        data.alias = aliases;
+            delete target.prototype.debugHooks;
+        });
 
-    }, [&#39;xtype&#39;, &#39;alias&#39;]);
+        // }}}
+        // {{{ deprecated
 
-    // load the cmd-5 style app manifest metadata now, if available...
-    if(CLI.manifest) {
-        var manifest = CLI.manifest,
-            classes = manifest.classes,
-            paths = manifest.paths,
-            aliases = {},
-            alternates = {},
-            className, obj, name, path, baseUrl;
+<span id='CLI-ClassManager-cfg-deprecated'>        /**
+</span>         * @cfg {Object} deprecated
+         * The object given has properties that describe the versions at which the deprecations
+         * apply.
+         *
+         * The purpose of the `deprecated` declaration is to enable development mode to give
+         * suitable error messages when deprecated methods or properties are used. Methods can
+         * always be injected to provide this feedback, but properties can only be handled on
+         * some browsers (those that support `Object.defineProperty`).
+         *
+         * In some cases, deprecated methods can be restored to their previous behavior or
+         * added back if they have been removed.
+         *
+         * The structure of a `deprecated` declaration is this:
+         *
+         *      CLI.define(&#39;Foo.bar.Class&#39;, {
+         *          ...
+         *
+         *          deprecated: {
+         *              // Optional package name - default is the framework (ext or touch)
+         *              name: &#39;foobar&#39;,
+         *
+         *              &#39;5.0&#39;: {
+         *                  methods: {
+         *                      // Throws: &#39;&quot;removedMethod&quot; is deprecated.&#39;
+         *                      removedMethod: null,
+         *
+         *                      // Throws: &#39;&quot;oldMethod&quot; is deprecated. Please use &quot;newMethod&quot; instead.&#39;
+         *                      oldMethod: &#39;newMethod&#39;,
+         *
+         *                      // When this block is enabled, this method is applied as an
+         *                      // override. Otherwise you get same as &quot;removeMethod&quot;.
+         *                      method: function () {
+         *                          // Do what v5 &quot;method&quot; did. If &quot;method&quot; exists in newer
+         *                          // versions callParent can call it. If 5.1 has &quot;method&quot;
+         *                          // then it would be next in line, otherwise 5.2 and last
+         *                          // would be the current class.
+         *                      },
+         *
+         *                      moreHelpful: {
+         *                          message: &#39;Something helpful to do instead.&#39;,
+         *                          fn: function () {
+         *                              // The v5 &quot;moreHelpful&quot; method to use when enabled.
+         *                          }
+         *                      }
+         *                  },
+         *                  properties: {
+         *                      // Throws: &#39;&quot;removedProp&quot; is deprecated.&#39;
+         *                      removedProp: null,
+         *
+         *                      // Throws: &#39;&quot;oldProp&quot; is deprecated. Please use &quot;newProp&quot; instead.&#39;
+         *                      oldProp: &#39;newProp&#39;,
+         *
+         *                      helpful: {
+         *                          message: &#39;Something helpful message about what to do.&#39;
+         *                      }
+         *                      ...
+         *                  },
+         *                  statics: {
+         *                      methods: {
+         *                          ...
+         *                      },
+         *                      properties: {
+         *                          ...
+         *                      },
+         *                  }
+         *              },
+         *
+         *              &#39;5.1&#39;: {
+         *                  ...
+         *              },
+         *
+         *              &#39;5.2&#39;: {
+         *                  ...
+         *              }
+         *          }
+         *      });
+         *
+         * The primary content of `deprecated` are the version number keys. These indicate
+         * a version number where methods or properties were deprecated. These versions are
+         * compared to the version reported by `CLI.getCompatVersion` to determine the action
+         * to take for each &quot;block&quot;.
+         *
+         * When the compatibility version is set to a value less than a version number key,
+         * that block is said to be &quot;enabled&quot;. For example, if a method was deprecated in
+         * version 5.0 but the desired compatibility level is 4.2 then the block is used to
+         * patch methods and (to some degree) restore pre-5.0 compatibility.
+         *
+         * When multiple active blocks have the same method name, each method is applied as
+         * an override in reverse order of version. In the above example, if a method appears
+         * in the &quot;5.0&quot;, &quot;5.1&quot; and &quot;5.2&quot; blocks then the &quot;5.2&quot; method is applied as an override
+         * first, followed by the &quot;5.1&quot; method and finally the &quot;5.0&quot; method. This means that
+         * the `callParent` from the &quot;5.0&quot; method calls the &quot;5.1&quot; method which calls the
+         * &quot;5.2&quot; method which can (if applicable) call the current version.
+         */
+        Manager.registerPostprocessor(&#39;deprecated&#39;, function(name, Class, data) {
 
-        if(paths) {
-            // if the manifest paths were calculated as relative to the
-            // bootstrap file, then we need to prepend Boot.baseUrl to the
-            // paths before processing
-            if(manifest.bootRelative) {
-                baseUrl = CLI.Boot.baseUrl;
-                for(path in paths) {
-                    if(paths.hasOwnProperty(path)) {
-                        paths[path] = baseUrl + paths[path];
+            CLI.classSystemMonitor &amp;&amp; CLI.classSystemMonitor(Class, &#39;CLI.Class#deprecated&#39;, arguments);
+
+            // may already have an instance here in the case of singleton
+            var target = Class.isInstance ? Class.self : Class;
+                target.addDeprecations(data.deprecated);
+
+            delete target.prototype.deprecated;
+        });
+
+        // }}}
+        // {{{ CLI
+
+        CLI.apply(CLI, {
+
+            // {{{ create
+
+<span id='CLI-method-create'>            /**
+</span>             * Instantiate a class by either full name, alias or alternate name.
+             *
+             * If {@link CLI.Loader} is {@link CLI.Loader#setConfig enabled} and the class has
+             * not been defined yet, it will attempt to load the class via synchronous loading.
+             *
+             * For example, all these three lines return the same result:
+             *
+             *      // xtype
+             *      var window = CLI.create({
+             *          xtype: &#39;window&#39;,
+             *          width: 600,
+             *          height: 800,
+             *          ...
+             *      });
+             *
+             *      // alias
+             *      var window = CLI.create(&#39;widget.window&#39;, {
+             *          width: 600,
+             *          height: 800,
+             *          ...
+             *      });
+             *
+             *      // alternate name
+             *      var window = CLI.create(&#39;CLI.Window&#39;, {
+             *          width: 600,
+             *          height: 800,
+             *          ...
+             *      });
+             *
+             *      // full class name
+             *      var window = CLI.create(&#39;CLI.window.Window&#39;, {
+             *          width: 600,
+             *          height: 800,
+             *          ...
+             *      });
+             *
+             *      // single object with xclass property:
+             *      var window = CLI.create({
+             *          xclass: &#39;CLI.window.Window&#39;, // any valid value for &#39;name&#39; (above)
+             *          width: 600,
+             *          height: 800,
+             *          ...
+             *      });
+             *
+             * @param {String} [name] The class name or alias. Can be specified as `xclass`
+             * property if only one object parameter is specified.
+             * @param {Object...} [args] Additional arguments after the name will be passed to
+             * the class&#39; constructor.
+             * @return {Object} instance
+             * @member CLI
+             * @method create
+             */
+            create: function () {
+
+                var name = arguments[0],
+                    nameType = typeof name,
+                    args = arraySlice.call(arguments, 1),
+                    cls;
+
+                if (nameType === &#39;function&#39;) {
+
+                    cls = name;
+
+                } else {
+
+                    if (nameType !== &#39;string&#39; &amp;&amp; args.length === 0) {
+
+                        args = [name];
+
+                        if (!(name = name.xclass)) {
+
+                            name = args[0].xtype;
+
+                            if (name) {
+
+                                name = &#39;widget.&#39; + name;
+
+                            }
+
+                        }
+
+                    }
+
+                    if (typeof name !== &#39;string&#39; || name.length &lt; 1) {
+                        throw new Error(&quot;[CLI.create] Invalid class name or alias &#39;&quot; + name +
+                                        &quot;&#39; specified, must be a non-empty string&quot;);
+                    }
+
+                    name = Manager.resolveName(name);
+                    cls = Manager.get(name);
+                }
+
+                // Still not existing at this point, try to load it via synchronous mode as the last resort
+                if (!cls) {
+
+                    // TODO: change for node
+
+                    !isNonBrowser &amp;&amp;
+                        CLI.log.warn(&quot;[CLI.Loader] Synchronously loading &#39;&quot; + name + &quot;&#39;; consider adding &quot; +
+                                     &quot;CLI.require(&#39;&quot; + name + &quot;&#39;) above CLI.onReady&quot;);
+
+                    CLI.syncRequire(name);
+
+                    cls = Manager.get(name);
+                }
+
+                if (!cls) {
+                    throw new Error(&quot;[CLI.create] Unrecognized class name / alias: &quot; + name);
+                }
+
+                if (typeof cls !== &#39;function&#39;) {
+                    throw new Error(&quot;[CLI.create] Singleton &#39;&quot; + name + &quot;&#39; cannot be instantiated.&quot;);
+                }
+
+                return Manager.getInstantiator(args.length)(cls, args);
+            },
+
+            // }}}
+            // {{{ widget
+
+<span id='CLI-method-widget'>            /**
+</span>             * Convenient shorthand to create a widget by its xtype or a config object.
+             *
+             *      var button = CLI.widget(&#39;button&#39;); // Equivalent to CLI.create(&#39;widget.button&#39;);
+             *
+             *      var panel = CLI.widget(&#39;panel&#39;, { // Equivalent to CLI.create(&#39;widget.panel&#39;)
+             *          title: &#39;Panel&#39;
+             *      });
+             *
+             *      var grid = CLI.widget({
+             *          xtype: &#39;grid&#39;,
+             *          ...
+             *      });
+             *
+             * If a {@link CLI.Component component} instance is passed, it is simply returned.
+             *
+             * @member CLI
+             * @param {String} [name] The xtype of the widget to create.
+             * @param {Object} [config] The configuration object for the widget constructor.
+             * @return {Object} The widget instance
+             */
+            widget: function(name, config) {
+
+                // forms:
+                //      1: (xtype)
+                //      2: (xtype, config)
+                //      3: (config)
+                //      4: (xtype, component)
+                //      5: (component)
+                //      
+                var xtype = name,
+                alias, className, T;
+
+                if (typeof xtype !== &#39;string&#39;) { // if (form 3 or 5)
+                    // first arg is config or component
+                    config = name; // arguments[0]
+                    xtype = config.xtype;
+                    className = config.xclass;
+                } else {
+                    config = config || {};
+                }
+
+                if (config.isComponent) {
+                    return config;
+                }
+
+                if (!className) {
+                    alias = &#39;widget.&#39; + xtype;
+                    className = Manager.getNameByAlias(alias);
+                }
+
+                // this is needed to support demand loading of the class
+                if (className) {
+                    T = Manager.get(className);
+                }
+
+                if (!T) {
+                    return CLI.create(className || alias, config);
+                }
+                return new T(config);
+            },
+
+            // }}}
+            // {{{ createByAlias
+
+<span id='CLI-method-createByAlias'>            /**
+</span>             * @inheritdoc CLI.ClassManager#instantiateByAlias
+             * @member CLI
+             * @method createByAlias
+             */
+            createByAlias: alias(Manager, &#39;instantiateByAlias&#39;),
+
+            // }}}
+            // {{{ define
+
+<span id='CLI-method-define'>            /**
+</span>             * Defines a class or override. A basic class is defined like this:
+             *
+             *      CLI.define(&#39;My.awesome.Class&#39;, {
+             *          someProperty: &#39;something&#39;,
+             *
+             *          someMethod: function(s) {
+             *              alert(s + this.someProperty);
+             *          }
+             *
+             *          ...
+             *      });
+             *
+             *      var obj = new My.awesome.Class();
+             *
+             *      obj.someMethod(&#39;Say &#39;); // alerts &#39;Say something&#39;
+             *
+             * To create an anonymous class, pass `null` for the `className`:
+             *
+             *      CLI.define(null, {
+             *          constructor: function () {
+             *              // ...
+             *          }
+             *      });
+             *
+             * In some cases, it is helpful to create a nested scope to contain some private
+             * properties. The best way to do this is to pass a function instead of an object
+             * as the second parameter. This function will be called to produce the class
+             * body:
+             *
+             *      CLI.define(&#39;MyApp.foo.Bar&#39;, function () {
+             *          var id = 0;
+             *
+             *          return {
+             *              nextId: function () {
+             *                  return ++id;
+             *              }
+             *          };
+             *      });
+             * 
+             * _Note_ that when using override, the above syntax will not override successfully, because
+             * the passed function would need to be executed first to determine whether or not the result 
+             * is an override or defining a new object. As such, an alternative syntax that immediately 
+             * invokes the function can be used:
+             * 
+             *      CLI.define(&#39;MyApp.override.BaseOverride&#39;, function () {
+             *          var counter = 0;
+             *
+             *          return {
+             *              override: &#39;CLI.Component&#39;,
+             *              logId: function () {
+             *                  console.log(++counter, this.id);
+             *              }
+             *          };
+             *      }());
+             * 
+             *
+             * When using this form of `CLI.define`, the function is passed a reference to its
+             * class. This can be used as an efficient way to access any static properties you
+             * may have:
+             *
+             *      CLI.define(&#39;MyApp.foo.Bar&#39;, function (Bar) {
+             *          return {
+             *              statics: {
+             *                  staticMethod: function () {
+             *                      // ...
+             *                  }
+             *              },
+             *
+             *              method: function () {
+             *                  return Bar.staticMethod();
+             *              }
+             *          };
+             *      });
+             *
+             * To define an override, include the `override` property. The content of an
+             * override is aggregated with the specified class in order to extend or modify
+             * that class. This can be as simple as setting default property values or it can
+             * extend and/or replace methods. This can also extend the statics of the class.
+             *
+             * One use for an override is to break a large class into manageable pieces.
+             *
+             *      // File: /src/app/Panel.js
+             *
+             *      CLI.define(&#39;My.app.Panel&#39;, {
+             *          extend: &#39;CLI.panel.Panel&#39;,
+             *          requires: [
+             *              &#39;My.app.PanelPart2&#39;,
+             *              &#39;My.app.PanelPart3&#39;
+             *          ]
+             *
+             *          constructor: function (config) {
+             *              this.callParent(arguments); // calls CLI.panel.Panel&#39;s constructor
+             *              //...
+             *          },
+             *
+             *          statics: {
+             *              method: function () {
+             *                  return &#39;abc&#39;;
+             *              }
+             *          }
+             *      });
+             *
+             *      // File: /src/app/PanelPart2.js
+             *      CLI.define(&#39;My.app.PanelPart2&#39;, {
+             *          override: &#39;My.app.Panel&#39;,
+             *
+             *          constructor: function (config) {
+             *              this.callParent(arguments); // calls My.app.Panel&#39;s constructor
+             *              //...
+             *          }
+             *      });
+             *
+             * Another use of overrides is to provide optional parts of classes that can be
+             * independently required. In this case, the class may even be unaware of the
+             * override altogether.
+             *
+             *      CLI.define(&#39;My.ux.CoolTip&#39;, {
+             *          override: &#39;CLI.tip.ToolTip&#39;,
+             *
+             *          constructor: function (config) {
+             *              this.callParent(arguments); // calls CLI.tip.ToolTip&#39;s constructor
+             *              //...
+             *          }
+             *      });
+             *
+             * The above override can now be required as normal.
+             *
+             *      CLI.define(&#39;My.app.App&#39;, {
+             *          requires: [
+             *              &#39;My.ux.CoolTip&#39;
+             *          ]
+             *      });
+             *
+             * Overrides can also contain statics:
+             *
+             *      CLI.define(&#39;My.app.BarMod&#39;, {
+             *          override: &#39;CLI.foo.Bar&#39;,
+             *
+             *          statics: {
+             *              method: function (x) {
+             *                  return this.callParent([x * 2]); // call CLI.foo.Bar.method
+             *              }
+             *          }
+             *      });
+             * 
+             * Starting in version 4.2.2, overrides can declare their `compatibility` based
+             * on the framework version or on versions of other packages. For details on the
+             * syntax and options for these checks, see `CLI.checkVersion`.
+             * 
+             * The simplest use case is to test framework version for compatibility:
+             * 
+             *      CLI.define(&#39;App.overrides.grid.Panel&#39;, {
+             *          override: &#39;CLI.grid.Panel&#39;,
+             *
+             *          compatibility: &#39;4.2.2&#39;, // only if framework version is 4.2.2
+             *
+             *          //...
+             *      });
+             * 
+             * An array is treated as an OR, so if any specs match, the override is
+             * compatible.
+             * 
+             *      CLI.define(&#39;App.overrides.some.Thing&#39;, {
+             *          override: &#39;Foo.some.Thing&#39;,
+             *
+             *          compatibility: [
+             *              &#39;4.2.2&#39;,
+             *              &#39;foo@1.0.1-1.0.2&#39;
+             *          ],
+             *
+             *          //...
+             *      });
+             * 
+             * To require that all specifications match, an object can be provided:
+             * 
+             *      CLI.define(&#39;App.overrides.some.Thing&#39;, {
+             *          override: &#39;Foo.some.Thing&#39;,
+             *
+             *          compatibility: {
+             *              and: [
+             *                  &#39;4.2.2&#39;,
+             *                  &#39;foo@1.0.1-1.0.2&#39;
+             *              ]
+             *          },
+             *
+             *          //...
+             *      });
+             * 
+             * Because the object form is just a recursive check, these can be nested:
+             * 
+             *      CLI.define(&#39;App.overrides.some.Thing&#39;, {
+             *          override: &#39;Foo.some.Thing&#39;,
+             *
+             *          compatibility: {
+             *              and: [
+             *                  &#39;4.2.2&#39;,  // exactly version 4.2.2 of the framework *AND*
+             *                  {
+             *                      // either (or both) of these package specs:
+             *                      or: [
+             *                          &#39;foo@1.0.1-1.0.2&#39;,
+             *                          &#39;bar@3.0+&#39;
+             *                      ]
+             *                  }
+             *              ]
+             *          },
+             *
+             *          //...
+             *      });
+             *
+             * IMPORTANT: An override is only included in a build if the class it overrides is
+             * required. Otherwise, the override, like the target class, is not included. In
+             * Sencha Cmd v4, the `compatibility` declaration can likewise be used to remove
+             * incompatible overrides from a build.
+             *
+             * @param {String} className The class name to create in string dot-namespaced format, for example:
+             * &#39;My.very.awesome.Class&#39;, &#39;FeedViewer.plugin.CoolPager&#39;
+             * It is highly recommended to follow this simple convention:
+             *  - The root and the class name are &#39;CamelCased&#39;
+             *  - Everything else is lower-cased
+             * Pass `null` to create an anonymous class.
+             * @param {Object} data The key - value pairs of properties to apply to this class. Property names can be of any valid
+             * strings, except those in the reserved listed below:
+             *  - `mixins`
+             *  - `statics`
+             *  - `config`
+             *  - `alias`
+             *  - `xtype` (for {@link CLI.Component Components} only)
+             *  - `self`
+             *  - `singleton`
+             *  - `alternateClassName`
+             *  - `override`
+             *
+             * @param {Function} [createdFn] Callback to execute after the class is created, the execution scope of which
+             * (`this`) will be the newly created class itself.
+             * @return {CLI.Base}
+             * @member CLI
+             */
+            define: function (className, data, createdFn) {
+
+                CLI.classSystemMonitor &amp;&amp; CLI.classSystemMonitor(className, &#39;ClassManager#define&#39;, arguments);
+
+                if (data.override) {
+
+                    Manager.classState[className] = 20;
+                    return Manager.createOverride.apply(Manager, arguments);
+
+                }
+
+                Manager.classState[className] = 10;
+                return Manager.create.apply(Manager, arguments);
+            },
+
+            // }}}
+            // {{{ undefine
+
+<span id='CLI-ClassManager-method-undefine'>            /**
+</span>             * Undefines a class defined using the #define method. Typically used
+             * for unit testing where setting up and tearing down a class multiple
+             * times is required.  For example:
+             * 
+             *     // define a class
+             *     CLI.define(&#39;Foo&#39;, {
+             *        ...
+             *     });
+             *     
+             *     // run test
+             *     
+             *     // undefine the class
+             *     CLI.undefine(&#39;Foo&#39;);
+             * @param {String} className The class name to undefine in string dot-namespaced format.
+             * @private
+             */
+            undefine: function(className) {
+
+                CLI.classSystemMonitor &amp;&amp; CLI.classSystemMonitor(className, &#39;CLI.ClassManager#undefine&#39;, arguments);
+
+                var classes = Manager.classes,
+                    parts, partCount, namespace, i;
+
+                delete Manager.namespaceParseCache[className];
+                delete classes[className];
+                delete Manager.existCache[className];
+                delete Manager.classState[className];
+
+                Manager.removeName(className);
+
+                parts  = Manager.parseNamespace(className);
+                partCount = parts.length - 1;
+                namespace = parts[0];
+
+                for (i = 1; i &lt; partCount; i++) {
+                    namespace = namespace[parts[i]];
+                    if (!namespace) {
+                        return;
                     }
                 }
-            }
-            Manager.setPath(paths);
-        }
 
-        if(classes) {
-            for(className in classes) {
-                alternates[className] = [];
-                aliases[className] = [];
-                obj = classes[className];
-                if(obj.alias) {
-                    aliases[className] = obj.alias;
+                // Old IE blows up on attempt to delete window property
+                try {
+                    delete namespace[parts[partCount]];
                 }
-                if(obj.alternates) {
-                    alternates[className] = obj.alternates;
+                catch (e) {
+                    namespace[parts[partCount]] = undefined;
+                }
+            },
+
+            // }}}
+            // {{{ getClassName
+
+<span id='CLI-method-getClassName'>            /**
+</span>             * @inheritdoc CLI.ClassManager#getName
+             * @member CLI
+             * @method getClassName
+             */
+            getClassName: alias(Manager, &#39;getName&#39;),
+
+            // }}}
+            // {{{ getDisplayName
+
+<span id='CLI-ClassManager-method-getDisplayName'>            /**
+</span>             * Returns the displayName property or className or object. When all else fails, returns &quot;Anonymous&quot;.
+             * @param {Object} object
+             * @return {String}
+             */
+            getDisplayName: function(object) {
+                if (object) {
+                    if (object.displayName) {
+                        return object.displayName;
+                    }
+
+                    if (object.$name &amp;&amp; object.$class) {
+                        return CLI.getClassName(object.$class) + &#39;#&#39; + object.$name;
+                    }
+
+                    if (object.$className) {
+                        return object.$className;
+                    }
+                }
+
+                return &#39;Anonymous&#39;;
+            },
+
+            // }}}
+            // {{{ getClass
+
+<span id='CLI-method-getClass'>            /**
+</span>             * @inheritdoc CLI.ClassManager#getClass
+             * @member CLI
+             * @method getClass
+             */
+            getClass: alias(Manager, &#39;getClass&#39;),
+
+            // }}}
+            // {{{ namespace
+
+<span id='CLI-method-namespace'>            /**
+</span>             * Creates namespaces to be used for scoping variables and classes so that they are not global.
+             * Specifying the last node of a namespace implicitly creates all other nodes. Usage:
+             *
+             *     CLI.namespace(&#39;Company&#39;, &#39;Company.data&#39;);
+             *
+             *     // equivalent and preferable to the above syntax
+             *     CLI.ns(&#39;Company.data&#39;);
+             *
+             *     Company.Widget = function() { ... };
+             *
+             *     Company.data.CustomStore = function(config) { ... };
+             *
+             * @param {String...} namespaces
+             * @return {Object} The namespace object.
+             * (If multiple arguments are passed, this will be the last namespace created)
+             * @member CLI
+             * @method namespace
+             */
+            namespace: alias(Manager, &#39;createNamespaces&#39;)
+
+            // }}}
+
+        });
+
+        // }}}
+        // {{{ createWidget
+
+<span id='CLI-method-createWidget'>        /**
+</span>         * Old name for {@link CLI#widget}.
+         * @deprecated Use {@link CLI#widget} instead.
+         * @method createWidget
+         * @member CLI
+         * @private
+         */
+        CLI.createWidget = CLI.widget;
+
+        // }}}
+        // {{{ ns
+
+<span id='CLI-method-ns'>        /**
+</span>         * Convenient alias for {@link CLI#namespace CLI.namespace}.
+         * @inheritdoc CLI#namespace
+         * @member CLI
+         * @method ns
+         */
+        CLI.ns = CLI.namespace;
+
+        // }}}
+        // {{{ className
+
+        Class.registerPreprocessor(&#39;className&#39;, function(cls, data) {
+
+            if (&#39;$className&#39; in data) {
+                cls.$className = data.$className;
+                cls.displayName = cls.$className;
+            }
+
+            CLI.classSystemMonitor &amp;&amp; CLI.classSystemMonitor(cls, &#39;CLI.ClassManager#classNamePreprocessor&#39;, arguments);
+
+        }, true, &#39;first&#39;);
+
+        // }}}
+        // {{{ alias
+
+        Class.registerPreprocessor(&#39;alias&#39;, function(cls, data) {
+
+            CLI.classSystemMonitor &amp;&amp; CLI.classSystemMonitor(cls, &#39;CLI.ClassManager#aliasPreprocessor&#39;, arguments);
+
+            var prototype = cls.prototype,
+                xtypes = arrayFrom(data.xtype),
+                aliases = arrayFrom(data.alias),
+                widgetPrefix = &#39;widget.&#39;,
+                widgetPrefixLength = widgetPrefix.length,
+                xtypesChain = Array.prototype.slice.call(prototype.xtypesChain || []),
+                xtypesMap = CLI.merge({}, prototype.xtypesMap || {}),
+                i, ln, alias, xtype;
+
+            for (i = 0,ln = aliases.length; i &lt; ln; i++) {
+
+                alias = aliases[i];
+
+                if (typeof alias !== &#39;string&#39; || alias.length &lt; 1) {
+                    throw new Error(&quot;[CLI.define] Invalid alias of: &#39;&quot; + alias + &quot;&#39; for class: &#39;&quot; + name + &quot;&#39;; must be a valid string&quot;);
+                }
+
+                if (alias.substring(0, widgetPrefixLength) === widgetPrefix) {
+                    xtype = alias.substring(widgetPrefixLength);
+
+                    // TODO: implement CLI.Array.include
+                    CLI.Array.include(xtypes, xtype);
                 }
             }
+
+            cls.xtype = data.xtype = xtypes[0];
+            data.xtypes = xtypes;
+
+            for (i = 0,ln = xtypes.length; i &lt; ln; i++) {
+
+                xtype = xtypes[i];
+
+                if (!xtypesMap[xtype]) {
+
+                    xtypesMap[xtype] = true;
+                    xtypesChain.push(xtype);
+
+                }
+
+            }
+
+            data.xtypesChain = xtypesChain;
+            data.xtypesMap = xtypesMap;
+
+            CLI.Function.interceptAfter(data, &#39;onClassCreated&#39;, function() {
+
+                CLI.classSystemMonitor &amp;&amp; CLI.classSystemMonitor(cls, &#39;CLI.ClassManager#aliasPreprocessor#afterClassCreated&#39;, arguments);
+
+                var mixins = prototype.mixins,
+                    key, mixin;
+
+                for (key in mixins) {
+
+                    if (mixins.hasOwnProperty(key)) {
+
+                        mixin = mixins[key];
+
+                        xtypes = mixin.xtypes;
+
+                        if (xtypes) {
+
+                            for (i = 0,ln = xtypes.length; i &lt; ln; i++) {
+
+                                xtype = xtypes[i];
+
+                                if (!xtypesMap[xtype]) {
+
+                                    xtypesMap[xtype] = true;
+                                    xtypesChain.push(xtype);
+
+                                }
+
+                            }
+
+                        }
+
+                    }
+
+                }
+
+            });
+
+            for (i = 0,ln = xtypes.length; i &lt; ln; i++) {
+
+                xtype = xtypes[i];
+
+                if (typeof xtype !== &#39;string&#39; || xtype.length &lt; 1) {
+                    throw new Error(&quot;[CLI.define] Invalid xtype of: &#39;&quot; + xtype + &quot;&#39; for class: &#39;&quot; + name + &quot;&#39;; must be a valid non-empty string&quot;);
+                }
+
+                CLI.Array.include(aliases, widgetPrefix + xtype);
+            }
+
+            data.alias = aliases;
+
+        }, [&#39;xtype&#39;, &#39;alias&#39;]);
+
+        // }}}
+
+        // TODO: confirm and remove...
+        // load the cmd-5 style app manifest metadata now, if available...
+        if(CLI.manifest) {
+
+            var manifest = CLI.manifest,
+                classes = manifest.classes,
+                paths = manifest.paths,
+                aliases = {},
+                alternates = {},
+                className, obj, name, path, baseUrl;
+
+            if(paths) {
+
+                // if the manifest paths were calculated as relative to the
+                // bootstrap file, then we need to prepend Boot.baseUrl to the
+                // paths before processing
+                if(manifest.bootRelative) {
+
+                    baseUrl = CLI.Boot.baseUrl;
+
+                    for(path in paths) {
+
+                        if(paths.hasOwnProperty(path)) {
+
+                            paths[path] = baseUrl + paths[path];
+
+                        }
+
+                    }
+
+                }
+
+                Manager.setPath(paths);
+            }
+
+            if(classes) {
+
+                for(className in classes) {
+
+                    alternates[className] = [];
+                    aliases[className] = [];
+                    obj = classes[className];
+
+                    if(obj.alias) {
+
+                        aliases[className] = obj.alias;
+
+                    }
+
+                    if(obj.alternates) {
+
+                        alternates[className] = obj.alternates;
+
+                    }
+
+                }
+
+            }
+
+            Manager.addAlias(aliases);
+            Manager.addAlternate(alternates);
         }
-
-        Manager.addAlias(aliases);
-        Manager.addAlternate(alternates);
-    }
-
-
-
 
         return Manager;
 

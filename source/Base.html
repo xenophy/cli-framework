@@ -86,8 +86,8 @@
 
                 return function () {
 
-                    // TODO: implement CLI.Error
-                    // CLI.Error.raise(message);
+                    CLI.Error.raise(message);
+
                 };
 
             },
@@ -184,7 +184,7 @@
              * is typically called by the `deprecated` config.
              * @private
              */
-            addDeprecations: function (deprecations) {
+            addDeprecations: function(deprecations) {
 
                 var me = this,
                     all = [],
@@ -220,9 +220,11 @@
                     // (if the deprecated block remains somehow) we just break the loop.
                     enabled = compatVersion &amp;&amp; compatVersion.lt(version);
 
+                    /*
                     if (!enabled) {
                         break;
                     }
+                   */
 
                     while (deprecate) {
 
@@ -622,7 +624,6 @@
                     cloneFunction = CLI.Function.clone,
                     target = isStatic ? me : me.prototype,
                     defaultConfig = !isStatic &amp;&amp; target.defaultConfig,
-                    enumerables = CLI.enumerables,
                     privates = members.privates,
                     configs, i, ln, member, name, subPrivacy, privateStatics;
 
@@ -656,10 +657,12 @@
                         member = members[name];
 
                         if (member &amp;&amp; member.$nullFn &amp;&amp; privacy !== member.$privacy) {
+
                             CLI.Error.raise(&#39;Cannot use stock function for private method &#39; + (me.$className ? me.$className + &#39;#&#39; : &#39;&#39;) + name);
                         }
 
                         if (typeof member === &#39;function&#39; &amp;&amp; !member.$isClass &amp;&amp; !member.$nullFn) {
+
 
                             if (member.$owner) {
                                 member = cloneFunction(member);
@@ -678,6 +681,7 @@
                             var existing = target[name];
 
                             if (privacy) {
+
                                 if (privacy === true) {
                                     privacy = &#39;framework&#39;;
                                 }
@@ -693,6 +697,7 @@
                                 if (existing &amp;&amp; existing.$privacy &amp;&amp; existing.$privacy !== privacy) {
                                     CLI.privacyViolation(me, existing, member, isStatic);
                                 }
+
 
                             } else if (existing &amp;&amp; existing.$privacy) {
 
@@ -722,41 +727,6 @@
 
                     // Add any configs found in the normal members arena:
                     me.addConfig(configs);
-
-                }
-
-                if (enumerables) {
-
-                    for (i = 0, ln = enumerables.length; i &lt; ln; ++i) {
-
-                        if (members.hasOwnProperty(name = enumerables[i])) {
-
-                            member = members[name];
-
-                            // The enumerables are all functions...
-                            if (member &amp;&amp; !member.$nullFn) {
-
-                                if (member.$owner) {
-
-                                    member = cloneFunction(member);
-
-                                }
-
-                                member.$owner = me;
-                                member.$name = name;
-                                member.displayName = displayName + name;
-
-                                if (target.hasOwnProperty(name)) {
-                                    member.$previous = target[name];
-                                }
-
-                            }
-
-                            target[name] = member;
-
-                        }
-
-                    }
 
                 }
 
@@ -1899,40 +1869,6 @@
 
         });
 
-        // {{{ callOverridden
-
-<span id='CLI-Base-method-callOverridden'>        /**
-</span>         * Call the original method that was previously overridden with {@link CLI.Base#override}
-         *
-         *     CLI.define(&#39;My.Cat&#39;, {
-         *         constructor: function() {
-         *             alert(&quot;I&#39;m a cat!&quot;);
-         *         }
-         *     });
-         *
-         *     My.Cat.override({
-         *         constructor: function() {
-         *             alert(&quot;I&#39;m going to be a cat!&quot;);
-         *
-         *             this.callOverridden();
-         *
-         *             alert(&quot;Meeeeoooowwww&quot;);
-         *         }
-         *     });
-         *
-         *     var kitty = new My.Cat(); // alerts &quot;I&#39;m going to be a cat!&quot;
-         *                               // alerts &quot;I&#39;m a cat!&quot;
-         *                               // alerts &quot;Meeeeoooowwww&quot;
-         *
-         * @param {Array/Arguments} args The arguments, either an array or the `arguments` object
-         * from the current method, for example: `this.callOverridden(arguments)`
-         * @return {Object} Returns the result of calling the overridden method
-         * @protected
-         * @deprecated Use {@link #callParent} instead.
-         */
-        BasePrototype.callOverridden = BasePrototype.callParent;
-
-        // }}}
         // {{{ privacyViolation
 
         CLI.privacyViolation = function (cls, existing, member, isStatic) {

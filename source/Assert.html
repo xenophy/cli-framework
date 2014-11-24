@@ -23,6 +23,73 @@
 
 <span id='CLI-Assert'>/**
 </span> * @class CLI.Assert
+ *
+ * This class provides help value testing methods useful for diagnostics. These are often
+ * used in `debugHooks`:
+ * 
+ *      CLI.define(&#39;Foo.bar.Class&#39;, {
+ *
+ *          debugHooks: {
+ *              method: function (a) {
+ *                  CLI.AsserisNotDefinedPropt.truthy(a, &#39;Expected &quot;a&quot; to be truthy&quot;);
+ *              },
+ *
+ *              foo: function (object) {
+ *                  CLI.Assert.isFunctionProp(object, &#39;doSomething&#39;);
+ *              }
+ *          }
+ *      });
+ * 
+ * **NOTE:** This class is entirely removed in production builds so all uses of it should
+ * be either in `debug` conditional comments or `debugHooks`.
+ * 
+ * The following type detection methods from the `CLI` object are wrapped as assertions
+ * by this class:
+ * 
+ *  * `isEmpty`
+ *  * `isArray`
+ *  * `isDate`
+ *  * `isObject`
+ *  * `isSimpleObject`
+ *  * `isPrimitive`
+ *  * `isFunction`
+ *  * `isNumber`
+ *  * `isNumeric`
+ *  * `isString`
+ *  * `isBoolean`
+ *  * `isElement`
+ *  * `isTextNode`
+ *  * `isDefined`
+ *  * `isIterable`
+ * 
+ * These appear both their exact name and with a &quot;Prop&quot; suffix for checking a property on
+ * an object. For example, these are almost identical:
+ * 
+ *      CLI.Assert.isFunction(object.foo);
+ *
+ *      CLI.Assert.isFunctionProp(object, &#39;foo&#39;);
+ *
+ * The difference is the default error message generated is better in the second use case
+ * than the first.
+ * 
+ * The above list are also expanded for &quot;Not&quot; flavors (and &quot;Not...Prop&quot;):
+ * 
+ *  * `isNotEmpty`
+ *  * `isNotArray`
+ *  * `isNotDate`
+ *  * `isNotObject`
+ *  * `isNotSimpleObject`
+ *  * `isNotPrimitive`
+ *  * `isNotFunction`
+ *  * `isNotNumber`
+ *  * `isNotNumeric`
+ *  * `isNotString`
+ *  * `isNotBoolean`
+ *  * `isNotElement`
+ *  * `isNotTextNode`
+ *  * `isNotDefined`
+ *  * `isNotIterable`
+ *
  * @singleton
  */
 
@@ -30,6 +97,182 @@
 
     &quot;use strict&quot;;
 
+    // {{{ CLI.Assert
+
+    CLI.Assert = {
+
+        // {{{ falsey
+
+<span id='CLI-Assert-method-falsey'>        /**
+</span>         * Checks that the first argument is falsey and throws an `Error` if it is not.
+         */
+        falsey: function (b, msg) {
+
+            if (b) {
+                CLI.Error.raise(msg || (&#39;Expected a falsey value but was &#39; + b));
+            }
+
+        },
+
+        // }}}
+        // {{{ falseyProp
+
+<span id='CLI-Assert-method-falseyProp'>        /**
+</span>         * Checks that the first argument is falsey and throws an `Error` if it is not.
+         */
+        falseyProp: function (object, property) {
+
+            CLI.Assert.truthy(object);
+
+            var b = object[property];
+
+            if (b) {
+
+                if (object.$className) {
+                    property = object.$className + &#39;#&#39; + property;
+                }
+
+                CLI.Error.raise(&#39;Expected a falsey value for &#39; + property + &#39; but was &#39; + b);
+            }
+
+        },
+
+        // }}}
+        // {{{ truthy
+
+<span id='CLI-Assert-method-truthy'>        /**
+</span>         * Checks that the first argument is truthy and throws an `Error` if it is not.
+         */
+        truthy: function (b, msg) {
+
+            if (!b) {
+                CLI.Error.raise(msg || (&#39;Expected a truthy value but was &#39; + typeof b));
+            }
+
+        },
+
+        // }}}
+        // {{{ truthyProp
+
+<span id='CLI-Assert-method-truthyProp'>        /**
+</span>         * Checks that the first argument is truthy and throws an `Error` if it is not.
+         */
+        truthyProp: function (object, property) {
+
+            CLI.Assert.truthy(object);
+
+            var b = object[property];
+
+            if (!b) {
+
+                if (object.$className) {
+                    property = object.$className + &#39;#&#39; + property;
+                }
+
+                CLI.Error.raise(&#39;Expected a truthy value for &#39; + property + &#39; but was &#39; + typeof b);
+            }
+
+        }
+
+        // }}}
+
+    };
+
+    // }}}
+    // {{{ functions
+
+    (function () {
+
+        // {{{ makeAssert
+
+        function makeAssert(name, kind) {
+
+            var testFn = CLI[name],
+                def;
+
+            return function (value, msg) {
+                if (!testFn(value)) {
+                    CLI.Error.raise(msg || def || (def = &#39;Expected value to be &#39; + kind));
+                }
+            };
+
+        }
+
+        // }}}
+        // {{{ makeAssertProp
+
+        function makeAssertProp(name, kind) {
+
+            var testFn = CLI[name],
+                def;
+
+            return function (object, prop) {
+
+                CLI.Assert.truthy(object);
+
+                if (!testFn(object[prop])) {
+                    CLI.Error.raise(def || (def = &#39;Expected &#39; + (object.$className ? object.$className + &#39;#&#39; : &#39;&#39;) + prop + &#39; to be &#39; + kind));
+                }
+
+            };
+
+        }
+
+        // }}}
+        // {{{ makeNotAssert
+
+        function makeNotAssert (name, kind) {
+
+            var testFn = CLI[name],
+                def;
+
+            return function (value, msg) {
+                if (testFn(value)) {
+                    CLI.Error.raise(msg || def || (def = &#39;Expected value to NOT be &#39; + kind));
+                }
+            };
+
+        }
+
+        // }}}
+        // {{{ makeNotAssertProp
+
+        function makeNotAssertProp (name, kind) {
+
+            var testFn = CLI[name],
+                def;
+
+            return function (object, prop) {
+                CLI.Assert.truthy(object);
+                if (testFn(object[prop])) {
+                    CLI.Error.raise(def || (def = &#39;Expected &#39; + (object.$className ? object.$className + &#39;#&#39; : &#39;&#39;) + prop + &#39; to NOT be &#39; + kind));
+                }
+            };
+
+        }
+
+        // }}}
+        // {{{ set CLI.isXXX&#39;s assert
+
+        for (var name in CLI) {
+
+            if (name.substring(0,2) == &quot;is&quot; &amp;&amp; CLI.isFunction(CLI[name])) {
+
+                var kind = name.substring(2);
+
+                CLI.Assert[name] = makeAssert(name, kind);
+                CLI.Assert[name + &#39;Prop&#39;] = makeAssertProp(name, kind);
+                CLI.Assert[&#39;isNot&#39; + kind] = makeNotAssert(name, kind);
+                CLI.Assert[&#39;isNot&#39; + kind + &#39;Prop&#39;] = makeNotAssertProp(name, kind);
+            }
+
+        }
+
+        // }}}
+
+    }());
+
+    // }}}
 
 })();
 

@@ -568,7 +568,7 @@
                 // TODO: implemented after, enable
                 /*
                 CLI.Error.raise({
-                    sourceClass: &#39;Ext&#39;,
+                    sourceClass: &#39;CLI&#39;,
                     sourceMethod: &#39;typeOf&#39;,
                     msg: &#39;Failed to determine the type of &quot;&#39; + value + &#39;&quot;.&#39;
                 });
@@ -578,6 +578,286 @@
             };
 
         }()),
+
+        // }}}
+        // {{{ log
+
+<span id='CLI-method-log'>        /**
+</span>         * @method log
+         * @member CLI
+         * Logs a message. If a console is present it will be used. On Opera, the method
+         * &quot;opera.postError&quot; is called. In other cases, the message is logged to an array
+         * &quot;CLI.log.out&quot;. An attached debugger can watch this array and view the log. The
+         * log buffer is limited to a maximum of &quot;CLI.log.max&quot; entries (defaults to 250).
+         *
+         * If additional parameters are passed, they are joined and appended to the message.
+         * A technique for tracing entry and exit of a function is this:
+         *
+         *     function foo () {
+         *         CLI.log({ indent: 1 }, &#39;&gt;&gt; foo&#39;);
+         *
+         *         // log statements in here or methods called from here will be indented
+         *         // by one step
+         *
+         *         CLI.log({ outdent: 1 }, &#39;&lt;&lt; foo&#39;);
+         *     }
+         *
+         * This method does nothing in a release build.
+         *
+         * @param {String/Object} [options] The message to log or an options object with any
+         * of the following properties:
+         *
+         *  - `msg`: The message to log (required).
+         *  - `level`: One of: &quot;error&quot;, &quot;warn&quot;, &quot;info&quot; or &quot;log&quot; (the default is &quot;log&quot;).
+         *  - `dump`: An object to dump to the log as part of the message.
+         *  - `stack`: True to include a stack trace in the log.
+         *  - `indent`: Cause subsequent log statements to be indented one step.
+         *  - `outdent`: Cause this and following statements to be one step less indented.
+         *
+         * @param {String...} [message] The message to log (required unless specified in
+         * options object).
+         */
+        log:
+            (function () {
+            /*
+             * Iterate through an object to dump its content into a string.
+             * For example:
+             *     {
+             *         style: {
+             *             lineWidth: 1
+             *         },
+             *         label: {},
+             *         marker: {
+             *             strokeStyle: &quot;#555&quot;,
+             *             radius: 3,
+             *             size: 3
+             *         },
+             *         subStyle: {
+             *             fillStyle: [
+             *                 0: &quot;#133987&quot;,
+             *                 1: &quot;#1c55ca&quot;,
+             *                 2: &quot;#4d7fe6&quot;
+             *             ]
+             *         },
+             *         markerSubStyle: {}
+             *     } 
+             *
+             * @param {Object} object The object to iterate
+             * @param {Number} [level] Current level of identation (and recursion). Default is 0.
+             * @param {Number} [maxLevel] Maximum level of recursion. Default is 3.
+             * @param {Boolean} [withFunctions] Include functions in the output.
+             * @return {String} The string with the contents of the object
+             */
+            var primitiveRe = /string|number|boolean/;
+
+            function dumpObject (object, level, maxLevel, withFunctions) {
+
+                var member, type, value, name, prefix, suffix,
+                    members = [];
+
+                if (CLI.isArray(object)) {
+
+                    prefix = &#39;[&#39;;
+                    suffix = &#39;]&#39;;
+
+                } else if (CLI.isObject(object)) {
+
+                    prefix = &#39;{&#39;;
+                    suffix = &#39;}&#39;;
+
+                }
+
+                if (!maxLevel) {
+                    maxLevel = 3;
+                }
+
+                if (level &gt; maxLevel) {
+                    return prefix+&#39;...&#39;+suffix;
+                }
+
+                level = level || 1;
+
+                var spacer = (new Array(level)).join(&#39;    &#39;);
+
+                // Cannot use CLI.encode since it can recurse endlessly
+                for (name in object) {
+
+                    if (object.hasOwnProperty(name)) {
+
+                        value = object[name];
+
+                        type = typeof value;
+
+                        if (type == &#39;function&#39;) {
+
+                            if (!withFunctions) {
+                                continue;
+                            }
+
+                            member = type;
+
+                        } else if (type == &#39;undefined&#39;) {
+
+                            member = type;
+
+                        } else if (value === null || primitiveRe.test(type) || CLI.isDate(value)) {
+
+                            member = CLI.encode(value);
+
+                        } else if (CLI.isArray(value)) {
+
+                            member = this.dumpObject(value, level+1, maxLevel, withFunctions);
+
+                        } else if (CLI.isObject(value)) {
+
+                            member = this.dumpObject(value, level+1, maxLevel, withFunctions);
+
+                        } else {
+
+                            member = type;
+
+                        }
+
+                        members.push(spacer + name + &#39;: &#39; + member);    // or CLI.encode(name)
+                    }
+                }
+
+                if (members.length) {
+
+                    return prefix + &#39;\n    &#39;+ members.join(&#39;,\n    &#39;) + &#39;\n&#39;+spacer+suffix;
+
+                }
+
+                return prefix+suffix;
+
+            }
+
+            // {{{ log
+
+            function log(message) {
+
+                var options, dump,
+                    con = CLI.global.console,
+                    level = &#39;log&#39;,
+                    indent = log.indent || 0,
+                    stack,
+                    out,
+                    max;
+
+                log.indent = indent;
+
+                if (typeof message != &#39;string&#39;) {
+
+                    options = message;
+                    message = options.msg || &#39;&#39;;
+                    level = options.level || level;
+                    dump = options.dump;
+                    stack = options.stack;
+
+                    if (options.indent) {
+
+                        ++log.indent;
+
+                    } else if (options.outdent) {
+
+                        log.indent = indent = Math.max(indent - 1, 0);
+
+                    }
+
+                    if (dump &amp;&amp; !(con &amp;&amp; con.dir)) {
+
+                        message += dumpObject(dump);
+                        dump = null;
+
+                    }
+
+                }
+
+                if (arguments.length &gt; 1) {
+
+                    message += Array.prototype.slice.call(arguments, 1).join(&#39;&#39;);
+
+                }
+
+                message = indent ? CLI.String.repeat(&#39; &#39;, log.indentSize * indent) + message : message;
+                // w/o console, all messages are equal, so munge the level into the message:
+
+                if (level != &#39;log&#39;) {
+                    message = &#39;[&#39; + level.charAt(0).toUpperCase() + &#39;] &#39; + message;
+                }
+
+
+                if (con[level]) {
+
+                    con[level](message);
+
+                } else {
+
+                    con.log(message);
+
+                }
+
+                if (dump) {
+
+                    con.dir(dump);
+
+                }
+
+                if (stack &amp;&amp; con.trace) {
+
+                    // Firebug&#39;s console.error() includes a trace already...
+                    if (!con.firebug || level != &#39;error&#39;) {
+                        con.trace();
+                    }
+                }
+
+                // Mostly informational, but the CLI.Error notifier uses them:
+                ++log.count;
+                ++log.counters[level];
+            }
+
+            // }}}
+            // {{{ logx
+
+            function logx(level, args) {
+
+                if (typeof args[0] == &#39;string&#39;) {
+                    args.unshift({});
+                }
+
+                args[0].level = level;
+                log.apply(this, args);
+            }
+
+            // }}}
+
+            log.error = function () {
+
+                logx(&#39;error&#39;, Array.prototype.slice.call(arguments));
+
+            };
+
+            log.info = function () {
+
+                logx(&#39;info&#39;, Array.prototype.slice.call(arguments));
+
+            };
+
+            log.warn = function () {
+
+                logx(&#39;warn&#39;, Array.prototype.slice.call(arguments));
+
+            };
+
+            log.count = 0;
+            log.counters = { error: 0, warn: 0, info: 0, log: 0 };
+            log.indentSize = 2;
+            log.out = [];
+            log.max = 750;
+
+            return log;
+
+        }())
 
         // }}}
 

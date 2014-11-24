@@ -121,6 +121,22 @@
             },
 
             // }}}
+            // {{{ clone
+
+<span id='CLI-Function-method-clone'>            /**
+</span>             * Create a &quot;clone&quot; of the provided method. The returned method will call the given
+             * method passing along all arguments and the &quot;this&quot; pointer and return its result.
+             *
+             * @param {Function} method
+             * @return {Function} cloneFn
+             */
+            clone: function(method) {
+                return function() {
+                    return method.apply(this, arguments);
+                };
+            },
+
+            // }}}
 
         };
 
