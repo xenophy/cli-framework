@@ -135,10 +135,16 @@ CLI._startTime = Date.now();
     global.CLI = module.exports = CLI;
 
     // }}}
+    // {{{ load package.json and set to manifest
+
+    CLI.manifest = JSON.parse(require(&#39;fs&#39;).readFileSync(__dirname + &#39;/../package.json&#39;).toString(&#39;utf8&#39;));
+
+    // }}}
     // {{{ append CLI methods and define classes
 
     [
         &#39;./Util.js&#39;,
+        &#39;./util/Version.js&#39;,
         &#39;./lang/Array.js&#39;,
         &#39;./lang/Date.js&#39;,
         &#39;./lang/Function.js&#39;,
