@@ -47,9 +47,9 @@
     // {{{ makeCtor
 
     // Creates a constructor that has nothing extra in its scope chain.
-    function makeCtor (className) {
+    function makeCtor(className) {
 
-        function constructor () {
+        function constructor() {
 
             // Opera has some problems returning from a constructor when Dragonfly isn&#39;t running. The || null seems to
             // be sufficient to stop it misbehaving. Known to be required against 10.53, 11.51 and 11.61.

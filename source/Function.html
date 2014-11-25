@@ -33,16 +33,49 @@
     &quot;use strict&quot;;
 
     CLI.Function = (function() {
+        var lastTime = 0,
+        animFrameId,
+        animFrameHandlers = [],
+        animFrameNoArgs = [],
+        idSource = 0,
+        animFrameMap = {},
+        win = global,
+        requestAnimFrame = win.requestAnimationFrame || win.webkitRequestAnimationFrame ||
+            win.mozRequestAnimationFrame || win.oRequestAnimationFrame ||
+            function(callback) {
+            var currTime = CLI.now(),
+            timeToCall = Math.max(0, 16 - (currTime - lastTime)),
+            id = win.setTimeout(function() {
+                callback(currTime + timeToCall);
+            }, timeToCall);
+            lastTime = currTime + timeToCall;
+            return id;
+        },
+        fireHandlers = function() {
+            var len = animFrameHandlers.length,
+            id, i, handler;
 
-        // @define CLI.lang.Function
-        // @define CLI.Function
-        // @require CLI
-        // @require CLI.lang.Array
+            animFrameId = null;
+            // Fire all animation frame handlers in one go
+            for (i = 0; i &lt; len; i++) {
+                handler = animFrameHandlers[i];
+                id = handler[3];
 
-        var CLIFunction = {
+                // Check if this timer has been canceled; its map entry is going to be removed
+                if (animFrameMap[id]) {
+                    handler[0].apply(handler[1] || CLI.global, handler[2] || animFrameNoArgs);
+                    delete animFrameMap[id];
+                }
+            }
 
-            // {{{ flexSetter
-
+            // Clear all fired animation frame handlers, don&#39;t forget that new handlers
+            // could have been created in user handler functions called in the loop above
+            animFrameHandlers = animFrameHandlers.slice(len);
+        },
+        fireElevatedHandlers = function() {
+            CLI.elevateFunction(fireHandlers);
+        },
+        CLIFunction = {
 <span id='CLI-Function-method-flexSetter'>            /**
 </span>             * A very commonly used method throughout the framework. It acts as a wrapper around another method
              * which originally accepts 2 arguments for `name` and `value`.
@@ -74,37 +107,145 @@
              * @return {Function}
              */
             flexSetter: function(setter) {
-
                 return function(name, value) {
-
                     var k, i;
 
                     if (name !== null) {
-
                         if (typeof name !== &#39;string&#39;) {
-
                             for (k in name) {
-
                                 if (name.hasOwnProperty(k)) {
                                     setter.call(this, k, name[k]);
                                 }
-
                             }
 
+                            if (CLI.enumerables) {
+                                for (i = CLI.enumerables.length; i--;) {
+                                    k = CLI.enumerables[i];
+                                    if (name.hasOwnProperty(k)) {
+                                        setter.call(this, k, name[k]);
+                                    }
+                                }
+                            }
                         } else {
-
                             setter.call(this, name, value);
-
                         }
                     }
 
                     return this;
                 };
-
             },
 
-            // }}}
-            // {{{ alias
+<span id='CLI-Function-method-bind'>            /**
+</span>             * Create a new function from the provided `fn`, change `this` to the provided scope,
+             * optionally overrides arguments for the call. Defaults to the arguments passed by
+             * the caller.
+             *
+             * {@link CLI#bind CLI.bind} is alias for {@link CLI.Function#bind CLI.Function.bind}
+             * 
+             * **NOTE:** This method is deprecated. Use the standard `bind` method of JavaScript
+             * `Function` instead:
+             * 
+             *      function foo () {
+             *          ...
+             *      }
+             *      
+             *      var fn = foo.bind(this);
+             *
+             * This method is unavailable natively on IE8 and IE/Quirks but CLI Framework provides a
+             * &quot;polyfill&quot; to emulate the important features of the standard `bind` method. In
+             * particular, the polyfill only provides binding of &quot;this&quot; and optional arguments.
+             * 
+             * @param {Function} fn The function to delegate.
+             * @param {Object} scope (optional) The scope (`this` reference) in which the function is executed.
+             * **If omitted, defaults to the default global environment object (usually the browser window).**
+             * @param {Array} args (optional) Overrides arguments for the call. (Defaults to the arguments passed by the caller)
+             * @param {Boolean/Number} appendArgs (optional) if True args are appended to call args instead of overriding,
+             * if a number the args are inserted at the specified position.
+             * @return {Function} The new function.
+             */
+            bind: function(fn, scope, args, appendArgs) {
+                if (arguments.length === 2) {
+                    return function() {
+                        return fn.apply(scope, arguments);
+                    };
+                }
+
+                var method = fn,
+                slice = Array.prototype.slice;
+
+                return function() {
+                    var callArgs = args || arguments;
+
+                    if (appendArgs === true) {
+                        callArgs = slice.call(arguments, 0);
+                        callArgs = callArgs.concat(args);
+                    }
+                    else if (typeof appendArgs == &#39;number&#39;) {
+                        callArgs = slice.call(arguments, 0); // copy arguments first
+                        CLI.Array.insert(callArgs, appendArgs, args);
+                    }
+
+                    return method.apply(scope || CLI.global, callArgs);
+                };
+            },
+
+<span id='CLI-Function-method-bindCallback'>            /**
+</span>             * Captures the given parameters for a later call to `CLI.callback`. This binding is
+             * most useful for resolving scopes for example to an `CLI.app.ViewController`.
+             *
+             * The arguments match that of `CLI.callback` except for the `args` which, if provided
+             * to this method, are prepended to any arguments supplied by the eventual caller of
+             * the returned function.
+             *
+             * @return {Function} A function that, when called, uses `CLI.callback` to call the
+             * captured `callback`.
+             * @since 5.0.0
+             */
+            bindCallback: function (callback, scope, args, delay, caller) {
+                return function () {
+                    var a = CLI.Array.slice(arguments);
+                    return CLI.callback(callback, scope, args ? args.concat(a) : a, delay, caller);
+                };
+            },
+
+<span id='CLI-Function-method-pass'>            /**
+</span>             * Create a new function from the provided `fn`, the arguments of which are pre-set to `args`.
+             * New arguments passed to the newly created callback when it&#39;s invoked are appended after the pre-set ones.
+             * This is especially useful when creating callbacks.
+             *
+             * For example:
+             *
+             *     var originalFunction = function(){
+             *         alert(CLI.Array.from(arguments).join(&#39; &#39;));
+             *     };
+             *
+             *     var callback = CLI.Function.pass(originalFunction, [&#39;Hello&#39;, &#39;World&#39;]);
+             *
+             *     callback(); // alerts &#39;Hello World&#39;
+             *     callback(&#39;by Me&#39;); // alerts &#39;Hello World by Me&#39;
+             *
+             * {@link CLI#pass CLI.pass} is alias for {@link CLI.Function#pass CLI.Function.pass}
+             *
+             * @param {Function} fn The original function.
+             * @param {Array} args The arguments to pass to new callback.
+             * @param {Object} scope (optional) The scope (`this` reference) in which the function is executed.
+             * @return {Function} The new callback function.
+             */
+            pass: function(fn, args, scope) {
+                if (!CLI.isArray(args)) {
+                    if (CLI.isIterable(args)) {
+                        args = CLI.Array.clone(args);
+                    } else {
+                        args = args !== undefined ? [args] : [];
+                    }
+                }
+
+                return function() {
+                    var fnArgs = args.slice();
+                    fnArgs.push.apply(fnArgs, arguments);
+                    return fn.apply(scope || this, fnArgs);
+                };
+            },
 
 <span id='CLI-Function-method-alias'>            /**
 </span>             * Create an alias to the provided method property with name `methodName` of `object`.
@@ -120,9 +261,6 @@
                 };
             },
 
-            // }}}
-            // {{{ clone
-
 <span id='CLI-Function-method-clone'>            /**
 </span>             * Create a &quot;clone&quot; of the provided method. The returned method will call the given
              * method passing along all arguments and the &quot;this&quot; pointer and return its result.
@@ -136,12 +274,484 @@
                 };
             },
 
-            // }}}
+<span id='CLI-Function-method-createInterceptor'>            /**
+</span>             * Creates an interceptor function. The passed function is called before the original one. If it returns false,
+             * the original one is not called. The resulting function returns the results of the original function.
+             * The passed function is called with the parameters of the original function. Example usage:
+             *
+             *     var sayHi = function(name){
+             *         alert(&#39;Hi, &#39; + name);
+             *     };
+             *
+             *     sayHi(&#39;Fred&#39;); // alerts &quot;Hi, Fred&quot;
+             *
+             *     // create a new function that validates input without
+             *     // directly modifying the original function:
+             *     var sayHiToFriend = CLI.Function.createInterceptor(sayHi, function(name){
+             *         return name === &#39;Brian&#39;;
+             *     });
+             *
+             *     sayHiToFriend(&#39;Fred&#39;);  // no alert
+             *     sayHiToFriend(&#39;Brian&#39;); // alerts &quot;Hi, Brian&quot;
+             *
+             * @param {Function} origFn The original function.
+             * @param {Function} newFn The function to call before the original.
+             * @param {Object} [scope] The scope (`this` reference) in which the passed function is executed.
+             * **If omitted, defaults to the scope in which the original function is called or the browser window.**
+             * @param {Object} [returnValue=null] The value to return if the passed function return `false`.
+             * @return {Function} The new function.
+             */
+            createInterceptor: function(origFn, newFn, scope, returnValue) {
+                if (!CLI.isFunction(newFn)) {
+                    return origFn;
+                } else {
+                    returnValue = CLI.isDefined(returnValue) ? returnValue : null;
+                    return function() {
+                        var me = this,
+                        args = arguments;
 
+                        newFn.target = me;
+                        newFn.method = origFn;
+                        return (newFn.apply(scope || me || CLI.global, args) !== false) ? 
+                            origFn.apply(me || CLI.global, args) : returnValue;
+                    };
+                }
+            },
+
+<span id='CLI-Function-method-createDelayed'>            /**
+</span>             * Creates a delegate (callback) which, when called, executes after a specific delay.
+             *
+             * @param {Function} fn The function which will be called on a delay when the returned function is called.
+             * Optionally, a replacement (or additional) argument list may be specified.
+             * @param {Number} delay The number of milliseconds to defer execution by whenever called.
+             * @param {Object} scope (optional) The scope (`this` reference) used by the function at execution time.
+             * @param {Array} args (optional) Override arguments for the call. (Defaults to the arguments passed by the caller)
+             * @param {Boolean/Number} appendArgs (optional) if True args are appended to call args instead of overriding,
+             * if a number the args are inserted at the specified position.
+             * @return {Function} A function which, when called, executes the original function after the specified delay.
+             */
+            createDelayed: function(fn, delay, scope, args, appendArgs) {
+                if (scope || args) {
+                    fn = CLI.Function.bind(fn, scope, args, appendArgs);
+                }
+
+                return function() {
+                    var me = this,
+                    args = Array.prototype.slice.call(arguments);
+
+                    setTimeout(function() {
+                        if (CLI.elevateFunction) {
+                            CLI.elevateFunction(fn, me, args);
+                        } else {
+                            fn.apply(me, args);
+                        }
+                    }, delay);
+                };
+            },
+
+<span id='CLI-Function-method-defer'>            /**
+</span>             * Calls this function after the number of milliseconds specified, optionally in a specific scope. Example usage:
+             *
+             *     var sayHi = function(name){
+             *         alert(&#39;Hi, &#39; + name);
+             *     }
+             *
+             *     // executes immediately:
+             *     sayHi(&#39;Fred&#39;);
+             *
+             *     // executes after 2 seconds:
+             *     CLI.Function.defer(sayHi, 2000, this, [&#39;Fred&#39;]);
+             *
+             *     // this syntax is sometimes useful for deferring
+             *     // execution of an anonymous function:
+             *     CLI.Function.defer(function(){
+             *         alert(&#39;Anonymous&#39;);
+             *     }, 100);
+             *
+             * {@link CLI#defer CLI.defer} is alias for {@link CLI.Function#defer CLI.Function.defer}
+             *
+             * @param {Function} fn The function to defer.
+             * @param {Number} millis The number of milliseconds for the `setTimeout` call
+             * (if less than or equal to 0 the function is executed immediately).
+             * @param {Object} scope (optional) The scope (`this` reference) in which the function is executed.
+             * **If omitted, defaults to the browser window.**
+             * @param {Array} [args] Overrides arguments for the call. Defaults to the arguments passed by the caller.
+             * @param {Boolean/Number} [appendArgs=false] If `true` args are appended to call args instead of overriding,
+             * or, if a number, then the args are inserted at the specified position.
+             * @return {Number} The timeout id that can be used with `clearTimeout`.
+             */
+            defer: function(fn, millis, scope, args, appendArgs) {
+                fn = CLI.Function.bind(fn, scope, args, appendArgs);
+                if (millis &gt; 0) {
+                    return setTimeout(function () {
+                        if (CLI.elevateFunction) {
+                            CLI.elevateFunction(fn);
+                        } else {
+                            fn();
+                        }
+                    }, millis);
+                }
+                fn();
+                return 0;
+            },
+
+<span id='CLI-Function-method-interval'>            /**
+</span>             * Calls this function repeatedly at a given interval, optionally in a specific scope.
+             *
+             * {@link CLI#defer CLI.defer} is alias for {@link CLI.Function#defer CLI.Function.defer}
+             *
+             * @param {Function} fn The function to defer.
+             * @param {Number} millis The number of milliseconds for the `setInterval` call
+             * @param {Object} scope (optional) The scope (`this` reference) in which the function is executed.
+             * **If omitted, defaults to the browser window.**
+             * @param {Array} [args] Overrides arguments for the call. Defaults to the arguments passed by the caller.
+             * @param {Boolean/Number} [appendArgs=false] If `true` args are appended to call args instead of overriding,
+             * or, if a number, then the args are inserted at the specified position.
+             * @return {Number} The interval id that can be used with `clearInterval`.
+             */
+            interval: function(fn, millis, scope, args, appendArgs) {
+                fn = CLI.Function.bind(fn, scope, args, appendArgs);
+                return setInterval(function () {
+                    if (CLI.elevateFunction) {
+                        CLI.elevateFunction(fn);
+                    } else {
+                        fn();
+                    }
+                }, millis);
+            },
+
+<span id='CLI-Function-method-createSequence'>            /**
+</span>             * Create a combined function call sequence of the original function + the passed function.
+             * The resulting function returns the results of the original function.
+             * The passed function is called with the parameters of the original function. Example usage:
+             *
+             *     var sayHi = function(name){
+             *         alert(&#39;Hi, &#39; + name);
+             *     };
+             *
+             *     sayHi(&#39;Fred&#39;); // alerts &quot;Hi, Fred&quot;
+             *
+             *     var sayGoodbye = CLI.Function.createSequence(sayHi, function(name){
+             *         alert(&#39;Bye, &#39; + name);
+             *     });
+             *
+             *     sayGoodbye(&#39;Fred&#39;); // both alerts show
+             *
+             * @param {Function} originalFn The original function.
+             * @param {Function} newFn The function to sequence.
+             * @param {Object} [scope] The scope (`this` reference) in which the passed function is executed.
+             * If omitted, defaults to the scope in which the original function is called or the
+             * default global environment object (usually the browser window).
+             * @return {Function} The new function.
+             */
+            createSequence: function(originalFn, newFn, scope) {
+                if (!newFn) {
+                    return originalFn;
+                }
+                else {
+                    return function() {
+                        var result = originalFn.apply(this, arguments);
+                        newFn.apply(scope || this, arguments);
+                        return result;
+                    };
+                }
+            },
+
+<span id='CLI-Function-method-createBuffered'>            /**
+</span>             * Creates a delegate function, optionally with a bound scope which, when called, buffers
+             * the execution of the passed function for the configured number of milliseconds.
+             * If called again within that period, the impending invocation will be canceled, and the
+             * timeout period will begin again.
+             *
+             * @param {Function} fn The function to invoke on a buffered timer.
+             * @param {Number} buffer The number of milliseconds by which to buffer the invocation of the
+             * function.
+             * @param {Object} [scope] The scope (`this` reference) in which.
+             * the passed function is executed. If omitted, defaults to the scope specified by the caller.
+             * @param {Array} [args] Override arguments for the call. Defaults to the arguments
+             * passed by the caller.
+             * @return {Function} A function which invokes the passed function after buffering for the specified time.
+             */
+            createBuffered: function(fn, buffer, scope, args) {
+                var timerId;
+
+                return function() {
+                    var callArgs = args || Array.prototype.slice.call(arguments, 0),
+                    me = scope || this;
+
+                    if (timerId) {
+                        clearTimeout(timerId);
+                    }
+
+                    timerId = setTimeout(function(){
+                        if (CLI.elevateFunction) {
+                            CLI.elevateFunction(fn, me, callArgs);
+                        } else {
+                            fn.apply(me, callArgs);
+                        }
+                    }, buffer);
+                };
+            },
+
+<span id='CLI-Function-method-createAnimationFrame'>            /**
+</span>             * Creates a wrapped function that, when invoked, defers execution until the next
+             * animation frame
+             * @private
+             * @param {Function} fn The function to call.
+             * @param {Object} [scope] The scope (`this` reference) in which the function is executed. Defaults to the window object.
+             * @param {Array} [args] The argument list to pass to the function.
+             * @param {Number} [queueStrategy=3] A bit flag that indicates how multiple calls to
+             * the returned function within the same animation frame should be handled.
+             *
+             * - 1: All calls will be queued - FIFO order
+             * - 2: Only the first call will be queued
+             * - 3: The last call will replace all previous calls
+             *
+             * @return {Function}
+             */
+            createAnimationFrame: function(fn, scope, args, queueStrategy) {
+                var timerId;
+
+                queueStrategy = queueStrategy || 3;
+
+                return function() {
+                    var callArgs = args || Array.prototype.slice.call(arguments, 0);
+
+                    scope = scope || this;
+
+                    if (queueStrategy === 3 &amp;&amp; timerId) {
+                        CLIFunction.cancelAnimationFrame(timerId);
+                    }
+
+                    if ((queueStrategy &amp; 1) || !timerId) {
+                        timerId = CLIFunction.requestAnimationFrame(function() {
+                            timerId = null;
+                            fn.apply(scope, callArgs);
+                        });
+                    }
+                };
+            },
+
+<span id='CLI-Function-method-requestAnimationFrame'>            /**
+</span>             * @private
+             * Schedules the passed function to be called on the next animation frame.
+             * @param {Function} fn The function to call.
+             * @param {Object} [scope] The scope (`this` reference) in which the function is executed. Defaults to the window object.
+             * @param {Mixed[]} [args] The argument list to pass to the function.
+             *
+             * @return {Number} Timer id for the new animation frame to use when canceling it.
+             */
+            requestAnimationFrame: function(fn, scope, args) {
+                var id = ++idSource,  // Ids start at 1
+                handler = Array.prototype.slice.call(arguments, 0);
+
+                handler[3] = id;
+                animFrameMap[id] = 1; // A flag to indicate that the timer exists
+
+                // We might be in fireHandlers at this moment but this new entry will not
+                // be executed until the next frame
+                animFrameHandlers.push(handler);
+
+                if (!animFrameId) {
+                    animFrameId = requestAnimFrame(CLI.elevateFunction ? fireElevatedHandlers : fireHandlers);
+                }
+                return id;
+            },
+
+            cancelAnimationFrame: function(id) {
+                // Don&#39;t remove any handlers from animFrameHandlers array, because
+                // the might be in use at the moment (when cancelAnimationFrame is called).
+                // Just remove the handler id from the map so it will not be executed
+                delete animFrameMap[id];
+            },
+
+<span id='CLI-Function-method-createThrottled'>            /**
+</span>             * Creates a throttled version of the passed function which, when called repeatedly and
+             * rapidly, invokes the passed function only after a certain interval has elapsed since the
+             * previous invocation.
+             *
+             * This is useful for wrapping functions which may be called repeatedly, such as
+             * a handler of a mouse move event when the processing is expensive.
+             *
+             * @param {Function} fn The function to execute at a regular time interval.
+             * @param {Number} interval The interval in milliseconds on which the passed function is executed.
+             * @param {Object} [scope] The scope (`this` reference) in which
+             * the passed function is executed. If omitted, defaults to the scope specified by the caller.
+             * @returns {Function} A function which invokes the passed function at the specified interval.
+             */
+            createThrottled: function(fn, interval, scope) {
+                var lastCallTime = 0,
+                elapsed,
+                lastArgs,
+                timer,
+                execute = function() {
+                    if (CLI.elevateFunction) {
+                        CLI.elevateFunction(fn, scope, lastArgs);
+                    } else {
+                        fn.apply(scope, lastArgs);
+                    }
+                    lastCallTime = CLI.now();
+                    timer = null;
+                };
+
+                return function() {
+                    // Use scope of last call unless the creator specified a scope
+                    if (!scope) {
+                        scope = this;
+                    }
+                    elapsed = CLI.now() - lastCallTime;
+                    lastArgs = arguments;
+
+                    // If this is the first invocation, or the throttle interval has been reached, clear any
+                    // pending invocation, and call the target function now.
+                    if (elapsed &gt;= interval) {
+                        clearTimeout(timer);
+                        execute();
+                    }
+                    // Throttle interval has not yet been reached. Only set the timer to fire if not already set.
+                    else if (!timer) {
+                        timer = CLI.defer(execute, interval - elapsed);
+                    }
+                };
+            },
+
+<span id='CLI-Function-method-createBarrier'>            /**
+</span>             * Wraps the passed function in a barrier function which will call the passed function after the passed number of invocations.
+             * @param {Number} count The number of invocations which will result in the calling of the passed function.
+             * @param {Function} fn The function to call after the required number of invocations.
+             * @param {Object} scope The scope (`this` reference) in which the function will be called.
+             */    
+            createBarrier: function(count, fn, scope) {
+                return function() {
+                    if (!--count) {
+                        fn.apply(scope, arguments);
+                    }
+                };
+            },
+
+<span id='CLI-Function-method-interceptBefore'>            /**
+</span>             * Adds behavior to an existing method that is executed before the
+             * original behavior of the function.  For example:
+             * 
+             *     var soup = {
+             *         contents: [],
+             *         add: function(ingredient) {
+             *             this.contents.push(ingredient);
+             *         }
+             *     };
+             *     CLI.Function.interceptBefore(soup, &quot;add&quot;, function(ingredient){
+             *         if (!this.contents.length &amp;&amp; ingredient !== &quot;water&quot;) {
+             *             // Always add water to start with
+             *             this.contents.push(&quot;water&quot;);
+             *         }
+             *     });
+             *     soup.add(&quot;onions&quot;);
+             *     soup.add(&quot;salt&quot;);
+             *     soup.contents; // will contain: water, onions, salt
+             * 
+             * @param {Object} object The target object
+             * @param {String} methodName Name of the method to override
+             * @param {Function} fn Function with the new behavior.  It will
+             * be called with the same arguments as the original method.  The
+             * return value of this function will be the return value of the
+             * new method.
+             * @param {Object} [scope] The scope to execute the interceptor function. Defaults to the object.
+             * @return {Function} The new function just created.
+             */
+            interceptBefore: function(object, methodName, fn, scope) {
+                var method = object[methodName] || CLI.emptyFn;
+
+                return (object[methodName] = function() {
+                    var ret = fn.apply(scope || this, arguments);
+                    method.apply(this, arguments);
+
+                    return ret;
+                });
+            },
+
+<span id='CLI-Function-method-interceptAfter'>            /**
+</span>             * Adds behavior to an existing method that is executed after the
+             * original behavior of the function.  For example:
+             * 
+             *     var soup = {
+             *         contents: [],
+             *         add: function(ingredient) {
+             *             this.contents.push(ingredient);
+             *         }
+             *     };
+             *     CLI.Function.interceptAfter(soup, &quot;add&quot;, function(ingredient){
+             *         // Always add a bit of extra salt
+             *         this.contents.push(&quot;salt&quot;);
+             *     });
+             *     soup.add(&quot;water&quot;);
+             *     soup.add(&quot;onions&quot;);
+             *     soup.contents; // will contain: water, salt, onions, salt
+             * 
+             * @param {Object} object The target object
+             * @param {String} methodName Name of the method to override
+             * @param {Function} fn Function with the new behavior.  It will
+             * be called with the same arguments as the original method.  The
+             * return value of this function will be the return value of the
+             * new method.
+             * @param {Object} [scope] The scope to execute the interceptor function. Defaults to the object.
+             * @return {Function} The new function just created.
+             */
+            interceptAfter: function(object, methodName, fn, scope) {
+                var method = object[methodName] || CLI.emptyFn;
+
+                return (object[methodName] = function() {
+                    method.apply(this, arguments);
+                    return fn.apply(scope || this, arguments);
+                });
+            },
+
+            makeCallback: function (callback, scope) {
+                //&lt;debug&gt;
+                if (!scope[callback]) {
+                    if (scope.$className) {
+                        CLI.Error.raise(&#39;No method &quot;&#39; + callback + &#39;&quot; on &#39; + scope.$className);
+                    }
+                    CLI.Error.raise(&#39;No method &quot;&#39; + callback + &#39;&quot;&#39;);
+                }
+                //&lt;/debug&gt;
+
+                return function () {
+                    return scope[callback].apply(scope, arguments);
+                };
+            }
         };
 
-        return CLIFunction;
+<span id='CLI-method-defer'>        /**
+</span>         * @method
+         * @member CLI
+         * @inheritdoc CLI.Function#defer
+         */
+        CLI.defer = CLIFunction.defer;
 
+<span id='CLI-method-interval'>        /**
+</span>         * @method
+         * @member CLI
+         * @inheritdoc CLI.Function#interval
+         */
+        CLI.interval = CLIFunction.interval;
+
+<span id='CLI-method-pass'>        /**
+</span>         * @method
+         * @member CLI
+         * @inheritdoc CLI.Function#pass
+         */
+        CLI.pass = CLIFunction.pass;
+
+<span id='CLI-method-bind'>        /**
+</span>         * @method
+         * @member CLI
+         * @inheritdoc CLI.Function#bind
+         */
+        CLI.bind = CLIFunction.bind;
+
+        CLI.deferCallback = CLIFunction.requestAnimationFrame;
+
+        return CLIFunction;
     })();
 
 })();
