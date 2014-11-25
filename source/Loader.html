@@ -35,7 +35,7 @@
 </span> * @class CLI.Loader
  *
  * CLI.Loader is the heart of the new dynamic dependency loading capability in Ext JS 4+. It is most commonly used
- * via the {@link Ext#require} shorthand. CLI.Loader supports both asynchronous and synchronous loading
+ * via the {@link CLI#require} shorthand. CLI.Loader supports both asynchronous and synchronous loading
  * approaches, and leverage their advantages for the best development flow. We&#39;ll discuss about the pros and cons of each approach:
  *
  * # Asynchronous Loading #
@@ -875,9 +875,9 @@ CLI.Loader = new function() {
         
 <span id='CLI-Loader-method-loadScript'>        /**
 </span>         * Loads the specified script URL and calls the supplied callbacks. If this method
-         * is called before {@link Ext#isReady}, the script&#39;s load will delay the transition
+         * is called before {@link CLI#isReady}, the script&#39;s load will delay the transition
          * to ready. This can be used to load arbitrary scripts that may contain further
-         * {@link Ext#require CLI.require} calls.
+         * {@link CLI#require CLI.require} calls.
          *
          * @param {Object/String/String[]} options The options object or simply the URL(s) to load.
          * @param {String} options.url The URL from which to load the script.
