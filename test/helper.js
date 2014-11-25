@@ -32,6 +32,8 @@
         CLI.global.console.trace = CLI.emptyFn;
         CLI.global.console.assert = CLI.emptyFn;
 
+        CLI.global.console.suspended = true;
+
     };
 
     global.endSilent = function() {
@@ -46,6 +48,7 @@
         global.console.trace = org_console.trace;
         global.console.assert = org_console.assert;
 
+        CLI.global.console.suspended = false;
     };
 
 })();

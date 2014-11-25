@@ -20,7 +20,7 @@ describe("CLI.ClassManager", function() {
 
     /*
 
-    var manager = Ext.ClassManager,
+    var manager = CLI.ClassManager,
         cls, emptyFn = function(){};
 
 
@@ -60,11 +60,11 @@ describe("CLI.ClassManager", function() {
         it("should return the broken-down namespace", function() {
             var parts = manager.parseNamespace('Some.strange.alien.Namespace');
 
-            expect(parts).toEqual([Ext.global, 'Some', 'strange', 'alien', 'Namespace']);
+            expect(parts).toEqual([CLI.global, 'Some', 'strange', 'alien', 'Namespace']);
         });
 
         it("should return the broken-down namespace with object rewrites", function() {
-            var parts = manager.parseNamespace('Ext.some.Namespace');
+            var parts = manager.parseNamespace('CLI.some.Namespace');
 
             expect(parts).toEqual([Ext, 'some', 'Namespace']);
         });
@@ -100,14 +100,14 @@ describe("CLI.ClassManager", function() {
                 classNames;
 
 
-            spyOn(Ext.Loader, 'require').andCallFake(function(classes, fn) {
+            spyOn(CLI.Loader, 'require').andCallFake(function(classes, fn) {
                 classNames = classes;
                 fn();
             });
 
-            Ext.Class.getPreprocessor('loader').fn(cls, data, emptyFn, emptyFn);
+            CLI.Class.getPreprocessor('loader').fn(cls, data, emptyFn, emptyFn);
 
-            expect(Ext.Loader.require).toHaveBeenCalled();
+            expect(CLI.Loader.require).toHaveBeenCalled();
             expect(classNames).toEqual(['My.awesome.Class', 'My.cool.AnotherClass1']);
             expect(data).toEqual(expected);
         });
@@ -214,10 +214,10 @@ describe("CLI.ClassManager", function() {
         });
         
         afterEach(function() {
-            Ext.undefine('I.am.the.MixinClass1');
-            Ext.undefine('I.am.the.MixinClass2');
-            Ext.undefine('I.am.the.ParentClass');
-            Ext.undefine('I.am.the.SubClass');
+            CLI.undefine('I.am.the.MixinClass1');
+            CLI.undefine('I.am.the.MixinClass2');
+            CLI.undefine('I.am.the.ParentClass');
+            CLI.undefine('I.am.the.SubClass');
         });
 
         it("should create the namespace", function() {
@@ -228,7 +228,7 @@ describe("CLI.ClassManager", function() {
         });
 
         it("should get className", function() {
-            expect(Ext.getClassName(subClass)).toEqual('I.am.the.SubClass');
+            expect(CLI.getClassName(subClass)).toEqual('I.am.the.SubClass');
         });
 
         describe("addStatics", function() {
@@ -343,7 +343,7 @@ describe("CLI.ClassManager", function() {
 
     describe('define', function () {
         it('should allow anonymous classes', function () {
-            var T = Ext.define(null, function (Self) {
+            var T = CLI.define(null, function (Self) {
                 return {
                     constructor: function () {
                         this.foo = 1;
@@ -396,12 +396,12 @@ describe("CLI.ClassManager", function() {
         });
 
         afterEach(function() {
-            Ext.undefine('Test.stuff.Person');
-            Ext.undefine('Test.stuff.Developer');
+            CLI.undefine('Test.stuff.Person');
+            CLI.undefine('Test.stuff.Developer');
         });
 
         it("should create the instance by full class name", function() {
-            var me = Ext.create('Test.stuff.Person', 'Jacky', 24, 'male');
+            var me = CLI.create('Test.stuff.Person', 'Jacky', 24, 'male');
             expect(me instanceof Test.stuff.Person).toBe(true);
         });
 
@@ -435,7 +435,7 @@ describe("CLI.ClassManager", function() {
 
     describe("post-processors", function() {
         afterEach(function() {
-            Ext.undefine('Something.Cool');
+            CLI.undefine('Something.Cool');
         });
 
         xdescribe("uses", function() {
@@ -445,7 +445,7 @@ describe("CLI.ClassManager", function() {
 
         describe("singleton", function() {
             it("should create the instance namespace and return the class", function() {
-                var test = Ext.define('Something.Cool', {
+                var test = CLI.define('Something.Cool', {
                     singleton: true,
                     someMethod: function() {
                         this.someMethodCalled = true;
@@ -460,7 +460,7 @@ describe("CLI.ClassManager", function() {
 
         describe("alias xtype", function() {
             it("should set xtype as a static class property", function() {
-                var test = Ext.define('Something.Cool', {
+                var test = CLI.define('Something.Cool', {
                     alias: 'widget.cool'
                 });
 
@@ -470,7 +470,7 @@ describe("CLI.ClassManager", function() {
 
         describe("alternate", function() {
             it("should create the alternate with a string for alternateClassName property", function() {
-                Ext.define('Something.Cool', {
+                CLI.define('Something.Cool', {
                     alternateClassName: 'Something.CoolAsWell',
 
                     someMethod: function() {
@@ -485,7 +485,7 @@ describe("CLI.ClassManager", function() {
             });
 
             it("should create the alternate with an array for alternateClassName property", function() {
-                Ext.define('Something.Cool', {
+                CLI.define('Something.Cool', {
                     alternateClassName: ['Something.CoolAsWell', 'Something.AlsoCool']
                 });
 
@@ -498,18 +498,18 @@ describe("CLI.ClassManager", function() {
     describe("createNamespaces", function() {
         var w = window;
 
-        it("should have an alias Ext.namespace", function() {
-            spyOn(Ext.ClassManager, 'createNamespaces');
-            Ext.namespace('a', 'b', 'c');
-            expect(Ext.ClassManager.createNamespaces).toHaveBeenCalledWith('a', 'b', 'c');
+        it("should have an alias CLI.namespace", function() {
+            spyOn(CLI.ClassManager, 'createNamespaces');
+            CLI.namespace('a', 'b', 'c');
+            expect(CLI.ClassManager.createNamespaces).toHaveBeenCalledWith('a', 'b', 'c');
         });
 
         it("should create a single top level namespace", function() {
-            Ext.ClassManager.createNamespaces('FooTest1');
+            CLI.ClassManager.createNamespaces('FooTest1');
 
             expect(w.FooTest1).toBeDefined();
 
-            if (Ext.isIE8) {
+            if (CLI.isIE8) {
                 w.FooTest1 = undefined;
             } else {
                 delete w.FooTest1;
@@ -517,13 +517,13 @@ describe("CLI.ClassManager", function() {
         });
 
         it("should create multiple top level namespace", function() {
-            Ext.ClassManager.createNamespaces('FooTest2', 'FooTest3', 'FooTest4');
+            CLI.ClassManager.createNamespaces('FooTest2', 'FooTest3', 'FooTest4');
 
             expect(w.FooTest2).toBeDefined();
             expect(w.FooTest3).toBeDefined();
             expect(w.FooTest4).toBeDefined();
 
-            if (Ext.isIE8) {
+            if (CLI.isIE8) {
                 w.FooTest2 = undefined;
                 w.FooTest3 = undefined;
                 w.FooTest4 = undefined;
@@ -535,14 +535,14 @@ describe("CLI.ClassManager", function() {
         });
 
         it("should create a chain of namespaces, starting from a top level", function() {
-            Ext.ClassManager.createNamespaces('FooTest5', 'FooTest5.ns1', 'FooTest5.ns1.ns2', 'FooTest5.ns1.ns2.ns3');
+            CLI.ClassManager.createNamespaces('FooTest5', 'FooTest5.ns1', 'FooTest5.ns1.ns2', 'FooTest5.ns1.ns2.ns3');
 
             expect(w.FooTest5).toBeDefined();
             expect(w.FooTest5.ns1).toBeDefined();
             expect(w.FooTest5.ns1.ns2).toBeDefined();
             expect(w.FooTest5.ns1.ns2.ns3).toBeDefined();
 
-            if (Ext.isIE8) {
+            if (CLI.isIE8) {
                 w.FooTest5 = undefined;
             } else {
                 delete w.FooTest5;
@@ -550,14 +550,14 @@ describe("CLI.ClassManager", function() {
         });
 
         it("should create lower level namespaces without first defining the top level", function() {
-            Ext.ClassManager.createNamespaces('FooTest6.ns1', 'FooTest7.ns2');
+            CLI.ClassManager.createNamespaces('FooTest6.ns1', 'FooTest7.ns2');
 
             expect(w.FooTest6).toBeDefined();
             expect(w.FooTest6.ns1).toBeDefined();
             expect(w.FooTest7).toBeDefined();
             expect(w.FooTest7.ns2).toBeDefined();
 
-            if (Ext.isIE8) {
+            if (CLI.isIE8) {
                 w.FooTest6 = undefined;
                 w.FooTest7 = undefined;
             } else {
@@ -567,13 +567,13 @@ describe("CLI.ClassManager", function() {
         });
 
         it("should create a lower level namespace without defining the middle level", function() {
-            Ext.ClassManager.createNamespaces('FooTest8', 'FooTest8.ns1.ns2');
+            CLI.ClassManager.createNamespaces('FooTest8', 'FooTest8.ns1.ns2');
 
             expect(w.FooTest8).toBeDefined();
             expect(w.FooTest8.ns1).toBeDefined();
             expect(w.FooTest8.ns1.ns2).toBeDefined();
 
-            if (Ext.isIE8) {
+            if (CLI.isIE8) {
                 w.FooTest8 = undefined;
             } else {
                 delete w.FooTest8;
@@ -581,15 +581,15 @@ describe("CLI.ClassManager", function() {
         });
 
         it ("should not overwritte existing namespace", function() {
-            Ext.ClassManager.createNamespaces('FooTest9');
+            CLI.ClassManager.createNamespaces('FooTest9');
 
             FooTest9.prop1 = 'foo';
 
-            Ext.ClassManager.createNamespaces('FooTest9');
+            CLI.ClassManager.createNamespaces('FooTest9');
 
             expect(FooTest9.prop1).toEqual("foo");
 
-            if (Ext.isIE8) {
+            if (CLI.isIE8) {
                 w.FooTest9 = undefined;
             } else {
                 delete w.FooTest9;

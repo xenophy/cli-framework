@@ -19,8 +19,8 @@ var assert = require('power-assert');
 describe("CLI.Loader", function() {
 
     /*
-    var Loader = Ext.Loader,
-        app    = Ext.app;
+    var Loader = CLI.Loader,
+        app    = CLI.app;
 
     it("should set single namespace with setPath call", function() {
         Loader.setPath('ExtLoaderTestNamespace1', '/foo1');
@@ -105,7 +105,7 @@ describe("CLI.Loader", function() {
         //      F.prototype === Ext;
         //      Foo = new F();
         //      Foo.__proto__ === Ext; // true
-        //      Foo.ux === Ext.ux; // true
+        //      Foo.ux === CLI.ux; // true
         //      Foo.hasOwnProperty('ux'); // false
         //
         // In certain scenarios that I haven't been able to reproduce outside of their actual application,
@@ -127,15 +127,15 @@ describe("CLI.Loader", function() {
             Foo = new F();
 
             Loader.setPath('Foo.spec', 'resources/spec');
-            Loader.setPath('Ext.spec', 'resources/spec');
+            Loader.setPath('CLI.spec', 'resources/spec');
 
             spyOn(Loader, 'loadScriptFile').andCallThrough();
 
-            Ext.require('Foo.spec.LoaderTest', function () {
+            CLI.require('Foo.spec.LoaderTest', function () {
                 callFoo = true;
             });
 
-            Ext.require('Ext.spec.LoaderTest', function () {
+            CLI.require('CLI.spec.LoaderTest', function () {
                 callExt = true;
             });
 
@@ -172,11 +172,11 @@ describe("CLI.Loader", function() {
         it('should append the cache-busting query param to the querystring in case there is already a querystring', function () {
             var newSrc; 
 
-            Ext.Loader.injectScriptElement = function (src, onScriptLoad, onScriptError) {
+            CLI.Loader.injectScriptElement = function (src, onScriptLoad, onScriptError) {
                 newSrc = src;
             };
 
-            Ext.Loader.loadScript({
+            CLI.Loader.loadScript({
                 url: 'script.js?key=value'
             });
 
