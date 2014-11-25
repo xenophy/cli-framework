@@ -445,12 +445,12 @@ describe("CLI.Base", function() {
                     mixins : ['spec.Mix1']
                 });
 
-                //assert.equal(cls.prototype.a, aFn);
-                //assert.equal(cls.prototype.mixins.mix1, spec.Mix1.prototype);
+                assert.equal(cls.prototype.a, aFn);
+                assert.equal(cls.prototype.mixins.mix1, spec.Mix1.prototype);
             });
 
-            /*
             it("should add mixins on a class with existing mixins", function() {
+
                 cls = CLI.define('spec.MyBase', {
                     mixins: ['spec.Mix1']
                 });
@@ -460,14 +460,15 @@ describe("CLI.Base", function() {
                     mixins : ['spec.Mix2']
                 });
 
-                expect(cls.prototype.a).toBe(aFn);
-                expect(cls.prototype.mixins.mix1).toBe(spec.Mix1.prototype);
+                assert.equal(cls.prototype.a, aFn);
+                assert.equal(cls.prototype.mixins.mix1, spec.Mix1.prototype);
 
-                expect(cls.prototype.b).toBe(bFn);
-                expect(cls.prototype.mixins.mix2).toBe(spec.Mix2.prototype);
+                assert.equal(cls.prototype.b, bFn);
+                assert.equal(cls.prototype.mixins.mix2, spec.Mix2.prototype);
             });
 
             it("should add mixins when the type differs", function() {
+
                 cls = CLI.define('spec.MyBase', {
                     mixins: {
                         mixFoo: 'spec.Mix1'
@@ -479,15 +480,16 @@ describe("CLI.Base", function() {
                     mixins : ['spec.Mix2']
                 });
 
-                expect(cls.prototype.a).toBe(aFn);
-                expect(cls.prototype.mixins.mixFoo).toBe(spec.Mix1.prototype);
+                assert.equal(cls.prototype.a, aFn);
+                assert.equal(cls.prototype.mixins.mixFoo, spec.Mix1.prototype);
 
-                expect(cls.prototype.b).toBe(bFn);
-                expect(cls.prototype.mixins.mix2).toBe(spec.Mix2.prototype);
+                assert.equal(cls.prototype.b, bFn);
+                assert.equal(cls.prototype.mixins.mix2, spec.Mix2.prototype);
             });
-            */
 
         });
+
+        // }}}
 
     });
 
