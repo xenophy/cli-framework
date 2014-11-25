@@ -650,7 +650,7 @@
              */
             var primitiveRe = /string|number|boolean/;
 
-            function dumpObject (object, level, maxLevel, withFunctions) {
+            function dumpObject(object, level, maxLevel, withFunctions) {
 
                 var member, type, value, name, prefix, suffix,
                     members = [];
@@ -805,8 +805,7 @@
 
                 if (stack &amp;&amp; con.trace) {
 
-                    // Firebug&#39;s console.error() includes a trace already...
-                    if (!con.firebug || level != &#39;error&#39;) {
+                    if (level != &#39;error&#39;) {
                         con.trace();
                     }
                 }
