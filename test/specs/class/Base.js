@@ -425,6 +425,7 @@ describe("CLI.Base", function() {
 
                     b: bFn
                 });
+
             });
 
             afterEach(function() {
@@ -434,7 +435,6 @@ describe("CLI.Base", function() {
                 CLI.undefine('spec.MyBase');
             });
 
-            /*
             it("should add mixins on a class without mixins", function() {
 
                 cls = CLI.define('spec.MyBase', {
@@ -445,10 +445,11 @@ describe("CLI.Base", function() {
                     mixins : ['spec.Mix1']
                 });
 
-                expect(cls.prototype.a).toBe(aFn);
-                expect(cls.prototype.mixins.mix1).toBe(spec.Mix1.prototype);
+                //assert.equal(cls.prototype.a, aFn);
+                //assert.equal(cls.prototype.mixins.mix1, spec.Mix1.prototype);
             });
 
+            /*
             it("should add mixins on a class with existing mixins", function() {
                 cls = CLI.define('spec.MyBase', {
                     mixins: ['spec.Mix1']
