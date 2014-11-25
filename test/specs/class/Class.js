@@ -1755,9 +1755,10 @@ describe("CLI.Class", function() {
                 // }}}
                 // {{{ subclassing
 
-                /*
                 describe("subclassing", function() {
+
                     it("should initialize the value on the subclass prototype", function() {
+
                         cls = CLI.define(null, {
                             constructor: defaultInitConfig,
                             config: {
@@ -1767,17 +1768,20 @@ describe("CLI.Class", function() {
                                 }
                             }
                         });
-                        
+
                         sub = CLI.define(null, {
                             extend: cls
                         });
-                        
+
                         o = new sub();
-                        expect(sub.prototype._foo).toBe('bar');
-                        expect(o.getFoo()).toBe('bar');
-                    });  
-                    
+
+                        assert.equal(sub.prototype._foo, 'bar');
+                        assert.equal(o.getFoo(), 'bar');
+
+                    });
+
                     it("should be able to override the default value", function() {
+
                         cls = CLI.define(null, {
                             constructor: defaultInitConfig,
                             config: {
@@ -1787,7 +1791,7 @@ describe("CLI.Class", function() {
                                 }
                             }
                         });
-                        
+
                         sub = CLI.define(null, {
                             extend: cls,
                             config: {
@@ -1797,16 +1801,19 @@ describe("CLI.Class", function() {
                                 }
                             }
                         });
-                        
+
                         o = new sub();
-                        expect(sub.prototype._foo).toBe('baz');
-                        expect(o.getFoo()).toBe('baz');
+
+                        assert.equal(sub.prototype._foo, 'baz');
+                        assert.equal(o.getFoo(), 'baz');
+
                     });
-                    
+
                     it("should call the applier only once per instance", function() {
+
                         var parentCount = 0,
                             subCount = 0;
-                            
+
                         cls = CLI.define(null, {
                             constructor: defaultInitConfig,
                             config: {
@@ -1815,7 +1822,7 @@ describe("CLI.Class", function() {
                                     $value: 'bar'
                                 }
                             },
-                            
+
                             applyFoo: function(foo) {
                                 if (this.self === cls) {
                                     ++parentCount;
@@ -1825,28 +1832,30 @@ describe("CLI.Class", function() {
                                 return foo;
                             }
                         });
-                        
+
                         sub = CLI.define(null, {
                             extend: cls
                         });
-                        
+
                         new cls();
                         new sub();
-                        
+
                         new cls();
                         new sub();
-                        
+
                         new cls();
                         new sub();
-                        
-                        expect(parentCount).toBe(1);
-                        expect(subCount).toBe(1);
+
+                        assert.equal(parentCount, 1);
+                        assert.equal(subCount, 1);
+
                     });
-                    
+
                     it("should retain cached-ness even when overridden in a subclass config", function() {
+
                         cls = CLI.define(null, {
                             constructor: defaultInitConfig,
-                            
+
                             config: {
                                 foo: {
                                     cached: true,
@@ -1854,24 +1863,29 @@ describe("CLI.Class", function() {
                                 }
                             }
                         });
-                        
+
                         sub = CLI.define(null, {
                             config: {
                                 foo: 'baz'
                             }
                         });
+
+                        assert.equal((new cls()).getFoo(), 'bar');
+                        assert.equal((new sub()).getFoo(), undefined);
+
                     });
-                    
+
                     it("should not allow an initially uncached config to be declared as cached", function() {
+
                         cls = CLI.define(null, {
                             config: {
                                 foo: 1
                             }
                         });
-                        
-                        spyOn(Ext, 'log');
-                        
-                        expect(function() {
+
+                        beginSilent();
+
+                        assert.throws(function() {
                             CLI.define(null, {
                                 extend: cls,
                                 config: {
@@ -1881,10 +1895,17 @@ describe("CLI.Class", function() {
                                     }
                                 }
                             });
-                        }).toThrow();
+                        });
+
+                        endSilent();
+
                     });
-                    
+
+                    // }}}
+                    // {{{ nulls
+
                     describe("nulls", function() {
+
                         it("should allow null overrides in child classes", function() {
                             cls = CLI.define(null, {
                                 config: {
@@ -1903,15 +1924,18 @@ describe("CLI.Class", function() {
                                         $value: null
                                     }
                                 }
-                            });    
-                            
+                            });
+
                             new cls();
                             new sub();
-                            expect(cls.prototype._foo).toBe(1);
-                            expect(sub.prototype._foo).not.toBeDefined();
+
+                            assert.equal(cls.prototype._foo, 1);
+                            assert.equal(sub.prototype._foo, undefined);
+
                         });
-                        
+
                         it("should allow null in the base class and value overrides in child classes", function() {
+
                             cls = CLI.define(null, {
                                 config: {
                                     foo: {
@@ -1921,6 +1945,7 @@ describe("CLI.Class", function() {
                                 },
                                 constructor: defaultInitConfig
                             });
+
                             sub = CLI.define(null, {
                                 extend: cls,
                                 config: {
@@ -1929,15 +1954,18 @@ describe("CLI.Class", function() {
                                         $value: 1
                                     }
                                 }
-                            }); 
-                            
+                            });
+
                             new cls();
                             new sub();
-                            expect(cls.prototype._foo).toBe(null);
-                            expect(sub.prototype._foo).toBe(1);
+
+                            assert.equal(cls.prototype._foo, null);
+                            assert.equal(sub.prototype._foo, 1);
+
                         });
-                        
+
                         it("should be able to return to being cached after being nulled out", function() {
+
                             var A = CLI.define(null, {
                                 config: {
                                     foo: {
@@ -1945,9 +1973,9 @@ describe("CLI.Class", function() {
                                         $value: 1
                                     }
                                 },
-                                constructor: defaultInitConfig    
+                                constructor: defaultInitConfig
                             });
-                            
+
                             var B = CLI.define(null, {
                                 extend: A,
                                 config: {
@@ -1957,7 +1985,7 @@ describe("CLI.Class", function() {
                                     }
                                 }
                             });
-                            
+
                             var C = CLI.define(null, {
                                 extend: B,
                                 config: {
@@ -1967,21 +1995,33 @@ describe("CLI.Class", function() {
                                     }
                                 }
                             });
-                            
-                            new A();
-                            expect(A.prototype._foo).toBe(1);
-                            new B();
-                            expect(B.prototype._foo).not.toBeDefined();
-                            new C();
-                            expect(C.prototype._foo).toBe(2);
-                        });
-                    });
-                });
-            });
-            */
 
-            /*
+                            new A();
+                            assert.equal(A.prototype._foo, 1);
+
+                            new B();
+                            assert.equal(B.prototype._foo, undefined);
+
+                            new C();
+                            assert.equal(C.prototype._foo, 2);
+
+                        });
+
+                    });
+
+                    // }}}
+
+                });
+
+                // }}}
+
+            });
+
+            // }}}
+            // {{{ lazy
+
             describe("lazy", function() {
+
                 function makeLazy(value) {
                     return {
                         foo: {
@@ -1991,66 +2031,84 @@ describe("CLI.Class", function() {
                     };
                 }
 
+                // {{{ basic construction
+
                 describe("basic construction", function() {
+
                     it("should not call the applier when instantiated without a config value", function() {
-                        var spy = jasmine.createSpy();
+
                         var Cls = CLI.define(null, {
                             constructor: defaultInitConfig,
                             config: makeLazy(1),
-
-                            applyFoo: spy
+                            applyFoo: function() {}
                         });
 
-                        new Cls();
-                        expect(spy).not.toHaveBeenCalled();
+                        var itFn = sinon.spy(new Cls(), 'applyFoo');
+
+                        assert.equal(itFn.called, false);
+
                     });
 
                     it("should not call the applier when instantiated with a config value", function() {
-                        var spy = jasmine.createSpy();
+
                         var Cls = CLI.define(null, {
                             constructor: defaultInitConfig,
                             config: makeLazy(1),
-
-                            applyFoo: spy
+                            applyFoo: function() {}
                         });
 
-                        new Cls({
+                        var o = new Cls({
                             foo: 100
                         });
-                        expect(spy).not.toHaveBeenCalled();
+                        var itFn = sinon.spy(o, 'applyFoo');
+
+                        assert.equal(itFn.called, false);
+
                     });
 
                     it("should not call the updater when instantiated without a config value", function() {
-                        var spy = jasmine.createSpy();
+
                         var Cls = CLI.define(null, {
                             constructor: defaultInitConfig,
                             config: makeLazy(1),
 
-                            updateFoo: spy
+                            updateFoo: function() {}
                         });
 
-                        new Cls();
-                        expect(spy).not.toHaveBeenCalled();
+                        var itFn = sinon.spy(new Cls(), 'updateFoo');
+
+                        assert.equal(itFn.called, false);
+
                     });
 
                     it("should not call the updater when instantiated with a config value", function() {
-                        var spy = jasmine.createSpy();
+
                         var Cls = CLI.define(null, {
                             constructor: defaultInitConfig,
                             config: makeLazy(1),
 
-                            updateFoo: spy
+                            updateFoo: function() {}
                         });
 
-                        new Cls({
+                        var o = new Cls({
                             foo: 100
                         });
-                        expect(spy).not.toHaveBeenCalled();
+
+                        var itFn = sinon.spy(o, 'updateFoo');
+
+                        assert.equal(itFn.called, false);
+
                     });
+
                 });
 
+                // }}}
+                // {{{ during construction
+
                 describe("during construction", function() {
+
                     it("should allow the getter to be called during initConfig by another method", function() {
+
                         var Cls = CLI.define(null, {
                             constructor: defaultInitConfig,
                             config: CLI.apply({
@@ -2063,11 +2121,16 @@ describe("CLI.Class", function() {
                         });
 
                         o = new Cls();
-                        expect(o.getBar()).toBe(101);
+
+                        assert.equal(o.getBar(), 101);
+
                     });
 
                     it("should not call the applier on subsequent get calls", function() {
-                        var spy = jasmine.createSpy().andReturn(1);
+
+                        var spy = sinon.spy();
+                        spy.returned(1);
+
                         var Cls = CLI.define(null, {
                             constructor: defaultInitConfig,
                             config: CLI.apply({
@@ -2075,19 +2138,22 @@ describe("CLI.Class", function() {
                             }, makeLazy(1)),
 
                             applyFoo: spy,
+
                             applyBar: function() {
                                 return this.getFoo() + 100;
                             }
                         });
 
                         o = new Cls();
-                        expect(spy.callCount).toBe(1);
+
+                        assert.equal(o.applyFoo.callCount, 1);
                         o.getFoo();
-                        expect(spy.callCount).toBe(1);
+                        assert.equal(o.applyFoo.callCount, 1);
                     });
 
                     it("should not call the updater on subsequent get calls", function() {
-                        var spy = jasmine.createSpy();
+
+                        var spy = sinon.spy();
                         var Cls = CLI.define(null, {
                             constructor: defaultInitConfig,
                             config: CLI.apply({
@@ -2101,47 +2167,77 @@ describe("CLI.Class", function() {
                         });
 
                         o = new Cls();
-                        expect(spy.callCount).toBe(1);
+
+                        assert.equal(spy.callCount, 1);
                         o.getFoo();
-                        expect(spy.callCount).toBe(1);
+                        assert.equal(spy.callCount, 1);
+
                     });
+
                 });
 
+                // }}}
+                // {{{ value before first get call
+
                 describe("value before first get call", function() {
+
+                    // {{{ from the prototype
+
                     describe("from the prototype", function() {
+
                         it("should have primitives defined on the instance", function() {
+
                             var Cls = CLI.define(null, {
                                 constructor: defaultInitConfig,
                                 config: makeLazy(1)
                             });
+
                             var o = new Cls();
-                            expect(o._foo).toBe(1);
+
+                            assert.equal(o._foo, 1);
+
                         });
 
                         it("should not have objects on the instance", function() {
+
                             var Cls = CLI.define(null, {
                                 constructor: defaultInitConfig,
                                 config: makeLazy({})
                             });
+
                             var o = new Cls();
-                            expect(o._foo).not.toBeDefined();
+
+                            assert.equal(o._foo, undefined);
                         });
+
                     });
 
+                    // }}}
+                    // {{{ from the instance config
+
                     describe("from the instance config", function() {
+
                         it("should not set the value on the underlying property", function() {
+
                             var Cls = CLI.define(null, {
                                 constructor: defaultInitConfig,
                                 config: makeLazy({})
                             });
+
                             var o = new Cls({
                                 foo: {}
                             });
-                            expect(o._foo).not.toBeDefined();
+
+                            assert.equal(o._foo, undefined);
+
                         });
+
                     });
 
+                    // }}}
+
                     it("should not have configs with a custom setter on the instance", function() {
+
                         var Cls = CLI.define(null, {
                             constructor: defaultInitConfig,
                             config: makeLazy(1),
@@ -2150,43 +2246,60 @@ describe("CLI.Class", function() {
                                 return this;
                             }
                         });
+
                         var o = new Cls();
-                        expect(o._foo).not.toBeDefined();
+
+                        assert.equal(o._foo, undefined);
+
                     });
 
                     it("should not have configs with a custom applier on the instance", function() {
+
                         var Cls = CLI.define(null, {
                             constructor: defaultInitConfig,
                             config: makeLazy(1),
                             applyFoo: CLI.identityFn
                         });
+
                         var o = new Cls();
-                        expect(o._foo).not.toBeDefined();
+
+                        assert.equal(o._foo, undefined);
+
                     });
 
                     it("should not have configs with a custom updater on the instance", function() {
+
                         var Cls = CLI.define(null, {
                             constructor: defaultInitConfig,
                             config: makeLazy(1),
                             updateFoo: CLI.emptyFn
                         });
+
                         var o = new Cls();
-                        expect(o._foo).not.toBeDefined();
+
+                        assert.equal(o._foo, undefined);
+
                     });
 
                     it("should not call the getter if set is called", function() {
-                        var spy = jasmine.createSpy();
+
+                        var spy = sinon.spy();
                         var Cls = CLI.define(null, {
                             constructor: defaultInitConfig,
                             config: makeLazy(1),
                             getFoo: spy
                         });
+
                         var o = new Cls();
+
                         o.setFoo(2);
-                        expect(spy).not.toHaveBeenCalled();
+
+                        assert.equal(spy.callCount, 0);
                     });
+
                 });
 
+               /*
                 describe("first call to get", function() {
                     it("should call the applier on the first get call", function() {
                         var spy = jasmine.createSpy();
@@ -2384,8 +2497,10 @@ describe("CLI.Class", function() {
                         expect(spy).toHaveBeenCalled();
                     });
                 });
+           */
             });
 
+          /*
             describe("merge", function() {
                 var spy, A, B;
                 beforeEach(function() {
@@ -2711,8 +2826,8 @@ describe("CLI.Class", function() {
                     });
                 });
             });
-   */
         });
+   */
     });
     
    /*
