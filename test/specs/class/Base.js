@@ -4,6 +4,11 @@
  * This file is part of CLI Framework
  */
 
+// {{{ helper
+
+require('../../helper.js');
+
+// }}}
 // {{{ assert
 
 var assert = require('power-assert');
@@ -85,46 +90,6 @@ describe("CLI.Base", function() {
                 }
 
             });
-
-        };
-
-        var org_console = {};
-
-        function beginSilent() {
-
-            org_console.log = global.console.log;
-            org_console.info = global.console.info;
-            org_console.warn = global.console.warn;
-            org_console.error = global.console.error;
-            org_console.dir = global.console.dir;
-            org_console.time = global.console.time;
-            org_console.timeEnd = global.console.timeEnd;
-            org_console.trace = global.console.trace;
-            org_console.assert = global.console.assert;
-
-            global.console.log = CLI.emptyFn;
-            global.console.info = CLI.emptyFn;
-            global.console.warn = CLI.emptyFn;
-            global.console.error = CLI.emptyFn;
-            global.console.dir = CLI.emptyFn;
-            global.console.time = CLI.emptyFn;
-            global.console.timeEnd = CLI.emptyFn;
-            global.console.trace = CLI.emptyFn;
-            global.console.assert = CLI.emptyFn;
-
-        };
-
-        function endSilent() {
-
-            global.console.log = org_console.log;
-            global.console.info = org_console.info;
-            global.console.warn = org_console.warn;
-            global.console.error = org_console.error;
-            global.console.dir = org_console.dir;
-            global.console.time = org_console.time;
-            global.console.timeEnd = org_console.timeEnd;
-            global.console.trace = org_console.trace;
-            global.console.assert = org_console.assert;
 
         };
 
