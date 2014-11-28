@@ -19,6 +19,11 @@ var assert = require('power-assert');
 require('../../../index.js');
 
 // }}}
+// {{{ sinon
+
+var sinon = require('sinon');
+
+// }}}
 // {{{ CLI.ClassManager
 
 describe("CLI.ClassManager", function() {
@@ -259,27 +264,27 @@ describe("CLI.ClassManager", function() {
             CLI.undefine('I.am.the.SubClass');
         });
 
-        /*
         it("should create the namespace", function() {
 
-            expect(I).toBeDefined();
-            expect(I.am).toBeDefined();
-            expect(I.am.the).toBeDefined();
-            expect(I.am.the.SubClass).toBeDefined();
+            assert.notEqual(I, undefined);
+            assert.notEqual(I.am, undefined);
+            assert.notEqual(I.am.the, undefined);
+            assert.notEqual(I.am.the.SubClass, undefined);
 
         });
-       */
 
-        /*
         it("should get className", function() {
 
-            expect(CLI.getClassName(subClass)).toEqual('I.am.the.SubClass');
-        });
-       */
+            assert.equal(CLI.getClassName(subClass), 'I.am.the.SubClass');
 
-        /*
+        });
+
+        // {{{ addStatics
+
         describe("addStatics", function() {
+
             it("single with name - value arguments", function() {
+
                 var called = false;
 
                 subClass.addStatics({
@@ -288,39 +293,58 @@ describe("CLI.ClassManager", function() {
                     }
                 });
 
-                expect(subClass.staticMethod).toBeDefined();
+                assert.notEqual(subClass.staticMethod, undefined);
+
                 subClass.staticMethod();
 
-                expect(called).toBeTruthy();
+                assert.equal(called, true);
+
             });
 
             it("multiple with object map argument", function() {
+
                 subClass.addStatics({
                     staticProperty: 'something',
                     staticMethod: function(){}
                 });
 
-                expect(subClass.staticProperty).toEqual('something');
-                expect(subClass.staticMethod).toBeDefined();
+                assert.equal(subClass.staticProperty, 'something');
+                assert.notEqual(subClass.staticMethod, undefined);
+
             });
+
         });
+
+        // }}}
+        // {{{ mixin
 
         describe("mixin", function() {
+
             it("should have all properties of mixins", function() {
+
                 var obj = new subClass();
-                expect(obj.mixinProperty1).toEqual('mixinProperty1');
-                expect(obj.mixinProperty2).toEqual('mixinProperty2');
-                expect(obj.mixinMethod1).toBeDefined();
-                expect(obj.mixinMethod2).toBeDefined();
-                expect(obj.config.mixinConfig).toEqual('mixinConfig');
+
+                assert.equal(obj.mixinProperty1, 'mixinProperty1');
+                assert.equal(obj.mixinProperty2, 'mixinProperty2');
+                assert.notEqual(obj.mixinMethod1, undefined);
+                assert.notEqual(obj.mixinMethod2, undefined);
+                assert.equal(obj.config.mixinConfig, 'mixinConfig');
+
             });
+
         });
 
+        // }}}
+        // {{{ config
+
         describe("config", function() {
+
+            /*
             it("should merge properly", function() {
+
                 var obj = new subClass();
 
-                expect(obj.config).toEqual({
+                assert.deepEqual(obj.config, {
                     mixinConfig: 'mixinConfig',
                     name: 'subClass',
                     isCool: true,
@@ -333,17 +357,22 @@ describe("CLI.ClassManager", function() {
                     hobbies: ['sleeping', 'eating', 'movies'],
                     isSpecial: true
                 });
+
             });
+           */
 
             it("should apply default config", function() {
+
                 var obj = new subClass();
 
-                expect(obj.getName()).toEqual('subClass');
-                expect(obj.getIsCool()).toEqual(true);
-                expect(obj.getHobbies()).toEqual(['sleeping', 'eating', 'movies']);
+                assert.equal(obj.getName(), 'subClass');
+                assert.equal(obj.getIsCool(), true);
+                assert.deepEqual(obj.getHobbies(), ['sleeping', 'eating', 'movies']);
+
             });
 
             it("should apply with supplied config", function() {
+
                 var obj = new subClass({
                     name: 'newName',
                     isCool: false,
@@ -352,44 +381,77 @@ describe("CLI.ClassManager", function() {
                     }
                 });
 
-                expect(obj.getName()).toEqual('newName');
-                expect(obj.getIsCool()).toEqual(false);
-                expect(obj.getMembers().aaron).toEqual('Aaron Conran');
+                assert.equal(obj.getName(), 'newName');
+                assert.equal(obj.getIsCool(), false);
+                assert.equal(obj.getMembers().aaron, 'Aaron Conran');
+
             });
+
         });
 
+        // }}}
+        // {{{ overriden methods
+
         describe("overriden methods", function() {
+
             it("should call self constructor", function() {
+
                 var obj = new subClass();
-                expect(obj.subConstrutorCalled).toBeTruthy();
+
+                assert.equal(obj.subConstrutorCalled, true);
+
             });
 
             it("should call parent constructor", function() {
+
                 var obj = new subClass();
-                expect(obj.parentConstructorCalled).toBeTruthy();
+
+                assert.equal(obj.parentConstructorCalled, true);
+
             });
 
             it("should call mixins constructors", function() {
+
                 var obj = new subClass();
-                expect(obj.mixinConstructor1Called).toBeTruthy();
-                expect(obj.mixinConstructor2Called).toBeTruthy();
+
+                assert.equal(obj.mixinConstructor1Called, true);
+                assert.equal(obj.mixinConstructor2Called, true);
+
             });
+
         });
 
+        // }}}
+        // {{{ alias
+
         describe("alias", function() {
+
             it("should store alias", function() {
-                expect(manager.getByAlias('subclass')).toBe(subClass);
+
+                assert.equal(manager.getByAlias('subclass'), subClass);
+
             });
 
             it("should store multiple aliases", function() {
-                expect(manager.getByAlias('parentclass')).toBe(parentClass);
-                expect(manager.getByAlias('superclass')).toBe(parentClass);
+
+                assert.equal(manager.getByAlias('parentclass'), parentClass);
+                assert.equal(manager.getByAlias('superclass'), parentClass);
+
             });
+
         });
+
+        // }}}
+
     });
 
+    // }}}
+    // {{{ define
+
     describe('define', function () {
+
         it('should allow anonymous classes', function () {
+
             var T = CLI.define(null, function (Self) {
                 return {
                     constructor: function () {
@@ -398,18 +460,25 @@ describe("CLI.ClassManager", function() {
                     }
                 }
             });
-            
+
             var obj = new T();
-            
-            expect(obj.foo).toBe(1);
-            expect(T).toBe(obj.self);
-            expect(obj.T).toBe(T);
-            expect(obj.$className).toBeNull();
-        })
+
+            assert.equal(obj.foo, 1);
+            assert.equal(T, obj.self);
+            assert.equal(obj.T, T);
+            assert.equal(obj.$className, null);
+
+        });
+
     });
 
+    // }}}
+    // {{{ instantiate
+
     describe("instantiate", function() {
+
         beforeEach(function() {
+
             manager.create('Test.stuff.Person', {
                 alias: 'person',
 
@@ -425,6 +494,7 @@ describe("CLI.ClassManager", function() {
             });
 
             manager.create('Test.stuff.Developer', {
+
                 alias: 'developer',
 
                 extend: 'Test.stuff.Person',
@@ -448,39 +518,59 @@ describe("CLI.ClassManager", function() {
         });
 
         it("should create the instance by full class name", function() {
+
             var me = CLI.create('Test.stuff.Person', 'Jacky', 24, 'male');
-            expect(me instanceof Test.stuff.Person).toBe(true);
+
+            assert.equal(me instanceof Test.stuff.Person, true);
+
         });
 
         it("should create the instance by alias", function() {
+
             var me = manager.instantiateByAlias('person', 'Jacky', 24, 'male');
-            expect(me instanceof Test.stuff.Person).toBe(true);
+
+            assert.equal(me instanceof Test.stuff.Person, true);
+
         });
 
         it("should pass all arguments to the constructor", function() {
+
             var me = manager.instantiateByAlias('person', 'Jacky', 24, 'male');
-            expect(me.name).toBe('Jacky');
-            expect(me.age).toBe(24);
-            expect(me.sex).toBe('male');
+
+            assert.equal(me.name, 'Jacky');
+            assert.equal(me.age, 24);
+            assert.equal(me.sex, 'male');
+
         });
 
         it("should have all methods in prototype", function() {
+
             var me = manager.instantiateByAlias('person', 'Jacky', 24, 'male');
+
             me.eat('rice');
 
-            expect(me.eatenFood).toBe('rice');
+            assert.equal(me.eatenFood, 'rice');
+
         });
 
         it("should works with inheritance", function() {
+
             var me = manager.instantiateByAlias('developer', true, 'Jacky', 24, 'male');
+
             me.code('javascript');
 
-            expect(me.languageCoded).toBe('javascript');
-            expect(me.eatenFood).toBe('bugs');
+            assert.equal(me.languageCoded, 'javascript');
+            assert.equal(me.eatenFood, 'bugs');
+
         });
+
     });
 
+    // }}}
+    // {{{ post-processors
+
     describe("post-processors", function() {
+
         afterEach(function() {
             CLI.undefine('Something.Cool');
         });
@@ -490,8 +580,12 @@ describe("CLI.ClassManager", function() {
             //expect(Something.Cool instanceof test).toBeTruthy();
         });
 
+        // {{{ singleton
+
         describe("singleton", function() {
+
             it("should create the instance namespace and return the class", function() {
+
                 var test = CLI.define('Something.Cool', {
                     singleton: true,
                     someMethod: function() {
@@ -500,23 +594,36 @@ describe("CLI.ClassManager", function() {
                     someProperty: 'something'
                 });
 
-                expect(Something.Cool).toBeDefined();
-                expect(Something.Cool instanceof test).toBeTruthy();
+                assert.notEqual(Something.Cool, undefined);
+                assert.equal(Something.Cool instanceof test, true);
+
             });
+
         });
 
+        // }}}
+        // {{{ alias xtype
+
         describe("alias xtype", function() {
+
             it("should set xtype as a static class property", function() {
+
                 var test = CLI.define('Something.Cool', {
                     alias: 'widget.cool'
                 });
 
-                expect(Something.Cool.xtype).toEqual('cool');
+                assert.equal(Something.Cool.xtype, 'cool');
+
             });
         });
 
+        // }}}
+        // {{{ alternate
+
         describe("alternate", function() {
+
             it("should create the alternate with a string for alternateClassName property", function() {
+
                 CLI.define('Something.Cool', {
                     alternateClassName: 'Something.CoolAsWell',
 
@@ -527,123 +634,124 @@ describe("CLI.ClassManager", function() {
                     someProperty: 'something'
                 });
 
-                expect(Something.CoolAsWell).toBeDefined();
-                expect(Something.CoolAsWell).toBe(Something.Cool);
+                assert.notEqual(Something.CoolAsWell, undefined);
+                assert.equal(Something.CoolAsWell, Something.Cool);
+
             });
 
             it("should create the alternate with an array for alternateClassName property", function() {
+
                 CLI.define('Something.Cool', {
                     alternateClassName: ['Something.CoolAsWell', 'Something.AlsoCool']
                 });
 
-                expect(Something.CoolAsWell).toBe(Something.Cool);
-                expect(Something.AlsoCool).toBe(Something.Cool);
+                assert.equal(Something.CoolAsWell, Something.Cool);
+                assert.equal(Something.AlsoCool, Something.Cool);
+
             });
+
         });
+
+        // }}}
+
     });
 
+    // }}}
+    // {{{ createNamespaces
+
     describe("createNamespaces", function() {
+
         var w = global;
 
         it("should have an alias CLI.namespace", function() {
-            spyOn(CLI.ClassManager, 'createNamespaces');
+
+            var spy = sinon.spy(CLI.ClassManager, 'createNamespaces');
+
             CLI.namespace('a', 'b', 'c');
-            expect(CLI.ClassManager.createNamespaces).toHaveBeenCalledWith('a', 'b', 'c');
+
+            assert.deepEqual(spy.lastCall.args, ['a', 'b', 'c']);
+
         });
 
         it("should create a single top level namespace", function() {
+
             CLI.ClassManager.createNamespaces('FooTest1');
 
-            expect(w.FooTest1).toBeDefined();
+            assert.notEqual(w.FooTest1, undefined);
 
-            if (CLI.isIE8) {
-                w.FooTest1 = undefined;
-            } else {
-                delete w.FooTest1;
-            }
+            delete w.FooTest1;
         });
 
         it("should create multiple top level namespace", function() {
+
             CLI.ClassManager.createNamespaces('FooTest2', 'FooTest3', 'FooTest4');
 
-            expect(w.FooTest2).toBeDefined();
-            expect(w.FooTest3).toBeDefined();
-            expect(w.FooTest4).toBeDefined();
+            assert.notEqual(w.FooTest2, undefined);
+            assert.notEqual(w.FooTest3, undefined);
+            assert.notEqual(w.FooTest4, undefined);
 
-            if (CLI.isIE8) {
-                w.FooTest2 = undefined;
-                w.FooTest3 = undefined;
-                w.FooTest4 = undefined;
-            } else {
-                delete w.FooTest2;
-                delete w.FooTest3;
-                delete w.FooTest4;
-            }
+            delete w.FooTest2;
+            delete w.FooTest3;
+            delete w.FooTest4;
+
         });
 
         it("should create a chain of namespaces, starting from a top level", function() {
+
             CLI.ClassManager.createNamespaces('FooTest5', 'FooTest5.ns1', 'FooTest5.ns1.ns2', 'FooTest5.ns1.ns2.ns3');
 
-            expect(w.FooTest5).toBeDefined();
-            expect(w.FooTest5.ns1).toBeDefined();
-            expect(w.FooTest5.ns1.ns2).toBeDefined();
-            expect(w.FooTest5.ns1.ns2.ns3).toBeDefined();
+            assert.notEqual(w.FooTest5, undefined);
+            assert.notEqual(w.FooTest5.ns1, undefined);
+            assert.notEqual(w.FooTest5.ns1.ns2, undefined);
+            assert.notEqual(w.FooTest5.ns1.ns2.ns3, undefined);
 
-            if (CLI.isIE8) {
-                w.FooTest5 = undefined;
-            } else {
-                delete w.FooTest5;
-            }
+            delete w.FooTest5;
+
         });
 
         it("should create lower level namespaces without first defining the top level", function() {
+
             CLI.ClassManager.createNamespaces('FooTest6.ns1', 'FooTest7.ns2');
 
-            expect(w.FooTest6).toBeDefined();
-            expect(w.FooTest6.ns1).toBeDefined();
-            expect(w.FooTest7).toBeDefined();
-            expect(w.FooTest7.ns2).toBeDefined();
+            assert.notEqual(w.FooTest6, undefined);
+            assert.notEqual(w.FooTest6.ns1, undefined);
+            assert.notEqual(w.FooTest7, undefined);
+            assert.notEqual(w.FooTest7.ns2, undefined);
 
-            if (CLI.isIE8) {
-                w.FooTest6 = undefined;
-                w.FooTest7 = undefined;
-            } else {
-                delete w.FooTest6;
-                delete w.FooTest7;
-            }
+            delete w.FooTest6;
+            delete w.FooTest7;
+
         });
 
         it("should create a lower level namespace without defining the middle level", function() {
+
             CLI.ClassManager.createNamespaces('FooTest8', 'FooTest8.ns1.ns2');
 
-            expect(w.FooTest8).toBeDefined();
-            expect(w.FooTest8.ns1).toBeDefined();
-            expect(w.FooTest8.ns1.ns2).toBeDefined();
+            assert.notEqual(w.FooTest8, undefined);
+            assert.notEqual(w.FooTest8.ns1, undefined);
+            assert.notEqual(w.FooTest8.ns1.ns2, undefined);
 
-            if (CLI.isIE8) {
-                w.FooTest8 = undefined;
-            } else {
-                delete w.FooTest8;
-            }
+            delete w.FooTest8;
+
         });
 
         it ("should not overwritte existing namespace", function() {
+
             CLI.ClassManager.createNamespaces('FooTest9');
 
             FooTest9.prop1 = 'foo';
 
             CLI.ClassManager.createNamespaces('FooTest9');
 
-            expect(FooTest9.prop1).toEqual("foo");
+            assert.equal(FooTest9.prop1, "foo");
 
-            if (CLI.isIE8) {
-                w.FooTest9 = undefined;
-            } else {
-                delete w.FooTest9;
-            }
+            delete w.FooTest9;
+
         });
-       */
+
     });
+
+    // }}}
 
 });
 
