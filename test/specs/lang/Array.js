@@ -13,7 +13,9 @@ require('../../helper.js');
 
 var assert = require('power-assert');
 
-// require CLI
+// }}}
+// {{{ require CLI
+
 require('../../../index.js');
 
 // }}}

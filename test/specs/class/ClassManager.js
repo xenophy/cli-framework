@@ -14,75 +14,104 @@ require('../../helper.js');
 var assert = require('power-assert');
 
 // }}}
+// {{{ require CLI
+
+require('../../../index.js');
+
+// }}}
 // {{{ CLI.ClassManager
 
 describe("CLI.ClassManager", function() {
 
-    /*
-
     var manager = CLI.ClassManager,
         cls, emptyFn = function(){};
 
-
-
     beforeEach(function() {
+
         manager.enableNamespaceParseCache = false;
-        window.My = {
+
+        global.My = {
+
             awesome: {
                 Class: function(){console.log(11);},
                 Class1: function(){console.log(12);},
                 Class2: function(){console.log(13);}
             },
+
             cool: {
                 AnotherClass: function(){console.log(21);},
                 AnotherClass1: function(){console.log(22);},
                 AnotherClass2: function(){console.log(23);}
             }
+
         };
+
     });
 
     afterEach(function() {
+
         try {
-            delete window.Something;
-            delete window.My;
-            delete window.I;
-            delete window.Test;
+            delete global.Something;
+            delete global.My;
+            delete global.I;
+            delete global.Test;
         } catch (e) {
-            window.Something = undefined;
-            window.My = undefined;
-            window.I = undefined;
-            window.Test = undefined;
+            global.Something = undefined;
+            global.My = undefined;
+            global.I = undefined;
+            global.Test = undefined;
         }
         manager.enableNamespaceParseCache = true;
     });
 
+    // {{{ parseNamespace
+
     describe("parseNamespace", function() {
+
         it("should return the broken-down namespace", function() {
+
             var parts = manager.parseNamespace('Some.strange.alien.Namespace');
 
-            expect(parts).toEqual([CLI.global, 'Some', 'strange', 'alien', 'Namespace']);
+            assert.deepEqual(parts, [CLI.global, 'Some', 'strange', 'alien', 'Namespace']);
+
         });
 
         it("should return the broken-down namespace with object rewrites", function() {
+
             var parts = manager.parseNamespace('CLI.some.Namespace');
 
-            expect(parts).toEqual([Ext, 'some', 'Namespace']);
+            assert.deepEqual(parts, [CLI, 'some', 'Namespace']);
+
         });
+
     });
+
+    // }}}
+    // {{{ exist
 
     describe("exist", function() {
+
         it("should return whether a single class exists", function() {
-            expect(manager.isCreated('My.notexisting.Class')).toBe(false);
-            expect(manager.isCreated('My.awesome.Class')).toBe(true);
+
+            assert.equal(manager.isCreated('My.notexisting.Class'), false);
+            assert.equal(manager.isCreated('My.awesome.Class'), true);
+
         });
+
     });
 
+    // }}}
+    // {{{ loader preprocessor
+
     describe("loader preprocessor", function() {
+
         beforeEach(function() {
             cls = function(){};
         });
 
+        /*
         it("should load and replace string class names with objects", function() {
+
             var data = {
                     extend: 'My.awesome.Class',
                     mixins: {
@@ -99,7 +128,6 @@ describe("CLI.ClassManager", function() {
                 },
                 classNames;
 
-
             spyOn(CLI.Loader, 'require').andCallFake(function(classes, fn) {
                 classNames = classes;
                 fn();
@@ -110,14 +138,24 @@ describe("CLI.ClassManager", function() {
             expect(CLI.Loader.require).toHaveBeenCalled();
             expect(classNames).toEqual(['My.awesome.Class', 'My.cool.AnotherClass1']);
             expect(data).toEqual(expected);
+
         });
+       */
+
+        // }}}
+
     });
 
+    // {{{ create
+
     describe("create", function() {
+
         var subClass, parentClass, mixinClass1, mixinClass2, subSubClass;
 
         beforeEach(function() {
+
             mixinClass1 = manager.create('I.am.the.MixinClass1', {
+
                 config: {
                     mixinConfig: 'mixinConfig'
                 },
@@ -182,6 +220,7 @@ describe("CLI.ClassManager", function() {
             });
 
             subClass = manager.create('I.am.the.SubClass', {
+
                 alias: 'subclass',
 
                 extend: 'I.am.the.ParentClass',
@@ -212,7 +251,7 @@ describe("CLI.ClassManager", function() {
                 }
             });
         });
-        
+
         afterEach(function() {
             CLI.undefine('I.am.the.MixinClass1');
             CLI.undefine('I.am.the.MixinClass2');
@@ -220,17 +259,25 @@ describe("CLI.ClassManager", function() {
             CLI.undefine('I.am.the.SubClass');
         });
 
+        /*
         it("should create the namespace", function() {
+
             expect(I).toBeDefined();
             expect(I.am).toBeDefined();
             expect(I.am.the).toBeDefined();
             expect(I.am.the.SubClass).toBeDefined();
-        });
 
+        });
+       */
+
+        /*
         it("should get className", function() {
+
             expect(CLI.getClassName(subClass)).toEqual('I.am.the.SubClass');
         });
+       */
 
+        /*
         describe("addStatics", function() {
             it("single with name - value arguments", function() {
                 var called = false;
@@ -496,7 +543,7 @@ describe("CLI.ClassManager", function() {
     });
 
     describe("createNamespaces", function() {
-        var w = window;
+        var w = global;
 
         it("should have an alias CLI.namespace", function() {
             spyOn(CLI.ClassManager, 'createNamespaces');
@@ -595,10 +642,8 @@ describe("CLI.ClassManager", function() {
                 delete w.FooTest9;
             }
         });
+       */
     });
-
-
-    */
 
 });
 

@@ -14,6 +14,11 @@ require('../../helper.js');
 var assert = require('power-assert');
 
 // }}}
+// {{{ require CLI
+
+require('../../../index.js');
+
+// }}}
 // {{{ sinon
 
 var sinon = require('sinon');
@@ -40,6 +45,7 @@ describe("CLI.Class", function() {
             },
 
             constructor: function(config) {
+
                 this.initConfig(config);
 
                 this.mixinConstructor1Called = true;
