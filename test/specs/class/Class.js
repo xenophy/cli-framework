@@ -2825,12 +2825,15 @@ describe("CLI.Class", function() {
 
                 });
 
-                /// }}}
+                // }}}
+                // {{{ instance values
 
-        /*
                 describe("instance values", function() {
+
                     var A;
+
                     function defineAndInstance(classVal, instanceVal) {
+
                         A = CLI.define(null, {
                             constructor: defaultInitConfig,
                             config: {
@@ -2850,21 +2853,37 @@ describe("CLI.Class", function() {
                         A = null;
                     });
 
+                    // {{{ merge values
+
                     describe("merge values", function() {
+
                         it("should call the merge function for all value combinations", function() {
+
                             var possible = [undefined, null, true, 'aString', 1, new Date(), {}, []];
+
                             CLI.Array.forEach(possible, function(clsValue) {
                                 CLI.Array.forEach(possible, function(instanceValue) {
+
                                     spy.reset();
                                     defineAndInstance(clsValue, instanceValue);
-                                    expect(spy).toHaveBeenCalled();
+
+                                    assert.equal(spy.called, true);
+
                                 });
+
                             });
+
                         });
                     });
 
+                    // }}}
+                    // {{{ merging
+
                     describe("merging", function() {
+
+                        /*
                         it("should pass the instance value, then class value", function() {
+
                             var args;
 
                             defineAndInstance({
@@ -2872,21 +2891,32 @@ describe("CLI.Class", function() {
                             }, {
                                 bar: 1
                             });
+
                             args = spy.mostRecentCall.args;
+
                             expect(args[0]).toEqual({
                                 bar: 1
                             });
+
                             expect(args[1]).toEqual({
                                 foo: 1
                             });
-                        });
 
+                        });
+                       */
+
+                      /*
                         it("should pass the instance", function() {
+
                             defineAndInstance({}, {});
                             expect(spy.mostRecentCall.args[2]).toBe(o);
-                        });
 
+                        });
+                       */
+
+                        /*
                         it("should set the returned value", function() {
+
                             spy = jasmine.createSpy().andReturn({
                                 merged: 'ok!'
                             });
@@ -2894,14 +2924,24 @@ describe("CLI.Class", function() {
                             expect(o.getFoo()).toEqual({
                                 merged: 'ok!'
                             });
-                        });
-                    });
-                });
-               */
 
-              /*
+                        });
+                       */
+
+                    });
+
+                    // }}}
+
+                });
+
+                // }}}
+                // {{{ subclassing
+
                 describe("subclassing", function() {
+
+                    /*
                     it("should inherit the merge from the parent", function() {
+
                         A = CLI.define(null, {
                             constructor: defaultInitConfig,
                             config: {
@@ -2923,10 +2963,15 @@ describe("CLI.Class", function() {
                         o = new B({
                             foo: {}
                         });
-                        expect(spy).toHaveBeenCalled();
-                    });
 
+                        expect(spy).toHaveBeenCalled();
+
+                    });
+                   */
+
+                  /*
                     it("should be able to set a merge on a subclass", function() {
+
                         A = CLI.define(null, {
                             constructor: defaultInitConfig,
                             config: {
@@ -2949,9 +2994,13 @@ describe("CLI.Class", function() {
                             foo: {}
                         });
                         expect(spy).toHaveBeenCalled();
-                    });
 
+                    });
+                   */
+
+                  /*
                     it("should be able to override the merge on a superclass", function() {
+
                         var superSpy = jasmine.createSpy();
                         spy = jasmine.createSpy().andReturn({});
 
@@ -2983,8 +3032,11 @@ describe("CLI.Class", function() {
                         expect(superSpy).not.toHaveBeenCalled();
                         expect(spy).toHaveBeenCalled();
                     });
+                   */
 
+                  /*
                     it("should retain the merge on the superclass", function() {
+
                         var superSpy = jasmine.createSpy().andReturn({});
 
                         A = CLI.define(null, {
@@ -3015,54 +3067,72 @@ describe("CLI.Class", function() {
                         expect(superSpy).toHaveBeenCalled();
                         expect(spy).not.toHaveBeenCalled();
                     });
+                   */
+
                 });
+
+                // }}}
+
             });
 
-   */
         });
 
     });
-   /*
+
+    // }}}
+    // {{{ statics
 
     describe("statics", function() {
+
         beforeEach(function() {
             fn = function() {};
         });
+
         it("should copy static properties to the class", function() {
+
             cls = CLI.define(null, {
                 statics: {
                     someName: 'someValue',
                     someMethod: fn
                 }
             });
-            expect(cls.someName).toBe('someValue');
-            expect(cls.someMethod).toBe(fn);
+
+            assert.equal(cls.someName, 'someValue');
+            assert.equal(cls.someMethod, fn);
+
         });
-        
+
         it("should not copy statics to subclasses", function() {
+
             cls = CLI.define(null, {
                 statics: {
                     someName: 'someValue',
                     someMethod: fn
                 }
             });
-            
+
             sub = CLI.define(null, {
                 extend: sub
             });
-            expect(sub.someName).not.toBeDefined();
-            expect(sub.someMethod).not.toBeDefined();
+
+            assert.equal(sub.someName, undefined);
+            assert.equal(sub.someMethod, undefined);
+
         });
+
     });
-   */
-   /*
-    
+
+    // }}}
+    // {{{ inheritableStatics
+
     describe("inheritableStatics", function() {
+
         beforeEach(function() {
             fn = function() {};
         });
-        
+
         it("should store names of inheritable static properties", function() {
+
             cls = CLI.define(null, {
                 inheritableStatics: {
                     someName: 'someValue',
@@ -3070,28 +3140,32 @@ describe("CLI.Class", function() {
                 }
             });
 
-            expect((new cls()).inheritableStatics).not.toBeDefined();
-            expect(cls.someName).toBe('someValue');
-            expect(cls.prototype.$inheritableStatics).toEqual(['someName', 'someMethod']);
-            expect(cls.someMethod).toBe(fn);
+            assert.equal((new cls()).inheritableStatics, undefined);
+            assert.equal(cls.someName, 'someValue');
+            assert.deepEqual(cls.prototype.$inheritableStatics, ['someName', 'someMethod']);
+            assert.equal(cls.someMethod, fn);
+
         });
-        
+
         it("should inherit inheritable statics", function() {
+
             cls = CLI.define(null, {
                 inheritableStatics: {
                     someName: 'someValue',
                     someMethod: fn
                 }
             });
+
             sub = CLI.define(null, {
                 extend: cls
             });
 
-            expect(sub.someName).toBe('someValue');
-            expect(sub.someMethod).toBe(fn);
+            assert.equal(sub.someName, 'someValue');
+            assert.equal(sub.someMethod, fn);
         });
-        
+
         it("should NOT inherit inheritable statics if the class already has it", function() {
+
             cls = CLI.define(null, {
                 inheritableStatics: {
                     someName: 'someValue',
@@ -3106,16 +3180,20 @@ describe("CLI.Class", function() {
                 }
             });
 
-            expect(sub.someName).toBe('someOtherValue');
-            expect(sub.someMethod).not.toBe(fn);
-        });
-    });
-   */
+            assert.equal(sub.someName, 'someOtherValue');
+            assert.notEqual(sub.someMethod, fn);
 
-   /*
+        });
+
+    });
+
+    // }}}
+    // {{{ addStatics
 
     describe("addStatics", function() {
+
         it("single with name - value arguments", function() {
+
             var called = false;
 
             subClass.addStatics({
@@ -3124,87 +3202,104 @@ describe("CLI.Class", function() {
                 }
             });
 
-            expect(subClass.staticMethod).toBeDefined();
+            assert.notEqual(subClass.staticMethod, undefined);
+
             subClass.staticMethod();
 
-            expect(called).toBeTruthy();
+            assert.equal(called, true);
         });
 
         it("multiple with object map argument", function() {
+
             subClass.addStatics({
                 staticProperty: 'something',
                 staticMethod: function(){}
             });
 
-            expect(subClass.staticProperty).toBe('something');
-            expect(subClass.staticMethod).toBeDefined();
+            assert.equal(subClass.staticProperty, 'something');
+            assert.notEqual(subClass.staticMethod, undefined);
+
         });
+
     });
-   */
 
+    // }}}
+    // {{{ override
 
-   /*
     describe("override", function() {
-        it("should override", function() {
-            subClass.override({
-                myOwnMethod: function(){
-                    this.isOverridden = true;
 
+        it("should override", function() {
+
+            subClass.override({
+
+                myOwnMethod: function(){
+
+                    this.isOverridden = true;
                     this.callOverridden(arguments);
+
                 }
             });
 
             var obj = new subClass;
+
             obj.myOwnMethod();
 
-            expect(obj.isOverridden).toBe(true);
-            expect(obj.myOwnMethodCalled).toBe(true);
+            assert.equal(obj.isOverridden, true);
+            assert.equal(obj.myOwnMethodCalled, true);
+
         });
-        
+
         it("should override a default config", function() {
+
             cls = CLI.define(null, {
                 constructor: defaultInitConfig,
                 config: {
                     foo: 1
                 }
             });
-            
+
             cls.override({
                 config: {
                     foo: 2
                 }
             });
-            
-            expect((new cls()).getFoo()).toBe(2);
+
+            assert.equal((new cls()).getFoo(), 2);
+
         });
-        
+
         it("should be able to add a new config", function() {
+
             cls = CLI.define(null, {
                 constructor: defaultInitConfig,
                 config: {
                     foo: 1
                 }
             });
-            
+
             cls.override({
                 config: {
                     bar: 2
                 }
             });
-            
-            expect((new cls()).getBar()).toBe(2);
+
+            assert.equal((new cls()).getBar(), 2);
+
         });
+
     });
 
-   */
-   /*
+    // }}}
+    // {{{ private methods
 
     describe('private methods', function () {
+
         var Base;
 
         beforeEach(function () {
+
             // This is to silence console log errors
-            spyOn(Ext, 'log');
+            beginSilent();
             Base = CLI.define(null, {
                 bar: function () {},
 
@@ -3212,11 +3307,18 @@ describe("CLI.Class", function() {
                     foo: function () {}
                 }
             });
+            endSilent();
+
         });
 
+        // {{{ extend
+
         describe('extend', function () {
+
             it('should allow derived class to override a private method w/a private method', function () {
-                expect(function () {
+
+                beginSilent();
+                assert.doesNotThrow(function () {
                     CLI.define(null, {
                         extend: Base,
 
@@ -3224,11 +3326,15 @@ describe("CLI.Class", function() {
                             foo: function () {}
                         }
                     });
-                }).not.toThrow();
+                });
+                endSilent();
+
             });
 
             it('should allow derived class to override a public method w/a private method', function () {
-                expect(function () {
+
+                beginSilent();
+                assert.doesNotThrow(function () {
                     CLI.define(null, {
                         extend: Base,
 
@@ -3236,21 +3342,28 @@ describe("CLI.Class", function() {
                             bar: function () {}
                         }
                     });
-                }).not.toThrow();
+                });
+                endSilent();
+
             });
 
             it('should throw when derived class overrides a private method', function () {
-                expect(function () {
+
+                beginSilent();
+                assert.throws(function () {
                     CLI.define(null, {
                         extend: Base,
 
                         foo: function () {}
                     });
-                }).toThrow();
+                });
+                endSilent();
+
             });
 
             it('should throw when derived class overrides a private method w/a foreign private method', function () {
-                expect(function () {
+                beginSilent();
+                assert.throws(function () {
                     CLI.define(null, {
                         extend: Base,
 
@@ -3260,57 +3373,78 @@ describe("CLI.Class", function() {
                             foo: function () {}
                         }
                     });
-                }).toThrow();
+                });
+                endSilent();
+
             });
+
         });
 
+        // }}}
+        // {{{ override
+
         describe('override', function () {
+
             it('should throw when overriding a private method', function () {
-                expect(function () {
+
+                beginSilent();
+                assert.throws(function () {
                     Base.override({
                         foo: function () {}
                     });
-                }).toThrow();
+                });
+                endSilent();
+
             });
 
             it('should allow overriding a public method w/a private method', function () {
-                expect(function () {
+
+                assert.doesNotThrow(function() {
                     Base.override({
                         privates: {
                             bar: function () {}
                         }
                     });
-                }).not.toThrow();
+                });
+
             });
 
             it('should allow overriding a private method w/a private method', function () {
-                expect(function () {
+
+                assert.doesNotThrow(function() {
                     Base.override({
                         privates: {
                             foo: function () {}
                         }
                     });
-                }).not.toThrow();
+                });
+
             });
 
             it('should throw when derived class overrides a private method w/a foreign private method', function () {
-                expect(function () {
-                    Base.override({
+                assert.throws(function() {
+                    base.override({
                         privates: {
                             privacy: 'user',
 
                             foo: function () {}
                         }
                     });
-                }).toThrow();
+                });
+
             });
+
         });
+
+        // }}}
+
     });
 
-   */
+    // }}}
+    // {{{ define override
 
-  /*
     describe("define override", function() {
+
         var obj,
             createFnsCalled;
 
@@ -3372,7 +3506,7 @@ describe("CLI.Class", function() {
                 method1: function(x) {
                     return 'b' + x;
                 },
-                
+
                 patchedMethod: function () {
                     return this.callParent() + 'B';
                 },
@@ -3438,55 +3572,82 @@ describe("CLI.Class", function() {
         });
 
         it("should call the createdFn", function () {
-            expect(createFnsCalled.length).toBe(2);
-            expect(createFnsCalled[0]).toBe('Foo.Singleton');
-            expect(createFnsCalled[1]).toBe('Foo.SomeClass');
+
+            assert.equal(createFnsCalled.length, 2);
+            assert.equal(createFnsCalled[0], 'Foo.Singleton');
+            assert.equal(createFnsCalled[1], 'Foo.SomeClass');
+
         });
 
         it("can override constructor", function() {
-            expect(obj.prop).toBe(42);
+
+            assert.equal(obj.prop, 42);
+
         });
 
         it("can add new methods", function() {
-            expect(obj.method2()).toBe('two');
+
+            assert.equal(obj.method2(), 'two');
+
         });
 
         it("can add new static methods", function() {
-            expect(Foo.SomeClass.newStatic()).toBe('boo');
+
+            assert.equal(Foo.SomeClass.newStatic(), 'boo');
+
         });
 
         it("callParent should work for instance methods", function() {
-            expect(obj.method1(21)).toBe('ab42c');
+
+            assert.equal(obj.method1(21), 'ab42c');
+
         });
 
         it("callParent should work for static methods", function() {
-            expect(Foo.SomeClass.staticMethod(21)).toBe('ZBA42!');
+
+            assert.equal(Foo.SomeClass.staticMethod(21), 'ZBA42!');
+
         });
 
         it("callSuper should work for instance methods", function() {
-            expect(obj.patchedMethod('x')).toBe('xAC');
+
+            assert.equal(obj.patchedMethod('x'), 'xAC');
+
         });
 
         it("callSuper should work for static methods", function() {
-            expect(Foo.SomeClass.patchedStaticMethod('X')).toBe('Xac');
+
+            assert.equal(Foo.SomeClass.patchedStaticMethod('X'), 'Xac');
+
         });
 
         it('works with singletons', function () {
-            expect(Foo.Singleton.foo(21)).toBe(42);
+
+            assert.equal(Foo.Singleton.foo(21), 42);
+
         });
+
     });
 
+    // }}}
+    // {{{ mixin
+
     describe("mixin", function() {
+
         it("should have all properties of mixins", function() {
+
             var obj = new subClass;
-            expect(obj.mixinProperty1).toBe('mixinProperty1');
-            expect(obj.mixinProperty2).toBe('mixinProperty2');
-            expect(obj.mixinMethod1).toBeDefined();
-            expect(obj.mixinMethod2).toBeDefined();
-            expect(obj.getMixinConfig()).toBe('mixinConfig');
+
+            assert.equal(obj.mixinProperty1, 'mixinProperty1');
+            assert.equal(obj.mixinProperty2, 'mixinProperty2');
+            assert.notEqual(obj.mixinMethod1, undefined);
+            assert.notEqual(obj.mixinMethod2, undefined);
+            assert.equal(obj.getMixinConfig(), 'mixinConfig');
+
         });
 
         it("should not overwrite a config if it exists on the class", function() {
+
             var Mix = CLI.define('spec.Mixin', {
                 config: {
                     foo: 1
@@ -3501,18 +3662,21 @@ describe("CLI.Class", function() {
                 }
             });
             o = new Cls();
-            expect(o.getFoo()).toBe(2);
+
+            assert.equal(o.getFoo(), 2);
+
             CLI.undefine('spec.Mixin');
         });
-    });
-   */
 
-  /*
+    });
+
     describe('hooks', function() {
+
         var fooResult,
             extendLog;
 
         beforeEach(function() {
+
             fooResult = '';
             extendLog = [];
 
@@ -3532,6 +3696,7 @@ describe("CLI.Class", function() {
                     fooResult += 'M1.bar' + s;
                 }
             });
+
             CLI.define('Foo.M2', {
                 extend: 'Foo.M1',
                 mixinConfig: {
@@ -3550,6 +3715,7 @@ describe("CLI.Class", function() {
                     fooResult += 'M2.bar' + s;
                 }
             });
+
             CLI.define('Foo.A', {
                 foo: function(s) {
                     fooResult += 'A.foo' + s;
@@ -3558,6 +3724,7 @@ describe("CLI.Class", function() {
                     fooResult += 'A.bar' + s;
                 }
             });
+
             CLI.define('Foo.B', {
                 extend: 'Foo.A',
                 foo: function(s) {
@@ -3569,6 +3736,7 @@ describe("CLI.Class", function() {
                     fooResult += 'B.bar' + s;
                 }
             });
+
             CLI.define('Foo.C', {
                 extend: 'Foo.A',
                 mixins: {
@@ -3584,6 +3752,7 @@ describe("CLI.Class", function() {
                     fooResult += 'C.bar' + s;
                 }
             });
+
             CLI.define('Foo.D', {
                 extend: 'Foo.B',
                 mixins: {
@@ -3600,6 +3769,7 @@ describe("CLI.Class", function() {
                     return 42;
                 }
             });
+
             CLI.define('Foo.E', {
                 extend: 'Foo.C',
                 foo: function(s) {
@@ -3625,36 +3795,42 @@ describe("CLI.Class", function() {
         });
 
         it('should call A then M2 then C', function() {
+
             var cInstance = new Foo.C(),
                 result = cInstance.foo(' ');
 
-            expect(fooResult).toBe('A.foo M2.foo C.foo ');
-            expect(result).toBe('C.foo');
+            assert.equal(fooResult, 'A.foo M2.foo C.foo ');
+            assert.equal(result, 'C.foo');
         });
 
         it('function hook should call A then B then M2 then C', function() {
+
             var dInstance = new Foo.D(),
                 result = dInstance.foo(' ');
 
-            expect(fooResult).toBe('A.foo B.foo M2.foo D.foo ');
-            expect(result).toBe('D.foo');
+            assert.equal(fooResult, 'A.foo B.foo M2.foo D.foo ');
+            assert.equal(result, 'D.foo');
         });
 
         it('named hook should call A then B then M2 then C', function() {
+
             var dInstance = new Foo.D(),
                 result = dInstance.bar(' - ');
 
-            expect(fooResult).toBe('A.bar - B.bar - M1.bar - M2.bar - D.bar - ');
-            expect(result).toBe(42);
+            assert.equal(fooResult, 'A.bar - B.bar - M1.bar - M2.bar - D.bar - ');
+            assert.equal(result, 42);
         });
 
         it('should process extended option', function () {
+
             var s = extendLog.join('/');
-            expect(s).toBe('Foo.E extends Foo.C');
+
+            assert.equal(s, 'Foo.E extends Foo.C');
         });
-   */
+
     });
 
+    // }}}
     // {{{ overriden methods
 
     describe("overriden methods", function() {
