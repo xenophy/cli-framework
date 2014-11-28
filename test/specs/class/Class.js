@@ -2548,20 +2548,26 @@ describe("CLI.Class", function() {
             });
 
             // }}}
+            // {{{ merge
 
-          /*
             describe("merge", function() {
+
                 var spy, A, B;
+
                 beforeEach(function() {
-                    spy = jasmine.createSpy();
+                    spy = sinon.spy();
                 });
 
                 afterEach(function() {
                     A = B = null;
                 });
 
+                // {{{ during class definition
+
                 describe("during class definition", function() {
+
                     function defineInherit(aVal, bVal, onlyA) {
+
                         A = CLI.define(null, {
                             constructor: defaultInitConfig,
                             config: {
@@ -2573,17 +2579,22 @@ describe("CLI.Class", function() {
                         });
 
                         if (!onlyA) {
+
                             B = CLI.define(null, {
                                 extend: A,
                                 config: {
                                     foo: bVal
                                 }
                             });
+
                         }
+
                     }
 
                     function defineMixin(aVal, bVal) {
+
                         CLI.undefine('spec.B');
+
                         // Mixins require a name to work...
                         B = CLI.define('spec.B', {
                             config: {
@@ -2608,86 +2619,215 @@ describe("CLI.Class", function() {
                     });
 
                     it("should not call the merge fn when defining the config", function() {
+
                         defineInherit({}, undefined, true);
-                        expect(spy).not.toHaveBeenCalled();
+
+                        assert.equal(spy.called, false);
                     });
 
+                    // }}}
+                    // {{{ merge values
+
                     describe("merge values", function() {
+
                         var possible = [undefined, null, true, 'aString', 1, new Date(), {}, []];
+
+                        // {{{ for subclasses
+
                         describe("for subclasses", function() {
+
                             it("should call the merge function for all value combinations", function() {
+
                                 CLI.Array.forEach(possible, function(superValue) {
+
                                     CLI.Array.forEach(possible, function(subValue) {
                                         spy.reset();
                                         defineInherit(superValue, subValue);
-                                        expect(spy).toHaveBeenCalled();
+                                        assert.equal(spy.called, true);
                                     });
+
                                 });
+
                             });
+
                         });
+
+                        // }}}
+                        // {{{ for mixins
 
                         describe("for mixins", function() {
+
                             it("should call the merge function for all value combinations", function() {
+
                                 CLI.Array.forEach(possible, function(mixinValue) {
+
                                     CLI.Array.forEach(possible, function(clsValue) {
+
                                         spy.reset();
                                         defineMixin(mixinValue, clsValue, false, true);
-                                        expect(spy).toHaveBeenCalled();
+
+                                        assert.equal(spy.called, true);
+
                                     });
+
                                 });
+
                             });
+
                         });
+
+                        // }}}
+
                     });
 
+                    // }}}
+                    // {{{ merging
+
                     describe("merging", function() {
+
+                        /*
                         it("should pass the sub value, then super value and whether it is from a mixin", function() {
                             var o1 = {},
                                 o2 = {};
 
                             defineInherit(o1, o2);
 
-                            var call = spy.mostRecentCall;
+                            var result = {};
+                            spy.getCalls().forEach(function(cl) {
+
+                                result[cl.callId] = result[cl.callId] || 0;
+                                result[cl.callId]++;
+
+                            });
+                            var maxCnt = 0;
+                            var maxKey;
+                            CLI.iterate(result, function(key, cnt) {
+                                if (maxCnt < cnt) {
+                                    maxCnt = cnt;
+                                    maxKey = key;
+                                }
+                            });
+                            var mostRecentCall;
+                            spy.getCalls().forEach(function(cl) {
+                                if (cl.callId == maxKey) {
+                                    mostRecentCall = cl;
+                                }
+                            });
+
+                            var call = mostRecentCall;
                             var args = call.args;
 
                             // When merge is called the "this" pointer should be the
                             // CLI.Config instance (which may have meta-level configs on
                             // it).
-                            expect(call.object).toBe(B.$config.configs.foo);
+                            assert.equal(call.thisValue, B.$config.configs.foo);
 
-                            expect(args[0]).toBe(o2);
-                            expect(args[1]).toBe(o1);
-                            expect(args[2]).toBe(B);
-                            expect(args[3]).toBeFalsy();
+                            assert.equal(args[0], o2);
+                            assert.equal(args[1], o1);
+                            assert.equal(args[2], B);
+                            assert.equal(args[3], false);
                         });
+                       */
+
+                        // {{{ with a mixin
 
                         describe("with a mixin", function() {
+
                             it("should pass the mixinClass", function() {
+
                                 defineMixin({}, {});
-                                var args = spy.mostRecentCall.args;
-                                expect(args[2]).toBe(A);
-                                expect(args[3]).toBe(B);
+
+                                var result = {};
+                                spy.getCalls().forEach(function(cl) {
+
+                                    result[cl.callId] = result[cl.callId] || 0;
+                                    result[cl.callId]++;
+
+                                });
+                                var maxCnt = 0;
+                                var maxKey;
+                                CLI.iterate(result, function(key, cnt) {
+                                    if (maxCnt < cnt) {
+                                        maxCnt = cnt;
+                                        maxKey = key;
+                                    }
+                                });
+                                var mostRecentCall;
+                                spy.getCalls().forEach(function(cl) {
+                                    if (cl.callId == maxKey) {
+                                        mostRecentCall = cl;
+                                    }
+                                });
+
+                                var args = mostRecentCall.args;
+
+                                assert.equal(args[2], A);
+                                assert.equal(args[3], B);
+
                             });
                         });
+
+                        // }}}
 
                         it("should pass the scope as the Config instance", function() {
+
                             defineInherit({}, {});
-                            expect(spy.mostRecentCall.object).toBe(B.$config.configs.foo);
+
+                            var result = {};
+                            spy.getCalls().forEach(function(cl) {
+
+                                result[cl.callId] = result[cl.callId] || 0;
+                                result[cl.callId]++;
+
+                            });
+                            var maxCnt = 0;
+                            var maxKey;
+                            CLI.iterate(result, function(key, cnt) {
+                                if (maxCnt < cnt) {
+                                    maxCnt = cnt;
+                                    maxKey = key;
+                                }
+                            });
+                            var mostRecentCall;
+                            spy.getCalls().forEach(function(cl) {
+                                if (cl.callId == maxKey) {
+                                    mostRecentCall = cl;
+                                }
+                            });
+
+                            assert.equal(mostRecentCall.thisValue, B.$config.configs.foo);
+
                         });
 
+                        /*
                         it("should set the returned value", function() {
-                            spy = jasmine.createSpy().andReturn({
+
+                            spy = sinon.spy();
+
+                            spy.alwaysReturned({
                                 merged: 'ok!'
                             });
+
                             defineInherit({}, {});
+
                             o = new B();
+
                             expect(o.getFoo()).toEqual({
                                 merged: 'ok!'
                             });
+
                         });
+                       */
+
                     });
+
+                    // }}}
 
                 });
 
+                /// }}}
+
+        /*
                 describe("instance values", function() {
                     var A;
                     function defineAndInstance(classVal, instanceVal) {
@@ -2757,7 +2897,9 @@ describe("CLI.Class", function() {
                         });
                     });
                 });
+               */
 
+              /*
                 describe("subclassing", function() {
                     it("should inherit the merge from the parent", function() {
                         A = CLI.define(null, {
@@ -2875,10 +3017,11 @@ describe("CLI.Class", function() {
                     });
                 });
             });
-        });
+
    */
+        });
+
     });
-    
    /*
 
     describe("statics", function() {
@@ -3164,6 +3307,9 @@ describe("CLI.Class", function() {
         });
     });
 
+   */
+
+  /*
     describe("define override", function() {
         var obj,
             createFnsCalled;
@@ -3359,7 +3505,9 @@ describe("CLI.Class", function() {
             CLI.undefine('spec.Mixin');
         });
     });
+   */
 
+  /*
     describe('hooks', function() {
         var fooResult,
             extendLog;
@@ -3504,92 +3652,122 @@ describe("CLI.Class", function() {
             var s = extendLog.join('/');
             expect(s).toBe('Foo.E extends Foo.C');
         });
+   */
     });
 
+    // {{{ overriden methods
+
     describe("overriden methods", function() {
+
         it("should call self constructor", function() {
+
             var obj = new subClass;
-            expect(obj.subConstructorCalled).toBeTruthy();
+
+            assert.equal(obj.subConstructorCalled, true);
+
         });
 
         it("should call parent constructor", function() {
+
             var obj = new subClass;
-            expect(obj.parentConstructorCalled).toBeTruthy();
+
+            assert.equal(obj.parentConstructorCalled, true);
         });
 
         it("should call mixins constructors", function() {
+
             var obj = new subClass;
-            expect(obj.mixinConstructor1Called).toBeTruthy();
-            expect(obj.mixinConstructor2Called).toBeTruthy();
+
+            assert.equal(obj.mixinConstructor1Called, true);
+            assert.equal(obj.mixinConstructor2Called, true);
         });
+
     });
-    
+
+    // }}}
+    // {{{ callbacks
+
     describe("callbacks", function() {
+
+        // {{{ extend
+
         describe("extend", function() {
+
             afterEach(function() {
                 CLI.undefine('spec.Extend');
             });
-            
+
             it("should set the scope to the created class", function() {
+
                 var fn = function() {},
                     val;
-                    
+
                 CLI.define('spec.Extend', {
                     extend: 'CLI.Base',
                     foo: fn
                 }, function() {
                     val = this.prototype.foo;
                 });
-                expect(val).toBe(fn);
+
+                assert.equal(val, fn);
             });
-            
+
             it("should pass the created class", function() {
+
                 var fn = function() {},
                     val;
-                    
+
                 CLI.define('spec.Extend', {
                     extend: 'CLI.Base',
                     foo: fn
                 }, function(Cls) {
                     val = Cls.prototype.foo;
                 });
-                expect(val).toBe(fn);
+
+                assert.equal(val, fn);
             });
+
         });
-        
+
         describe("override", function() {
+
             var base;
+
             beforeEach(function() {
                 base = CLI.define('spec.Base', {});
             });
-            
+
             afterEach(function() {
                 CLI.undefine('spec.Base');
             });
-            
+
             it("should set the scope to the overridden class", function() {
+
                 var val;
+
                 CLI.define('spec.Override', {
                     override: 'spec.Base'
                 }, function() {
                     val = this;
                 });
-                expect(val).toBe(base);
+
+                assert.equal(val, base);
             });
-            
+
             it("should pass the overridden class", function() {
+
                 var val;
-                    
+
                 CLI.define('spec.Override', {
                     override: 'spec.Base'
                 }, function(Cls) {
                     val = Cls;
                 });
-                expect(val).toBe(base);
-            });
-        });
 
-       */
+                assert.equal(val, base);
+            });
+
+        });
 
     });
 
