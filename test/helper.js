@@ -51,6 +51,27 @@
         CLI.global.console.suspended = false;
     };
 
+    global.fakeScope = {
+        id: "fakeScope",
+        fakeScope: true
+    };
+
+    global.waitsFor = function(latchFunction, callback) {
+
+        var timer = setInterval(function() {
+
+            if (latchFunction() === true) {
+
+                clearInterval(timer);
+
+                callback();
+            }
+
+        }, 1);
+
+    };
+
+
 })();
 
 /*
