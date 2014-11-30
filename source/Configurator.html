@@ -21,8 +21,8 @@
  * This file is part of CLI Framework
  */
 
-<span id='Ext-Configurator'>/**
-</span> * @class Ext.Configurator
+<span id='CLI-Configurator'>/**
+</span> * @class CLI.Configurator
  * This class manages the config properties for a class.
  * @private
  */
@@ -45,7 +45,7 @@
 
         // {{{ cls
 
-<span id='Ext-Configurator-property-cls'>        /**
+<span id='CLI-Configurator-property-cls'>        /**
 </span>         * @property {CLI.Class} cls The class to which this instance is associated.
          * @private
          * @readonly
@@ -58,7 +58,7 @@
 
             // {{{ configs
 
-<span id='Ext-Configurator-property-configs'>            /**
+<span id='CLI-Configurator-property-configs'>            /**
 </span>             * This object holds an `CLI.Config` value for each config property keyed by name.
              * This object has as its prototype object the `configs` of its super class.
              * 
@@ -73,7 +73,7 @@
             // }}}
             // {{{ cachedConfigs
 
-<span id='Ext-Configurator-property-cachedConfigs'>            /**
+<span id='CLI-Configurator-property-cachedConfigs'>            /**
 </span>             * This object holds a bool value for each cachedConfig property keyed by name.
              * 
              * This map is maintained as each property is added via the `add` method.
@@ -87,7 +87,7 @@
             // }}}
             // {{{ initMap
 
-<span id='Ext-Configurator-property-initMap'>            /**
+<span id='CLI-Configurator-property-initMap'>            /**
 </span>             * This object holds a `Number` for each config property keyed by name. This object has
              * as its prototype object the `initMap` of its super class. The value of each property
              * has the following meaning:
@@ -110,7 +110,7 @@
             // }}}
             // {{{ values
 
-<span id='Ext-Configurator-property-values'>            /**
+<span id='CLI-Configurator-property-values'>            /**
 </span>             * This object holds the default value for each config property keyed by name. This
              * object has as its prototype object the `values` of its super class.
              * 
@@ -150,7 +150,7 @@
         // }}}
         // {{{ initList
 
-<span id='Ext-Configurator-property-initList'>        /**
+<span id='CLI-Configurator-property-initList'>        /**
 </span>         * This array holds the properties that need to be set on new instances.
          * 
          * This array is populated when the first instance is passed to `configure` (basically
@@ -165,7 +165,7 @@
         // }}}
         // {{{ add
 
-<span id='Ext-Configurator-method-add'>        /**
+<span id='CLI-Configurator-method-add'>        /**
 </span>         * This method adds new config properties. This is called for classes when they are
          * declared, then for any mixins that class may define and finally for any overrides
          * defined that target the class.
@@ -361,7 +361,7 @@
         // }}}
         // {{{ configure
 
-<span id='Ext-Configurator-method-configure'>        /**
+<span id='CLI-Configurator-method-configure'>        /**
 </span>         * This method configures the given `instance` using the specified `instanceConfig`.
          * The given `instance` should have been created by this object&#39;s `cls`.
          * 
@@ -714,7 +714,7 @@
         // }}}
         // {{{ merge
 
-<span id='Ext-Configurator-method-merge'>        /**
+<span id='CLI-Configurator-method-merge'>        /**
 </span>         * Merges the values of a config object onto a base config.
          * @param {CLI.Base} instance
          * @param {Object} baseConfig

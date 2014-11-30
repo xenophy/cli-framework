@@ -32,6 +32,8 @@
 
     &quot;use strict&quot;;
 
+    // {{{ CLI.String
+
     CLI.String = (function() {
         var trimRegex     = /^[\x09\x0a\x0b\x0c\x0d\x20\xa0\u1680\u180e\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a\u2028\u2029\u202f\u205f\u3000]+|[\x09\x0a\x0b\x0c\x0d\x20\xa0\u1680\u180e\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a\u2028\u2029\u202f\u205f\u3000]+$/g,
         escapeRe      = /(&#39;|\\)/g,
@@ -156,6 +158,8 @@
                 return s.replace(varReplace, &#39;&#39;);
             },
 
+            // {{{ htmlEncode
+
 <span id='CLI-String-method-htmlEncode'>            /**
 </span>             * Convert certain characters (&amp;, &lt;, &gt;, &#39;, and &quot;) to their HTML character equivalents for literal display in web pages.
              * @param {String} value The string to encode.
@@ -166,6 +170,9 @@
                 return (!value) ? value : String(value).replace(charToEntityRegex, htmlEncodeReplaceFn);
             },
 
+            // }}}
+            // {{{ htmlDecode
+
 <span id='CLI-String-method-htmlDecode'>            /**
 </span>             * Convert certain characters (&amp;, &lt;, &gt;, &#39;, and &quot;) from their HTML character equivalents.
              * @param {String} value The string to decode.
@@ -175,6 +182,8 @@
             htmlDecode: function(value) {
                 return (!value) ? value : String(value).replace(entityToCharRegex, htmlDecodeReplaceFn);
             },
+
+            // }}}
 
 <span id='CLI-String-method-hasHtmlCharacters'>            /**
 </span>             * Checks if a string has values needing to be html encoded.
@@ -304,6 +313,8 @@
                 return string || &#39;&#39;;
             },
 
+            // {{{ ellipsis
+
 <span id='CLI-String-method-ellipsis'>            /**
 </span>             * Truncate a string and add an ellipsis (&#39;...&#39;) to the end if it exceeds the specified length.
              * @param {String} value The string to truncate.
@@ -312,18 +323,29 @@
              * @return {String} The converted text.
              */
             ellipsis: function(value, length, word) {
+
                 if (value &amp;&amp; value.length &gt; length) {
+
                     if (word) {
+
                         var vs = value.substr(0, length - 2),
-                        index = Math.max(vs.lastIndexOf(&#39; &#39;), vs.lastIndexOf(&#39;.&#39;), vs.lastIndexOf(&#39;!&#39;), vs.lastIndexOf(&#39;?&#39;));
+                            index = Math.max(vs.lastIndexOf(&#39; &#39;), vs.lastIndexOf(&#39;.&#39;), vs.lastIndexOf(&#39;!&#39;), vs.lastIndexOf(&#39;?&#39;));
+
                         if (index !== -1 &amp;&amp; index &gt;= (length - 15)) {
                             return vs.substr(0, index) + &quot;...&quot;;
                         }
+
                     }
+
                     return value.substr(0, length - 3) + &quot;...&quot;;
+
                 }
+
                 return value;
             },
+
+            // }}}
+            // {{{ escapeRegex
 
 <span id='CLI-String-method-escapeRegex'>            /**
 </span>             * Escapes the passed string for use in a regular expression.
@@ -333,6 +355,8 @@
             escapeRegex: function(string) {
                 return string.replace(escapeRegexRe, &quot;\\$1&quot;);
             },
+
+            // }}}
 
 <span id='CLI-String-method-createRegex'>            /**
 </span>             * Creates a `RegExp` given a string `value` and optional flags. For example, the
@@ -378,6 +402,8 @@
                 return ret;
             },
 
+            // {{{ escape
+
 <span id='CLI-String-method-escape'>            /**
 </span>             * Escapes the passed string for &#39; and \.
              * @param {String} string The string to escape.
@@ -386,6 +412,8 @@
             escape: function(string) {
                 return string.replace(escapeRe, &quot;\\$1&quot;);
             },
+
+            // }}}
 
 <span id='CLI-String-method-toggle'>            /**
 </span>             * Utility function that allows you to easily switch a string between two alternating values.  The passed value
@@ -468,6 +496,8 @@
     // initialize the default encode / decode entities
     CLI.String.resetCharacterEntities();
 
+    // {{{ CLI.htmlEncode
+
 <span id='CLI-method-htmlEncode'>    /**
 </span>     * Old alias to {@link CLI.String#htmlEncode}
      * @deprecated Use {@link CLI.String#htmlEncode} instead
@@ -477,6 +507,8 @@
      */
     CLI.htmlEncode = CLI.String.htmlEncode;
 
+    // }}}
+    // {{{ htmlDecode
 
 <span id='CLI-method-htmlDecode'>    /**
 </span>     * Old alias to {@link CLI.String#htmlDecode}
@@ -486,6 +518,8 @@
      * @inheritdoc CLI.String#htmlDecode
      */
     CLI.htmlDecode = CLI.String.htmlDecode;
+
+    // }}}
 
 <span id='CLI-method-urlAppend'>    /**
 </span>     * Old alias to {@link CLI.String#urlAppend}

@@ -2268,6 +2268,7 @@
                 alternates = {},
                 className, obj, name, path, baseUrl;
 
+
             if(paths) {
 
                 // if the manifest paths were calculated as relative to the
@@ -2320,9 +2321,17 @@
             Manager.addAlternate(alternates);
         }
 
+
+        Manager.setPath({
+            CLI: require(&#39;path&#39;).normalize(__dirname + &#39;/../&#39;)
+        });
+
+
         return Manager;
 
     }(CLI.Class, CLI.Function.alias, Array.prototype.slice, CLI.Array.from, CLI.global));
+
+
 
 })();
 
