@@ -1174,7 +1174,6 @@ describe("CLI.String", function() {
 
     // }}}
 
-
 });
 
 // }}}
