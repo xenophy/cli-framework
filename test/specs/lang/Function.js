@@ -50,12 +50,15 @@ describe("CLI.Function", function() {
 
         },
         mockTimeout = function() {
+
             timeouts = [];
             timeoutIds = [];
             clearedTimeoutIds = [];
 
             _setTimeout = global.setTimeout;
+
             global.setTimeout = function(fn, timeout) {
+
                 timeouts.push(timeout);
                 var timeoutId = _setTimeout.apply(this, arguments);
                 timeoutIds.push(timeoutId);
@@ -63,17 +66,21 @@ describe("CLI.Function", function() {
             };
 
             _clearTimeout = global.clearTimeout;
+
             global.clearTimeout = function(timeoutId) {
                 clearedTimeoutIds.push(timeoutId);
                 _clearTimeout.apply(this, arguments);
             };
+
         },
         unmockTimeout = function() {
+
             timeouts = undefined;
             timeoutIds = undefined;
             clearedTimeoutIds = undefined;
             global.setTimeout = _setTimeout;
             global.clearTimeout = _clearTimeout;
+
         };
 
     // {{{ bind
@@ -456,10 +463,9 @@ describe("CLI.Function", function() {
 
             runAfterInvocation(fn, function() {
                 assert.deepEqual(fn.lastCall.args, ['foo']);
+                unmockTimeout();
                 done();
             });
-
-            unmockTimeout();
 
         });
 
@@ -692,10 +698,10 @@ describe("CLI.Function", function() {
 
             runAfterInvocation(fn, function() {
                 assert.equal(fn.callCount, 1);
+                unmockTimeout();
                 done();
             });
 
-            unmockTimeout();
         });
 
         it("should use the specified scope as 'this'", function(done) {
@@ -743,62 +749,71 @@ describe("CLI.Function", function() {
     // }}}
     // {{{ createThrottled
 
-    /*
-    xdescribe("createThrottled", function() {
+    describe("createThrottled", function() {
 
-        it("should execute only once per each specified time interval", function() {
+        it("should execute only once per each specified time interval", function(done) {
 
             mockTimeout();
 
-            var fn = jasmine.createSpy(),
+            var fn = sinon.spy(),
                 throttledFn = CLI.Function.createThrottled(fn, 10);
 
-            expect(fn).not.toHaveBeenCalled();
+            assert.equal(fn.called, false);
+
             throttledFn();
-            expect(clearedTimeoutIds.shift()).toBeUndefined();
-            expect(fn.calls.length).toBe(1);
-            
+
+            assert.equal(clearedTimeoutIds.shift(), undefined);
+            assert.equal(fn.callCount, 1);
+
             throttledFn();
-            expect(timeouts.shift()).not.toBeGreaterThan(10);
-            expect(clearedTimeoutIds.shift()).toBeUndefined();
+
+            assert.equal(timeouts.shift() <= 10, true);
+            assert.equal(clearedTimeoutIds.shift(), undefined);
+
             throttledFn();
-            expect(timeouts.shift()).not.toBeGreaterThan(10);
-            expect(clearedTimeoutIds.shift()).toBe(timeoutIds.shift());
-            throttledFn();
-            expect(timeouts.shift()).not.toBeGreaterThan(10);
-            expect(clearedTimeoutIds.shift()).toBe(timeoutIds.shift());
-            
-            expect(fn.calls.length).toBe(1);
+
+            assert.equal(fn.callCount, 1);
+
             runAfterInvocation(fn, function() {
-                expect(fn.calls.length).toEqual(2);
+
+                assert.equal(fn.callCount, 2);
                 throttledFn(); // elapsed may have been exceeded here, so this call may execute immediately
-                expect(fn.calls.length).not.toBeLessThan(2);
-                expect(fn.calls.length).not.toBeGreaterThan(3);
+
+                assert.equal(fn.callCount <= 2, true);
+                assert.equal(fn.callCount >= 3, false);
+
+                unmockTimeout();
+                done();
+
             }, 2);
-            unmockTimeout();
+
         });
-        
+
         it("should use the specified scope as 'this'", function() {
+
             var scope = {},
-                fn = jasmine.createSpy().andCallFake(function(value) { this.x = value; }),
+                fn = sinon.spy({
+                    fake: function(value) {
+                        this.x = value;
+                    }
+                }, 'fake'),
                 throttledFn = CLI.Function.createThrottled(fn, 10, scope);
-            
+
             throttledFn('foo');
             throttledFn('bar');
             throttledFn('baz');
             throttledFn('qux');
-            
-            expect(fn).toHaveBeenCalledWith('foo');
-            expect(scope.x).toBe('foo');
-            expect(fn.calls.length).toBe(1);
+
+            assert.deepEqual(fn.lastCall.args, ['foo']);
+            assert.equal(scope.x, 'foo');
+            assert.equal(fn.callCount, 1);
         });
+
     });
 
-   */
     // }}}
     // {{{ interceptAfter
 
-    /*
     describe("interceptAfter", function() {
 
         it("should execute interceptor after each method call", function() {
@@ -809,19 +824,24 @@ describe("CLI.Function", function() {
                         this.phrases.push(phrase)
                     }
                 },
-                addMeToo = jasmine.createSpy().andCallFake(function(phrase) {
-                    this.phrases.push(phrase + ' too');
-                });
+                addMeToo = sinon.spy({
+                    fake: function(phrase) {
+                        this.phrases.push(phrase + ' too');
+                    }
+                }, 'fake');
 
             CLI.Function.interceptAfter(monologue, 'addPhrase', addMeToo);
+
             monologue.addPhrase('I like you');
             monologue.addPhrase('I love you');
-            expect(monologue.phrases).toEqual(['I like you', 'I like you too', 'I love you', 'I love you too']);
-            expect(addMeToo).toHaveBeenCalledWith('I like you');
-            expect(addMeToo).toHaveBeenCalledWith('I love you');
+
+            assert.deepEqual(monologue.phrases, ['I like you', 'I like you too', 'I love you', 'I love you too']);
+            assert.deepEqual(addMeToo.firstCall.args, ['I like you']);
+            assert.deepEqual(addMeToo.secondCall.args, ['I love you']);
         });
 
         it("should execute interceptor after each method call with the specified scope as 'this'", function() {
+
             var monologue = {
                     phrases: [],
                     addPhrase: function(phrase) {
@@ -831,20 +851,24 @@ describe("CLI.Function", function() {
                 transcription = {
                     phrases: []
                 },
-                transcriptPhrase = jasmine.createSpy().andCallFake(function(phrase) {
-                    this.phrases.push("He said: " + phrase);
-                });
+                transcriptPhrase = sinon.spy({
+                    fake: function(phrase) {
+                        this.phrases.push("He said: " + phrase);
+                    }
+                }, 'fake');
 
             CLI.Function.interceptAfter(monologue, 'addPhrase', transcriptPhrase, transcription);
+
             monologue.addPhrase('I like you');
             monologue.addPhrase('I love you');
-            expect(monologue.phrases).toEqual(['I like you', 'I love you']);
-            expect(transcription.phrases).toEqual(['He said: I like you', 'He said: I love you']);
-            expect(transcriptPhrase).toHaveBeenCalledWith('I like you');
-            expect(transcriptPhrase).toHaveBeenCalledWith('I love you');
+
+            assert.deepEqual(monologue.phrases, ['I like you', 'I love you']);
+            assert.deepEqual(transcription.phrases, ['He said: I like you', 'He said: I love you']);
+            assert.deepEqual(transcriptPhrase.firstCall.args, ['I like you']);
+            assert.deepEqual(transcriptPhrase.secondCall.args, ['I love you']);
         });
+
     });
-   */
 
     // }}}
 
