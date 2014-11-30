@@ -230,20 +230,7 @@ describe("CLI.Function", function() {
         assert.equal(CLI.isFunction(scope.myFunc), true);
         assert.notEqual(scope.myFunc, bindCb);
 
-        console.log(bindCb());
-
-
-
     });
-
-    /*
-
-     var myFunc = this.myFunc;
-
- Ext.callback(myFunc, this, [arg1, arg2]);
-
- Ext.isFunction(myFunc) && this.myFunc(arg1, arg2);
-    */
 
     // }}}
     // {{{ pass

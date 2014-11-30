@@ -25,6 +25,77 @@ describe("CLI.Array", function() {
 
     var array;
 
+    // {{{ binarySearch
+
+    describe("binarySearch", function() {
+
+        it("should find near value's index in array", function() {
+
+            var array = [ 'A', 'D', 'G', 'K', 'O', 'R', 'X' ];
+            var index = CLI.Array.binarySearch(array, 'E');
+
+            assert.equal(index, 2);
+
+            array.splice(index, 0, 'E');
+
+            assert.equal(array.join(''), 'ADEGKORX');
+
+        });
+
+        it("should find using user begin compare function near value's index in array", function() {
+
+            var array = [ 'A', 'D', 'G', 'K', 'O', 'R', 'X' ];
+            var called = false;
+            var beginFn = function(lhs, rhs) {
+
+                called = true;
+
+                lhs = String(lhs);
+                rhs = String(rhs);
+
+                return (lhs < rhs) ? -1 : ((lhs > rhs) ? 1 : 0);
+            };
+            var index = CLI.Array.binarySearch(array, 'E', beginFn);
+
+            assert.equal(index, 2);
+
+            array.splice(index, 0, 'E');
+
+            assert.equal(array.join(''), 'ADEGKORX');
+
+            assert.equal(called, true);
+
+        });
+
+        it("should find using user end compare function near value's index in array", function() {
+
+            var array = [ 'A', 'D', 'G', 'K', 'O', 'R', 'X' ];
+            var called = false;
+            var endFn = function(lhs, rhs) {
+
+                called = true;
+
+                lhs = String(lhs);
+                rhs = String(rhs);
+
+                return (lhs < rhs) ? -1 : ((lhs > rhs) ? 1 : 0);
+            };
+            var index = CLI.Array.binarySearch(array, 'E', null, endFn);
+
+            assert.equal(index, 2);
+
+            array.splice(index, 0, 'E');
+
+            assert.equal(array.join(''), 'ADEGKORX');
+
+            assert.equal(called, true);
+
+        });
+
+
+    });
+
+    // }}}
     // {{{ indexOf
 
     describe("indexOf", function() {
@@ -39,13 +110,13 @@ describe("CLI.Array", function() {
 
             });
 
-            afterEach(function(){
+            afterEach(function() {
 
                 array = null;
 
             });
 
-            it("should always return -1 on an empty array", function(){
+            it("should always return -1 on an empty array", function() {
 
                 assert.equal(CLI.Array.indexOf([], 1), -1);
 
@@ -63,7 +134,7 @@ describe("CLI.Array", function() {
 
             });
 
-            it("should return the first matching index if found", function(){
+            it("should return the first matching index if found", function() {
 
                 array.push(1);
 
@@ -142,7 +213,7 @@ describe("CLI.Array", function() {
 
             });
 
-            it("should remove only using a strict type check", function(){
+            it("should remove only using a strict type check", function() {
 
                 CLI.Array.remove(myArray, '2');
 
@@ -161,7 +232,7 @@ describe("CLI.Array", function() {
 
     describe("contains", function() {
 
-        it("should always return false with an empty array", function(){
+        it("should always return false with an empty array", function() {
 
             assert.equal(CLI.Array.contains([], 1), false);
 
@@ -179,7 +250,7 @@ describe("CLI.Array", function() {
 
         });
 
-        it("should only match with strict type checking", function(){
+        it("should only match with strict type checking", function() {
 
             assert.equal(CLI.Array.contains([1, 2, 3, 4, 5], '1'), false);
 
@@ -190,11 +261,11 @@ describe("CLI.Array", function() {
     // }}}
     // {{{ include
 
-    describe("include", function(){
+    describe("include", function() {
 
         var myArray;
 
-        it("should always add to an empty array", function(){
+        it("should always add to an empty array", function() {
 
             myArray = [];
 
@@ -204,7 +275,7 @@ describe("CLI.Array", function() {
 
         });
 
-        it("should add the item if it doesn't exist", function(){
+        it("should add the item if it doesn't exist", function() {
 
             myArray = [1];
 
@@ -213,7 +284,7 @@ describe("CLI.Array", function() {
             assert.deepEqual(myArray, [1, 2]);
         });
 
-        it("should always add to the end of the array", function(){
+        it("should always add to the end of the array", function() {
 
             myArray = [9, 8, 7, 6];
 
@@ -223,7 +294,7 @@ describe("CLI.Array", function() {
 
         });
 
-        it("should match using strict type checking", function(){
+        it("should match using strict type checking", function() {
 
             myArray = ['1'];
 
@@ -233,7 +304,7 @@ describe("CLI.Array", function() {
 
         });
 
-        it("should not modify the array if the value exists", function(){
+        it("should not modify the array if the value exists", function() {
 
             myArray = [4, 5, 6];
 
@@ -248,21 +319,21 @@ describe("CLI.Array", function() {
     // }}}
     // {{{ clone
 
-    describe("clone", function(){
+    describe("clone", function() {
 
-        it("should clone an empty array to be empty", function(){
+        it("should clone an empty array to be empty", function() {
 
             assert.deepEqual(CLI.Array.clone([]), []);
 
         });
 
-        it("should clone an array with items", function(){
+        it("should clone an array with items", function() {
 
             assert.deepEqual(CLI.Array.clone([1, 3, 5]), [1, 3, 5]);
 
         });
 
-        it("should create a new reference", function(){
+        it("should create a new reference", function() {
 
             var arr = [1, 2, 3];
 
@@ -270,7 +341,7 @@ describe("CLI.Array", function() {
 
         });
 
-        it("should do a shallow clone", function(){
+        it("should do a shallow clone", function() {
 
             var o = {},
                 arr = [o],
@@ -287,63 +358,63 @@ describe("CLI.Array", function() {
     // }}}
     // {{{ clean
 
-    describe("clean", function(){
+    describe("clean", function() {
 
-        it("should return an empty array if cleaning an empty array", function(){
+        it("should return an empty array if cleaning an empty array", function() {
 
             assert.deepEqual(CLI.Array.clean([]), []);
 
         });
 
-        it("should remove undefined values", function(){
+        it("should remove undefined values", function() {
 
             assert.deepEqual(CLI.Array.clean([undefined]), []);
 
         });
 
-        it("should remove null values", function(){
+        it("should remove null values", function() {
 
             assert.deepEqual(CLI.Array.clean([null]), []);
 
         });
 
-        it("should remove empty strings", function(){
+        it("should remove empty strings", function() {
 
             assert.deepEqual(CLI.Array.clean(['']), []);
 
         });
 
-        it("should remove empty arrays", function(){
+        it("should remove empty arrays", function() {
 
             assert.deepEqual(CLI.Array.clean([[]]), []);
 
         });
 
-        it("should remove a mixture of empty values", function(){
+        it("should remove a mixture of empty values", function() {
 
             assert.deepEqual(CLI.Array.clean([null, undefined, '', []]), []);
 
         });
 
-        it("should remove all occurrences of empty values", function(){
+        it("should remove all occurrences of empty values", function() {
 
             assert.deepEqual(CLI.Array.clean([null, null, null, undefined, '', '', '', undefined]), []);
 
         });
 
-        it("should leave non empty values untouched", function(){
+        it("should leave non empty values untouched", function() {
 
             assert.deepEqual(CLI.Array.clean([1, 2, 3]), [1, 2, 3]);
 
         });
 
-        it("should remove only the empty values", function(){
+        it("should remove only the empty values", function() {
 
             assert.deepEqual(CLI.Array.clean([undefined, null, 1, null, 2]), [1, 2]);
 
         });
 
-        it("should preserve order on removal", function(){
+        it("should preserve order on removal", function() {
 
             assert.deepEqual(CLI.Array.clean([1, null, 2, null, null, null, 3, undefined, '', '', 4]), [1, 2, 3, 4]);
 
@@ -354,15 +425,15 @@ describe("CLI.Array", function() {
     // }}}
     // {{{ unique
 
-    describe("unique", function(){
+    describe("unique", function() {
 
-        it("should return an empty array if run on an empty array", function(){
+        it("should return an empty array if run on an empty array", function() {
 
             assert.deepEqual(CLI.Array.unique([]), []);
 
         });
 
-        it("should return a new reference", function(){
+        it("should return a new reference", function() {
 
             var arr = [1, 2, 3];
 
@@ -370,19 +441,19 @@ describe("CLI.Array", function() {
 
         });
 
-        it("should return a copy if all items are unique", function(){
+        it("should return a copy if all items are unique", function() {
 
             assert.deepEqual(CLI.Array.unique([6, 7, 8]), [6, 7, 8]);
 
         });
 
-        it("should only use strict typing to match", function(){
+        it("should only use strict typing to match", function() {
 
             assert.deepEqual(CLI.Array.unique([1, '1']), [1, '1']);
 
         });
 
-        it("should preserve the order when removing", function(){
+        it("should preserve the order when removing", function() {
 
             assert.deepEqual(CLI.Array.unique([1, 2, 1, 3, 1, 1, 1, 6, 5, 1]), [1, 2, 3, 6, 5]);
 
@@ -393,19 +464,19 @@ describe("CLI.Array", function() {
     // }}}
     // {{{ map
 
-    describe("map", function(){
+    describe("map", function() {
 
         var emptyFn = function(v){
                 return v;
             };
 
-        it("should return an empty array if run on an empty array", function(){
+        it("should return an empty array if run on an empty array", function() {
 
-            assert.deepEqual(CLI.Array.map([], function(){}), []);
+            assert.deepEqual(CLI.Array.map([], function() {}), []);
 
         });
 
-        it("should return a new reference", function(){
+        it("should return a new reference", function() {
 
             var arr = [1, 2];
 
@@ -413,7 +484,7 @@ describe("CLI.Array", function() {
 
         });
 
-        it("should execute the function for each item in the array", function(){
+        it("should execute the function for each item in the array", function() {
 
             assert.deepEqual(CLI.Array.map([1, 2, 3, 4, 5], function(v){
                 return v * 2;
@@ -421,12 +492,12 @@ describe("CLI.Array", function() {
 
         });
 
-        it("should get called with the correct scope", function(){
+        it("should get called with the correct scope", function() {
 
             var scope = {},
                 realScope;
 
-            CLI.Array.map([1, 2, 3, 4, 5], function(){
+            CLI.Array.map([1, 2, 3, 4, 5], function() {
                 realScope = this;
             }, scope);
 
@@ -434,14 +505,14 @@ describe("CLI.Array", function() {
 
         });
 
-        it("should get called with the argument, index and array", function(){
+        it("should get called with the argument, index and array", function() {
 
             var item,
                 index,
                 arr,
                 data = [1];
 
-            CLI.Array.map(data, function(){
+            CLI.Array.map(data, function() {
                 item = arguments[0];
                 index = arguments[1];
                 arr = arguments[2];
@@ -522,14 +593,17 @@ describe("CLI.Array", function() {
 
         it("should return empty array if the passed value is empty", function() {
             assert.deepEqual(CLI.Array.toArray(false), []);
+            assert.deepEqual(CLI.toArray(false), []);
         });
 
         it("should convert an array", function() {
             assert.deepEqual(CLI.Array.toArray([1, 2, 3, 4]), [1, 2, 3, 4]);
+            assert.deepEqual(CLI.toArray([1, 2, 3, 4]), [1, 2, 3, 4]);
         });
 
         it("should convert a string", function() {
             assert.deepEqual(CLI.Array.toArray('12345'), ['1', '2', '3', '4', '5']);
+            assert.deepEqual(CLI.toArray('12345'), ['1', '2', '3', '4', '5']);
         });
 
         it("should create a new reference", function() {
@@ -537,6 +611,7 @@ describe("CLI.Array", function() {
             var arr = [6, 7, 8];
 
             assert.deepEqual(CLI.Array.toArray(arr), arr);
+            assert.deepEqual(CLI.toArray(arr), arr);
 
         });
 
@@ -595,15 +670,15 @@ describe("CLI.Array", function() {
     // }}}
     // {{{ pluck
 
-    describe("pluck", function(){
+    describe("pluck", function() {
 
-        it("should return an empty array when an empty array is passed", function(){
+        it("should return an empty array when an empty array is passed", function() {
 
             assert.deepEqual(CLI.Array.pluck([], 'prop'), []);
 
         });
 
-        it("should pull the properties from objects in the array", function(){
+        it("should pull the properties from objects in the array", function() {
 
             var arr = [{prop: 1}, {prop: 2}, {prop: 3}];
 
@@ -611,7 +686,7 @@ describe("CLI.Array", function() {
 
         });
 
-        it("should return a new reference", function(){
+        it("should return a new reference", function() {
 
             var arr = [{prop: 1}, {prop: 2}, {prop: 3}];
 
@@ -624,19 +699,19 @@ describe("CLI.Array", function() {
     // }}}
     // {{{ filter
 
-    describe("filter", function(){
+    describe("filter", function() {
 
-        var trueFn = function(){
+        var trueFn = function() {
                 return true;
             };
 
-        it("should return an empty array if filtering an empty array", function(){
+        it("should return an empty array if filtering an empty array", function() {
 
             assert.deepEqual(CLI.Array.filter([], trueFn), []);
 
         });
 
-        it("should create a new reference", function(){
+        it("should create a new reference", function() {
 
             var arr = [1, 2, 3];
 
@@ -644,7 +719,7 @@ describe("CLI.Array", function() {
 
         });
 
-        it("should add items if the filter function returns true", function(){
+        it("should add items if the filter function returns true", function() {
 
             assert.deepEqual(CLI.Array.filter([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], function(val){
                 return val % 2 === 0;
@@ -652,7 +727,7 @@ describe("CLI.Array", function() {
 
         });
 
-        it("should add items if the filter function returns a truthy value", function(){
+        it("should add items if the filter function returns a truthy value", function() {
 
             assert.deepEqual(CLI.Array.filter([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], function(val){
                 if (val % 2 === 0) {
@@ -662,7 +737,7 @@ describe("CLI.Array", function() {
 
         });
 
-        it("should not add items if the filter function returns a falsy value", function(){
+        it("should not add items if the filter function returns a falsy value", function() {
 
             assert.deepEqual(CLI.Array.filter([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], function(val){
                 return 0;
@@ -670,7 +745,7 @@ describe("CLI.Array", function() {
 
         });
 
-        it("should pass the correct parameters", function(){
+        it("should pass the correct parameters", function() {
 
             var values = [],
                 indexes = [],
@@ -688,7 +763,7 @@ describe("CLI.Array", function() {
             assert.deepEqual(arrs, [data, data, data]);
         });
 
-        it("should do a shallow copy", function(){
+        it("should do a shallow copy", function() {
 
             var o1 = {prop: 1},
                 o2 = {prop: 2},
@@ -698,12 +773,12 @@ describe("CLI.Array", function() {
 
         });
 
-        it("should execute in scope when passed", function(){
+        it("should execute in scope when passed", function() {
 
             var scope = {},
                 actual;
 
-            assert(CLI.Array.filter([1, 2, 3], function(){
+            assert(CLI.Array.filter([1, 2, 3], function() {
                 actual = this;
             }, scope));
 
@@ -712,15 +787,52 @@ describe("CLI.Array", function() {
     });
 
     // }}}
+    // {{{ findBy
+
+    describe("findBy", function() {
+
+        it("should find by user function", function() {
+
+            var ret = CLI.Array.findBy(['foo', 'bar', 'hoge'], function(item, index) {
+
+                if (item === 'foo') {
+                    return true;
+                }
+                return false;
+
+            });
+
+            assert.deepEqual(ret, 'foo');
+
+        });
+
+        it("should not find by user function", function() {
+
+            var ret = CLI.Array.findBy(['foo', 'bar', 'hoge'], function(item, index) {
+
+                if (item === 'foos') {
+                    return true;
+                }
+                return false;
+
+            });
+
+            assert.deepEqual(ret, null);
+
+        });
+
+    });
+
+    // }}}
     // {{{ forEach
 
-    describe("forEach", function(){
+    describe("forEach", function() {
 
-        it("should not execute on an empty array", function(){
+        it("should not execute on an empty array", function() {
 
             var count = 0;
 
-            CLI.Array.forEach([], function(){
+            CLI.Array.forEach([], function() {
                 ++count;
             });
 
@@ -728,11 +840,11 @@ describe("CLI.Array", function() {
 
         });
 
-        it("should execute for each item in the array", function(){
+        it("should execute for each item in the array", function() {
 
             var count = 0;
 
-            CLI.Array.forEach([1, 2, 3, 4, 5], function(){
+            CLI.Array.forEach([1, 2, 3, 4, 5], function() {
                 ++count;
             });
 
@@ -740,12 +852,12 @@ describe("CLI.Array", function() {
 
         });
 
-        it("should execute in the appropriate scope", function(){
+        it("should execute in the appropriate scope", function() {
 
             var scope = {},
                 actual;
 
-            CLI.Array.forEach([1, 2, 3], function(){
+            CLI.Array.forEach([1, 2, 3], function() {
                 actual = this;
             }, scope);
 
@@ -753,7 +865,7 @@ describe("CLI.Array", function() {
 
         });
 
-        it("should pass the appropriate params to the callback", function(){
+        it("should pass the appropriate params to the callback", function() {
 
             var values = [],
                 indexes = [],
@@ -965,18 +1077,18 @@ describe("CLI.Array", function() {
     // }}}
     // {{{ every
 
-    describe("every", function(){
+    describe("every", function() {
 
         // {{{ scope/params
 
-        describe("scope/params", function(){
+        describe("scope/params", function() {
 
-            it("should execute in the specified scope", function(){
+            it("should execute in the specified scope", function() {
 
                 var scope = {},
                     actual;
 
-                CLI.Array.every([1, 2, 3], function(){
+                CLI.Array.every([1, 2, 3], function() {
                     actual = this;
                 }, scope);
 
@@ -984,7 +1096,7 @@ describe("CLI.Array", function() {
 
             });
 
-            it("should pass the item, index and array", function(){
+            it("should pass the item, index and array", function() {
 
                 var values = [],
                     indexes = [],
@@ -1010,13 +1122,13 @@ describe("CLI.Array", function() {
 
         // }}}
 
-        it("should return true on an empty array", function(){
+        it("should return true on an empty array", function() {
 
-            assert.equal(CLI.Array.every([], function(){}), true);
+            assert.equal(CLI.Array.every([], function() {}), true);
 
         });
 
-        it("should throw an exception if no fn is passed", function(){
+        it("should throw an exception if no fn is passed", function() {
 
             beginSilent();
             try {
@@ -1028,7 +1140,7 @@ describe("CLI.Array", function() {
 
         });
 
-        it("should stop as soon as a false value is found", function(){
+        it("should stop as soon as a false value is found", function() {
             var count = 0,
                 result;
 
@@ -1042,7 +1154,7 @@ describe("CLI.Array", function() {
 
         });
 
-        it("should return true if all values match the function", function(){
+        it("should return true if all values match the function", function() {
 
             assert.equal(CLI.Array.every([1, 2, 3, 4, 5, 6, 7, 8, 9], function(v){
                 return v < 10;
@@ -1055,18 +1167,18 @@ describe("CLI.Array", function() {
     // }}}
     // {{{ some
 
-    describe("some", function(){
+    describe("some", function() {
 
         // {{{ scope/params
 
-        describe("scope/params", function(){
+        describe("scope/params", function() {
 
-            it("should execute in the specified scope", function(){
+            it("should execute in the specified scope", function() {
 
                 var scope = {},
                     actual;
 
-                CLI.Array.some([1, 2, 3], function(){
+                CLI.Array.some([1, 2, 3], function() {
                     actual = this;
                 }, scope);
 
@@ -1074,7 +1186,7 @@ describe("CLI.Array", function() {
 
             });
 
-            it("should pass the item, index and array", function(){
+            it("should pass the item, index and array", function() {
 
                 var values = [],
                     indexes = [],
@@ -1097,16 +1209,16 @@ describe("CLI.Array", function() {
 
         // }}}
 
-        it("should return false on an empty array", function(){
+        it("should return false on an empty array", function() {
 
             try {
-                assert.equal(CLI.Array.some([], function(){}), false);
+                assert.equal(CLI.Array.some([], function() {}), false);
             } catch (e) {
             }
 
         });
 
-        it("should throw an exception if no fn is passed", function(){
+        it("should throw an exception if no fn is passed", function() {
 
             beginSilent();
             try {
@@ -1118,7 +1230,7 @@ describe("CLI.Array", function() {
 
         });
 
-        it("should stop as soon as a matching value is found", function(){
+        it("should stop as soon as a matching value is found", function() {
             var count = 0,
                 result;
 
@@ -1132,7 +1244,7 @@ describe("CLI.Array", function() {
 
         });
 
-        it("should return false if nothing matches the matcher function", function(){
+        it("should return false if nothing matches the matcher function", function() {
 
             var count = 0,
                 result;
@@ -1152,15 +1264,15 @@ describe("CLI.Array", function() {
     // }}}
     // {{{ merge
 
-    describe("merge", function(){
+    describe("merge", function() {
 
-        it("should return an empty array if run on an empty array", function(){
+        it("should return an empty array if run on an empty array", function() {
 
             assert.deepEqual(CLI.Array.merge([]), []);
 
         });
 
-        it("should return a new reference", function(){
+        it("should return a new reference", function() {
 
             var arr = [1, 2, 3];
 
@@ -1168,19 +1280,19 @@ describe("CLI.Array", function() {
 
         });
 
-        it("should return a copy if all items are unique", function(){
+        it("should return a copy if all items are unique", function() {
 
             assert.deepEqual(CLI.Array.merge([6, 7, 8]), [6, 7, 8]);
 
         });
 
-        it("should only use strict typing to match", function(){
+        it("should only use strict typing to match", function() {
 
             assert.deepEqual(CLI.Array.merge([1, '1']), [1, '1']);
 
         });
 
-        it("should accept two or more arrays and return a unique union with items in order of first appearance", function(){
+        it("should accept two or more arrays and return a unique union with items in order of first appearance", function() {
 
             assert.deepEqual(CLI.Array.merge([1, 2, 3], ['1', '2', '3'], [4, 1, 5, 2], [6, 3, 7, '1'], [8, '2', 9, '3']), [1, 2, 3, '1', '2', '3', 4, 5, 6, 7, 8, 9]);
 
@@ -1191,21 +1303,21 @@ describe("CLI.Array", function() {
     // }}}
     // {{{ intersect
 
-    describe("intersect", function(){
+    describe("intersect", function() {
 
-        it("should return an empty array if no arrays are passed", function(){
+        it("should return an empty array if no arrays are passed", function() {
 
             assert.deepEqual(CLI.Array.intersect(), []);
 
         });
 
-        it("should return an empty array if one empty array is passed", function(){
+        it("should return an empty array if one empty array is passed", function() {
 
             assert.deepEqual(CLI.Array.intersect([]), []);
 
         });
 
-        it("should return a new reference", function(){
+        it("should return a new reference", function() {
 
             var arr = [1, 2, 3];
 
@@ -1213,31 +1325,31 @@ describe("CLI.Array", function() {
 
         });
 
-        it("should return a copy if one array is passed", function(){
+        it("should return a copy if one array is passed", function() {
 
             assert.deepEqual(CLI.Array.intersect([6, 7, 8]), [6, 7, 8]);
 
         });
 
-        it("should return an intersection of two or more arrays with items in order of first appearance", function(){
+        it("should return an intersection of two or more arrays with items in order of first appearance", function() {
 
             assert.deepEqual(CLI.Array.intersect([1, 2, 3], [4, 3, 2, 5], [2, 6, 3]), [2, 3]);
 
         });
 
-        it("should return an empty array if there is no intersecting values", function(){
+        it("should return an empty array if there is no intersecting values", function() {
 
             assert.deepEqual(CLI.Array.intersect([1, 2, 3], [4, 5, 6]), []);
 
         });
 
-        it("should contain the unique set of intersected values only", function(){
+        it("should contain the unique set of intersected values only", function() {
 
             assert.deepEqual(CLI.Array.intersect([1, 1, 2, 3, 3], [1, 1, 2, 3, 3]), [1, 2, 3]);
 
         });
 
-        it("should only use strict typing to match", function(){
+        it("should only use strict typing to match", function() {
 
             assert.deepEqual(CLI.Array.intersect([1], ['1']), []);
 
@@ -1254,21 +1366,21 @@ describe("CLI.Array", function() {
     // }}}
     // {{{ difference
 
-    describe("difference", function(){
+    describe("difference", function() {
 
-        it("should return a set difference of two arrays with items in order of first appearance", function(){
+        it("should return a set difference of two arrays with items in order of first appearance", function() {
 
             assert.deepEqual(CLI.Array.difference([1, 2, 3, 4], [3, 2]), [1, 4]);
 
         });
 
-        it("should return the first array unchanged if there is no difference", function(){
+        it("should return the first array unchanged if there is no difference", function() {
 
             assert.deepEqual(CLI.Array.difference([1, 2, 3], [4, 5, 6]), [1, 2, 3]);
 
         });
 
-        it("should return a new reference", function(){
+        it("should return a new reference", function() {
 
             var arr = [1, 2, 3];
 
@@ -1276,13 +1388,13 @@ describe("CLI.Array", function() {
 
         });
 
-        it("should remove multiples of the same value from the first array", function(){
+        it("should remove multiples of the same value from the first array", function() {
 
             assert.deepEqual(CLI.Array.difference([1, 2, 3, 2, 4, 1], [2, 1]), [3, 4]);
 
         });
 
-        it("should only use strict typing to match", function(){
+        it("should only use strict typing to match", function() {
 
             assert.deepEqual(CLI.Array.difference([1], ['1']), [1]);
 
@@ -1324,6 +1436,7 @@ describe("CLI.Array", function() {
                 });
 
                 assert.deepEqual(sarray, ['addda', 'bbb', 'de3', 'erere', 'fff']);
+
            });
 
        });
@@ -1346,6 +1459,10 @@ describe("CLI.Array", function() {
                 CLI.Array.sort(narray, function(a,b){
                     return a - b;
                 });
+
+                assert.deepEqual(narray, [1,2,3,4,6,7]);
+
+                CLI.Array.sort(narray, CLI.Array.numericSortFn);
 
                 assert.deepEqual(narray, [1,2,3,4,6,7]);
 
@@ -1637,15 +1754,15 @@ describe("CLI.Array", function() {
     // }}}
     // {{{ slice
 
-    describe('slice', function(){
+    describe('slice', function() {
 
         var array;
 
         // {{{ with Array
 
-        describe('with Array', function(){
+        describe('with Array', function() {
 
-            beforeEach(function(){
+            beforeEach(function() {
                 array = [{0:0}, {1:1}, {2:2}, {3:3}];
             });
 
@@ -1656,10 +1773,10 @@ describe("CLI.Array", function() {
         // }}}
         // {{{ with arguments
 
-        describe('with arguments', function(){
+        describe('with arguments', function() {
 
-            beforeEach(function(){
-                array = (function(){ return arguments; })({0:0}, {1:1}, {2:2}, {3:3});
+            beforeEach(function() {
+                array = (function() { return arguments; })({0:0}, {1:1}, {2:2}, {3:3});
             });
 
             tests();
@@ -1671,7 +1788,7 @@ describe("CLI.Array", function() {
 
         function tests(){
 
-            it('should shallow clone', function(){
+            it('should shallow clone', function() {
 
                 var newArray = CLI.Array.slice(array, 0);
 
@@ -1680,7 +1797,7 @@ describe("CLI.Array", function() {
 
             });
 
-            it('should not require a begin or end', function(){
+            it('should not require a begin or end', function() {
 
                 var newArray = CLI.Array.slice(array);
 
@@ -1689,7 +1806,7 @@ describe("CLI.Array", function() {
 
             });
 
-            it('should slice off the first item', function(){
+            it('should slice off the first item', function() {
 
                 var newArray = CLI.Array.slice(array, 1);
 
@@ -1699,7 +1816,7 @@ describe("CLI.Array", function() {
 
             });
 
-            it('should ignore `end` if undefined', function(){
+            it('should ignore `end` if undefined', function() {
 
                 var newArray = CLI.Array.slice(array, 1, undefined);
 
@@ -1709,7 +1826,7 @@ describe("CLI.Array", function() {
 
             });
 
-            it('should ignore `begin` if undefined', function(){
+            it('should ignore `begin` if undefined', function() {
 
                 var newArray = CLI.Array.slice(array, undefined);
 
@@ -1719,7 +1836,7 @@ describe("CLI.Array", function() {
 
             });
 
-            it('should ignore `begin` and `end` if undefined', function(){
+            it('should ignore `begin` and `end` if undefined', function() {
 
                 var newArray = CLI.Array.slice(array, undefined, undefined);
 
@@ -1729,7 +1846,7 @@ describe("CLI.Array", function() {
 
             });
 
-            it('should slice out the middle', function(){
+            it('should slice out the middle', function() {
 
                 var newArray = CLI.Array.slice(array, 1, -1);
 
@@ -1811,6 +1928,143 @@ describe("CLI.Array", function() {
     });
 
     // }}}
+    // {{{ toValueMap
+
+    describe('toValueMap', function() {
+
+        it('should handle just an array', function () {
+
+            var map = CLI.Array.toValueMap(['a','b','c']);
+
+            assert.equal(map.a, 'a');
+            assert.equal(map.b, 'b');
+            assert.equal(map.c, 'c');
+
+            delete map.a;
+            delete map.b;
+            delete map.c;
+
+            assert.equal(CLI.encode(map), '{}');
+
+        });
+
+        it('should handle just an array and a property name', function () {
+
+            var map = CLI.Array.toValueMap([
+                { name: 'aaa' },
+                { name: 'bbb' },
+                { name: 'ccc' }
+            ], 'name');
+
+            assert.equal(map.aaa.name, 'aaa');
+            assert.equal(map.bbb.name, 'bbb');
+            assert.equal(map.ccc.name, 'ccc');
+
+            delete map.aaa;
+            delete map.bbb;
+            delete map.ccc;
+
+            assert.equal(CLI.encode(map), '{}');
+
+        });
+
+        it('should handle just an array and a property name as always Array', function () {
+
+            var map = CLI.Array.toValueMap([
+                { name: 'aaa' },
+                { name: 'bbb' },
+                { name: 'ccc' }
+            ], function(obj) {
+                return 'custom_' + obj.name;
+            }, 1);
+
+            assert.equal(map.custom_aaa.name, 'aaa');
+            assert.equal(map.custom_bbb.name, 'bbb');
+            assert.equal(map.custom_ccc.name, 'ccc');
+
+            delete map.custom_aaa;
+            delete map.custom_bbb;
+            delete map.custom_ccc;
+
+            var map = CLI.Array.toValueMap([
+                { name: 'aaa' },
+                { name: 'bbb' },
+                { name: 'ccc' }
+            ], 'name', 1);
+
+            assert.equal(map.aaa[0].name, 'aaa');
+            assert.equal(map.bbb[0].name, 'bbb');
+            assert.equal(map.ccc[0].name, 'ccc');
+
+            delete map.aaa;
+            delete map.bbb;
+            delete map.ccc;
+
+            assert.equal(CLI.encode(map), '{}');
+
+        });
+
+        it('should handle just an array and a property name as auto Array', function () {
+
+            var map = CLI.Array.toValueMap([
+                { name: 'aaa' },
+                { name: 'bbb' },
+                { name: 'ccc' }
+            ], function(obj) {
+                return 'custom_' + obj.name;
+            }, 2);
+
+            assert.equal(map.custom_aaa.name, 'aaa');
+            assert.equal(map.custom_bbb.name, 'bbb');
+            assert.equal(map.custom_ccc.name, 'ccc');
+
+            delete map.custom_aaa;
+            delete map.custom_bbb;
+            delete map.custom_ccc;
+
+            var map = CLI.Array.toValueMap([
+                { name: 'aaa' },
+                { name: 'bbb' },
+                { name: 'ccc' }
+            ], 'name', 2);
+
+            assert.equal(map.aaa.name, 'aaa');
+            assert.equal(map.bbb.name, 'bbb');
+            assert.equal(map.ccc.name, 'ccc');
+
+            delete map.aaa;
+            delete map.bbb;
+            delete map.ccc;
+
+            assert.equal(CLI.encode(map), '{}');
+
+        });
+
+        it('should handle just an array and a key extractor', function () {
+
+            var map = CLI.Array.toValueMap([
+                { name: 'aaa' },
+                { name: 'bbb' },
+                { name: 'ccc' }
+            ], function (obj) {
+                return obj.name.toUpperCase();
+            });
+
+            assert.equal(map.AAA.name, 'aaa');
+            assert.equal(map.BBB.name, 'bbb');
+            assert.equal(map.CCC.name, 'ccc');
+
+            delete map.AAA;
+            delete map.BBB;
+            delete map.CCC;
+
+            assert.equal(CLI.encode(map), '{}');
+
+        });
+
+    });
+
+    // }}}
     // {{{ flatten
 
     describe('flatten', function() {
@@ -1836,7 +2090,7 @@ describe("CLI.Array", function() {
 
         var push = CLI.Array.push;
 
-        it("should create an array", function(){
+        it("should create an array", function() {
 
             assert.deepEqual(push(undefined, 1), [1]);
 
@@ -1854,13 +2108,13 @@ describe("CLI.Array", function() {
 
         });
 
-        it("should push all items of array arguments onto end", function(){
+        it("should push all items of array arguments onto end", function() {
 
             assert.deepEqual(push([1, 2], [3, 4], [5]), [1, 2, 3, 4, 5]);
 
         });
 
-        it("should push arrays and single items into the end", function(){
+        it("should push arrays and single items into the end", function() {
 
             assert.deepEqual(push([1, 2], [3, 4], 5), [1, 2, 3, 4, 5]);
 
@@ -1871,53 +2125,53 @@ describe("CLI.Array", function() {
     // }}}
     // {{{ equals
 
-    describe("equals", function(){
+    describe("equals", function() {
 
         var equals = CLI.Array.equals;
 
-        it("should match 2 empty arrays", function(){
+        it("should match 2 empty arrays", function() {
 
             assert.equal(equals([], []), true);
 
         });
 
-        it("should not match if the arrays are a different size", function(){
+        it("should not match if the arrays are a different size", function() {
 
             assert.equal(equals([1, 2, 3, 4], [1, 2, 3]), false);
 
         });
 
-        it("should use strict equality matching", function(){
+        it("should use strict equality matching", function() {
 
             assert.equal(equals([1], ['1']), false);
 
         });
 
-        it("should have items in the same order", function(){
+        it("should have items in the same order", function() {
 
             assert.equal(equals(['baz', 'bar', 'foo'], ['foo', 'bar', 'baz']), false);
 
         });
 
-        it("should match strings", function(){
+        it("should match strings", function() {
 
             assert.equal(equals(['foo', 'bar', 'baz'], ['foo', 'bar', 'baz']), true);
 
         });
 
-        it("should match numbers", function(){
+        it("should match numbers", function() {
 
             assert.equal(equals([1, 2, 3, 4], [1, 2, 3, 4]), true);
 
         });
 
-        it("should match booleans", function(){
+        it("should match booleans", function() {
 
             assert.equal(equals([false, false, false, true], [false, false, false, true]), true);
 
         });
 
-        it("should match objects", function(){
+        it("should match objects", function() {
 
             var o1 = {},
                 o2 = {},
@@ -1927,7 +2181,7 @@ describe("CLI.Array", function() {
 
         });
 
-        it("should match the same array", function(){
+        it("should match the same array", function() {
 
             var arr = [1, 2, 3];
 
