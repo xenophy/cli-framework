@@ -32,4 +32,3 @@ CLI.define('MyApp.app.build.Main', {
  * c-hanging-comment-ender-p: nil
  * End:
  */
-

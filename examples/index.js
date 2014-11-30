@@ -1,10 +1,20 @@
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 
-// require CLI Framework
+/*
+ * require CLI Framework
+ *
+ * when use in your app is following:
+ *
+ *     require('cli-framework');
+ *
+ */
 require('../lib/index.js');
 
-// {{{ define your application
+// {{{ CLI.application
 
+/*
+ * define your application
+ */
 CLI.application({
 
     // {{{ name
