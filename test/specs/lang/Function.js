@@ -701,7 +701,7 @@ describe("CLI.Function", function() {
             runAfterInvocation(fn, function() {
 
                 assert.equal(fn.callCount, 5);
-                assert.equal((CLI.now() - start) > 50,  true);
+                assert.equal((CLI.now() - start) >= 50,  true);
 
                 done();
 

@@ -905,9 +905,6 @@ describe("CLI.Object", function() {
 
     describe("fromQueryString", function() {
 
-        console.log("==============");
-        console.log(Object.defineProperty);
-
         var fromQueryString = CLI.Object.fromQueryString;
 
         // {{{ standard mode
