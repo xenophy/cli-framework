@@ -83,6 +83,52 @@ describe("CLI.Function", function() {
 
         };
 
+    // {{{ flexSetter
+
+    describe("flexSetter", function() {
+
+        it("should return function if a function is passed object values can set", function() {
+
+            var cnt = 1;
+            var f = CLI.Function.flexSetter(function(key, v) {
+                assert.equal(key, 'key' + cnt);
+                assert.equal(v, 'v' + cnt);
+                cnt++;
+            });
+
+            var o = {key1: 'v1', key2: 'v2'};
+
+            f(o);
+
+        });
+
+        it('should set null', function() {
+
+            var ret = false;
+            var f = CLI.Function.flexSetter(function(key, v) {
+                ret = true;
+            });
+
+            f(null);
+
+            assert.equal(ret, false);
+        });
+
+        it('should set primitive values', function() {
+
+            var ret = '';
+            var f = CLI.Function.flexSetter(function(key, v) {
+                ret = key + ':' + v;
+            });
+
+            f('hoge', 'foo');
+
+            assert.equal(ret, 'hoge:foo');
+        });
+
+    });
+
+    // }}}
     // {{{ bind
 
     describe("bind", function() {
@@ -166,6 +212,38 @@ describe("CLI.Function", function() {
         // }}}
 
     });
+
+    // }}}
+    // {{{ bindCallback
+
+    describe("bindCallback", function() {
+
+        var scope = {
+            myFunc: function() {
+                return arguments;
+            }
+        };
+
+        var myFunc = scope.myFunc;
+        var bindCb = CLI.Function.bindCallback('myFunc', scope, ['foo', 'bar']);
+
+        assert.equal(CLI.isFunction(scope.myFunc), true);
+        assert.notEqual(scope.myFunc, bindCb);
+
+        console.log(bindCb());
+
+
+
+    });
+
+    /*
+
+     var myFunc = this.myFunc;
+
+ Ext.callback(myFunc, this, [arg1, arg2]);
+
+ Ext.isFunction(myFunc) && this.myFunc(arg1, arg2);
+    */
 
     // }}}
     // {{{ pass
@@ -383,15 +461,15 @@ describe("CLI.Function", function() {
         // }}}
         // {{{ returnValue
 
-        describe("returnValue", function(){
+        describe("returnValue", function() {
 
-            beforeEach(function(){
+            beforeEach(function() {
 
-                interceptedFn = function(){
+                interceptedFn = function() {
                     return 'Original';
                 };
 
-                interceptorFn = function(){
+                interceptorFn = function() {
                     return false;
                 };
 
@@ -401,7 +479,7 @@ describe("CLI.Function", function() {
 
             describe("when interceptorFn returns false", function() {
 
-                it("should return null as a default", function(){
+                it("should return null as a default", function() {
 
                     interceptor = CLI.Function.createInterceptor(interceptedFn, interceptorFn);
 
@@ -409,14 +487,14 @@ describe("CLI.Function", function() {
 
                 });
 
-                it("should accept a custom returnValue", function(){
+                it("should accept a custom returnValue", function() {
 
                     interceptor = CLI.Function.createInterceptor(interceptedFn, interceptorFn, null, 'Custom');
                     assert.equal(interceptor(), 'Custom');
 
                 });
 
-                it("should accept a falsy returnValue", function(){
+                it("should accept a falsy returnValue", function() {
 
                     interceptor = CLI.Function.createInterceptor(interceptedFn, interceptorFn, null, false);
 
@@ -428,9 +506,9 @@ describe("CLI.Function", function() {
 
             // }}}
 
-            it("should return the value of the original function if false is not returned", function(){
+            it("should return the value of the original function if false is not returned", function() {
 
-                interceptorFn = function(){
+                interceptorFn = function() {
                     return;
                 };
 
@@ -551,7 +629,7 @@ describe("CLI.Function", function() {
 
         var fn;
 
-        beforeEach(function(){
+        beforeEach(function() {
             fn = sinon.spy();
         });
 
@@ -559,7 +637,7 @@ describe("CLI.Function", function() {
 
             CLI.defer(fn, 10);
 
-            waitsFor(function(){
+            waitsFor(function() {
 
                 return fn.callCount === 1;
 
@@ -582,7 +660,7 @@ describe("CLI.Function", function() {
 
             CLI.defer(fn, 10, fakeScope);
 
-            waitsFor(function(){
+            waitsFor(function() {
 
                 return fn.callCount === 1;
 
@@ -599,7 +677,7 @@ describe("CLI.Function", function() {
 
             CLI.defer(fn, 10, this, [1, 2, 3]);
 
-            waitsFor(function(){
+            waitsFor(function() {
 
                 return fn.callCount === 1;
 
@@ -620,9 +698,35 @@ describe("CLI.Function", function() {
     });
 
     // }}}
+    // {{{ interval
+
+    describe("interval", function() {
+
+        // function(fn, millis, scope, args, appendArgs) {
+
+        it("should execute as interval function", function(done) {
+
+            var fn = sinon.spy();
+            var timer = CLI.Function.interval(fn, 10, fakeScope, ['hoge', 'foo', 'piyo']);
+
+            var start = CLI.now();
+
+            runAfterInvocation(fn, function() {
+
+                assert.equal(fn.callCount, 5);
+                assert.equal((CLI.now() - start) > 50,  true);
+
+                done();
+
+            }, 5);
+
+        });
+
+    });
+
+    // }}}
     // {{{ createSequence
 
-    /*
     describe("createSequence", function() {
 
         var sequence,
@@ -632,23 +736,34 @@ describe("CLI.Function", function() {
             newFnIsRunAfter;
 
         beforeEach(function() {
+
             origFnIsRunFirst = false;
             newFnIsRunAfter = false;
 
-            origFn = jasmine.createSpy("interceptedSpy").andCallFake(function() {
-                origFnIsRunFirst = true;
-            });
+            origFn = sinon.spy({
+                fake: function() {
+                    origFnIsRunFirst = true;
+                }
+            }, 'fake');
 
-            newFn = jasmine.createSpy("sequenceSpy").andCallFake(function() {
-                newFnIsRunAfter = origFnIsRunFirst;
-            });
+            newFn = sinon.spy({
+                fake: function() {
+                    newFnIsRunAfter = origFnIsRunFirst;
+                }
+            }, 'fake');
+
         });
+
+        // {{{ if no function is passed
 
         describe("if no function is passed", function() {
             it("should return the same function", function() {
-                expect(CLI.Function.createSequence(origFn)).toEqual(origFn);
+                assert.equal(CLI.Function.createSequence(origFn), origFn);
             });
         });
+
+        // }}}
+        // {{{ if a function is passed
 
         describe("if a function is passed", function() {
             beforeEach(function() {
@@ -657,21 +772,23 @@ describe("CLI.Function", function() {
             });
 
             it("should return a new function", function() {
-                expect(typeof sequence === "function").toBe(true);
-                expect(sequence).not.toEqual(origFn);
+                assert.equal(typeof sequence === "function", true);
+                assert.notEqual(sequence, origFn);
             });
 
             it("should set the correct scope for the sequence function", function() {
-                expect(newFn.calls[0].object).toBe(fakeScope);
+                assert.equal(newFn.firstCall.thisValue, fakeScope);
             });
 
             it("should call the sequence function first", function() {
-                expect(newFnIsRunAfter).toBe(true);
+                assert.equal(newFnIsRunAfter, true);
             });
 
         });
+
+        // }}}
+
     });
-    */
 
     // }}}
     // {{{ createBuffered
@@ -812,6 +929,72 @@ describe("CLI.Function", function() {
     });
 
     // }}}
+    // {{{ createBarrier
+
+    describe("createBarrier", function() {
+
+        it("should execute only therd call", function() {
+
+            var fn = sinon.spy(),
+                barrierFn = CLI.Function.createBarrier(3, fn, fakeScope);
+
+            barrierFn();
+
+            assert.equal(fn.callCount, 0);
+
+            barrierFn();
+
+            assert.equal(fn.callCount, 0);
+
+            barrierFn();
+
+            assert.equal(fn.callCount, 1);
+            assert.equal(fn.lastCall.thisValue, fakeScope);
+
+            barrierFn();
+
+            assert.equal(fn.callCount, 1);
+            assert.equal(fn.lastCall.thisValue, fakeScope);
+
+            barrierFn();
+
+            assert.equal(fn.callCount, 1);
+            assert.equal(fn.lastCall.thisValue, fakeScope);
+
+        });
+
+    });
+
+    // }}}
+    // {{{ interceptBefore
+
+    describe("interceptBefore", function() {
+
+        it("should execute interceptor before each method call", function() {
+
+            var soup = {
+                contents: [],
+                add: function(ingredient) {
+                    this.contents.push(ingredient);
+                }
+            };
+
+            CLI.Function.interceptBefore(soup, "add", function(ingredient) {
+                if (!this.contents.length && ingredient !== "water") {
+                    this.contents.push("water");
+                }
+            });
+
+            soup.add("onions");
+            soup.add("salt");
+
+            assert.deepEqual(soup.contents, ['water', 'onions', 'salt']);
+
+        });
+
+    });
+
+    // }}}
     // {{{ interceptAfter
 
     describe("interceptAfter", function() {
@@ -866,6 +1049,60 @@ describe("CLI.Function", function() {
             assert.deepEqual(transcription.phrases, ['He said: I like you', 'He said: I love you']);
             assert.deepEqual(transcriptPhrase.firstCall.args, ['I like you']);
             assert.deepEqual(transcriptPhrase.secondCall.args, ['I love you']);
+        });
+
+    });
+
+    // }}}
+    // {{{ makeCallback
+
+    describe("makeCallback", function() {
+
+        it("should not create no method", function() {
+
+            var cls = CLI.define('Test.Function.makeCallback', {
+                foo: function() {
+                }
+            });
+
+            beginSilent();
+
+            assert.throws(function() {
+                CLI.Function.makeCallback('hoge', new cls);
+            });
+
+            endSilent();
+
+        });
+
+        it("should not create no method", function() {
+
+            beginSilent();
+
+            assert.throws(function() {
+                CLI.Function.makeCallback('hoge', {});
+            });
+
+            endSilent();
+
+        });
+
+        it("should execute callback method", function() {
+
+            beginSilent();
+
+            var cls = CLI.define('Test.Function.makeCallback', {
+                hoge: function() {
+                    return 123;
+                }
+            });
+
+            var cb = CLI.Function.makeCallback('hoge', new cls);
+
+            assert.equal(cb(), 123);
+
+            endSilent();
+
         });
 
     });
