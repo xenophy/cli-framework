@@ -12,16 +12,9 @@ CLI.application({
     name: 'MyApp',
 
     // }}}
-    // {{{ appFolder
-
-//    appFolder: './app'
-
-    // }}}
     // {{{ launch
 
     launch: function() {
-
-
 
     }
 
