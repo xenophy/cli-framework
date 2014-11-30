@@ -39,6 +39,110 @@
 
     CLI.apply(CLI, {
 
+        // shortcut for the special named scopes for listener scope resolution
+        _namedScopes: {
+            &#39;this&#39;: { isThis: 1 },
+            controller: { isController: 1 },
+            // these two are private, used to indicate that listeners were declared on the
+            // class body with either an unspecified scope, or scope:&#39;controller&#39;
+            self: { isSelf: 1 },
+            &#39;self.controller&#39;: { isSelf: 1, isController: 1 }
+        },
+
+        // {{{ callback
+
+<span id='CLI-method-callback'>        /**
+</span>         * @method callback
+         * @member CLI
+         * Execute a callback function in a particular scope. If `callback` argument is a
+         * function reference, that is called. If it is a string, the string is assumed to
+         * be the name of a method on the given `scope`. If no function is passed the call
+         * is ignored.
+         *
+         * For example, these calls are equivalent:
+         *
+         *      var myFunc = this.myFunc;
+         *
+         *      CLI.callback(&#39;myFunc&#39;, this, [arg1, arg2]);
+         *      CLI.callback(myFunc, this, [arg1, arg2]);
+         *
+         *      CLI.isFunction(myFunc) &amp;&amp; this.myFunc(arg1, arg2);
+         *
+         * @param {Function/String} callback The callback function to execute or the name of
+         * the callback method on the provided `scope`.
+         * @param {Object} [scope] The scope in which `callback` should be invoked. If `callback`
+         * is a string this object provides the method by that name. If this is `null` then
+         * the `caller` is used to resolve the scope to a `ViewController` or the proper
+         * `defaultListenerScope`.
+         * @param {Array} [args] The arguments to pass to the function.
+         * @param {Number} [delay] Pass a number to delay the call by a number of milliseconds.
+         * @param {Object} [caller] The object calling the callback. This is used to resolve
+         * named methods when no explicit `scope` is provided.
+         * @param {Object} [defaultScope=caller] The default scope to return if none is found.
+         * @return The value returned by the callback or `undefined` (if there is a `delay`
+         * or if the `callback` is not a function).
+         */
+        callback: function (callback, scope, args, delay, caller, defaultScope) {
+
+            if (!callback) {
+                return;
+            }
+
+            var namedScope = (scope in CLI._namedScopes);
+
+            if (callback.charAt) { // if (isString(fn))
+
+                if ((!scope || namedScope) &amp;&amp; caller) {
+                    scope = caller.resolveListenerScope(namedScope ? scope : defaultScope);
+                }
+                //&lt;debug&gt;
+                if (!scope || !CLI.isObject(scope)) {
+                    CLI.Error.raise(&#39;Named method &quot;&#39; + callback + &#39;&quot; requires a scope object&#39;);
+                }
+                if (!CLI.isFunction(scope[callback])) {
+                    CLI.Error.raise(&#39;No method named &quot;&#39; + callback + &#39;&quot; on &#39; +
+                                    (scope.$className || &#39;scope object&#39;));
+                }
+                //&lt;/debug&gt;
+
+                callback = scope[callback];
+
+            } else if (namedScope) {
+
+                scope = defaultScope || caller;
+
+            } else if (!scope) {
+
+                scope = caller;
+
+            }
+
+            var ret;
+
+            if (callback &amp;&amp; CLI.isFunction(callback)) {
+
+                scope = scope || CLI.global;
+
+                if (delay) {
+
+                    CLI.defer(callback, delay, scope, args);
+
+                } else if (args) {
+
+                    ret = callback.apply(scope, args);
+
+                } else {
+
+                    ret = callback.call(scope);
+
+                }
+
+            }
+
+            return ret;
+        },
+
+        // }}}
         // {{{ applyIf
 
 <span id='CLI-method-applyIf'>        /**
@@ -789,30 +893,44 @@
 
                 if (con[level]) {
 
-                    con[level](message);
+                    if (con.suspended !== true) {
+                        con[level](message);
+                    }
 
                 } else {
 
-                    con.log(message);
+                    if (con.suspended !== true) {
+                        con.log(message);
+                    }
 
                 }
 
                 if (dump) {
 
-                    con.dir(dump);
+                    if (con.suspended !== true) {
+                        con.dir(dump);
+                    }
 
                 }
 
                 if (stack &amp;&amp; con.trace) {
 
-                    if (level != &#39;error&#39;) {
-                        con.trace();
+                    if (con.suspended !== true) {
+
+                        if (level != &#39;error&#39;) {
+                            con.trace();
+                        }
+
                     }
                 }
 
-                // Mostly informational, but the CLI.Error notifier uses them:
-                ++log.count;
-                ++log.counters[level];
+                if (con.suspended !== true) {
+
+                    // Mostly informational, but the CLI.Error notifier uses them:
+                    ++log.count;
+                    ++log.counters[level];
+
+                }
             }
 
             // }}}
@@ -832,19 +950,25 @@
 
             log.error = function () {
 
-                logx(&#39;error&#39;, Array.prototype.slice.call(arguments));
+                if (CLI.global.console.suspended !== true) {
+                    logx(&#39;error&#39;, Array.prototype.slice.call(arguments));
+                }
 
             };
 
             log.info = function () {
 
-                logx(&#39;info&#39;, Array.prototype.slice.call(arguments));
+                if (CLI.global.console.suspended !== true) {
+                    logx(&#39;info&#39;, Array.prototype.slice.call(arguments));
+                }
 
             };
 
             log.warn = function () {
 
-                logx(&#39;warn&#39;, Array.prototype.slice.call(arguments));
+                if (CLI.global.console.suspended !== true) {
+                    logx(&#39;warn&#39;, Array.prototype.slice.call(arguments));
+                }
 
             };
 

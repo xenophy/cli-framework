@@ -38,9 +38,10 @@ CLI._startTime = Date.now();
     &quot;use strict&quot;;
 
     var emptyFn     = function () {},
-        privateFn   = function () {};
+        privateFn   = function () {},
+        identityFn  = function(o) { return o; };
 
-    emptyFn.$nullFn = emptyFn.$emptyFn = privateFn.$nullFn = true;
+    emptyFn.$nullFn = identityFn.$nullFn = emptyFn.$emptyFn = identityFn.$identityFn = privateFn.$nullFn = true;
     privateFn.$privacy = &#39;framework&#39;;
 
     // set global object
@@ -97,6 +98,15 @@ CLI._startTime = Date.now();
          * A reusable empty function.
          */
         emptyFn: emptyFn,
+
+        // }}}
+        // {{{ identityFn
+
+<span id='CLI-property-identityFn'>        /**
+</span>         * @property {Function}
+         * A reusable identity function that simply returns its first argument.
+         */
+        identityFn: identityFn,
 
         // }}}
         // {{{ privateFn

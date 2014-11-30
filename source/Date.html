@@ -131,161 +131,163 @@
 
     &quot;use strict&quot;;
 
+    // {{{ CLI.Date
+
     CLI.Date = (function () {
 
         var utilDate,
-        stripEscapeRe = /(\\.)/g,
-        hourInfoRe = /([gGhHisucUOPZ]|MS)/,
-        dateInfoRe = /([djzmnYycU]|MS)/,
-        slashRe = /\\/gi,
-        numberTokenRe = /\{(\d+)\}/g,
-        MSFormatRe = new RegExp(&#39;\\/Date\\(([-+])?(\\d+)(?:[+-]\\d{4})?\\)\\/&#39;),
+            stripEscapeRe = /(\\.)/g,
+            hourInfoRe = /([gGhHisucUOPZ]|MS)/,
+            dateInfoRe = /([djzmnYycU]|MS)/,
+            slashRe = /\\/gi,
+            numberTokenRe = /\{(\d+)\}/g,
+            MSFormatRe = new RegExp(&#39;\\/Date\\(([-+])?(\\d+)(?:[+-]\\d{4})?\\)\\/&#39;),
 
-        // Most of the date-formatting functions below are the excellent work of Baron Schwartz.
-        // (see http://www.xaprb.com/blog/2005/12/12/javascript-closures-for-runtime-efficiency/)
-        // They generate precompiled functions from format patterns instead of parsing and
-        // processing each pattern every time a date is formatted.
-        code = [
-            // date calculations (note: the code below creates a dependency on CLI.Number.from())
-            &quot;var me = this, dt, y, m, d, h, i, s, ms, o, O, z, zz, u, v, W, year, jan4, week1monday, daysInMonth, dayMatched,&quot;,
-            &quot;def = me.defaults,&quot;,
-            &quot;from = CLI.Number.from,&quot;,
-            &quot;results = String(input).match(me.parseRegexes[{0}]);&quot;, // either null, or an array of matched strings
+            // Most of the date-formatting functions below are the excellent work of Baron Schwartz.
+            // (see http://www.xaprb.com/blog/2005/12/12/javascript-closures-for-runtime-efficiency/)
+            // They generate precompiled functions from format patterns instead of parsing and
+            // processing each pattern every time a date is formatted.
+            code = [
+                // date calculations (note: the code below creates a dependency on CLI.Number.from())
+                &quot;var me = this, dt, y, m, d, h, i, s, ms, o, O, z, zz, u, v, W, year, jan4, week1monday, daysInMonth, dayMatched,&quot;,
+                &quot;def = me.defaults,&quot;,
+                &quot;from = CLI.Number.from,&quot;,
+                &quot;results = String(input).match(me.parseRegexes[{0}]);&quot;, // either null, or an array of matched strings
 
-            &quot;if(results){&quot;,
-            &quot;{1}&quot;,
+                &quot;if(results){&quot;,
+                &quot;{1}&quot;,
 
-            &quot;if(u != null){&quot;, // i.e. unix time is defined
-            &quot;v = new Date(u * 1000);&quot;, // give top priority to UNIX time
-            &quot;}else{&quot;,
-            // create Date object representing midnight of the current day;
-            // this will provide us with our date defaults
-            // (note: clearTime() handles Daylight Saving Time automatically)
-            &quot;dt = me.clearTime(new Date);&quot;,
+                &quot;if(u != null){&quot;, // i.e. unix time is defined
+                &quot;v = new Date(u * 1000);&quot;, // give top priority to UNIX time
+                &quot;}else{&quot;,
+                // create Date object representing midnight of the current day;
+                // this will provide us with our date defaults
+                // (note: clearTime() handles Daylight Saving Time automatically)
+                &quot;dt = me.clearTime(new Date);&quot;,
 
-            &quot;y = from(y, from(def.y, dt.getFullYear()));&quot;,
-            &quot;m = from(m, from(def.m - 1, dt.getMonth()));&quot;,
-            &quot;dayMatched = d !== undefined;&quot;,
-            &quot;d = from(d, from(def.d, dt.getDate()));&quot;,
+                &quot;y = from(y, from(def.y, dt.getFullYear()));&quot;,
+                &quot;m = from(m, from(def.m - 1, dt.getMonth()));&quot;,
+                &quot;dayMatched = d !== undefined;&quot;,
+                &quot;d = from(d, from(def.d, dt.getDate()));&quot;,
 
-            // Attempt to validate the day. Since it defaults to today, it may go out
-            // of range, for example parsing m/Y where the value is 02/2000 on the 31st of May.
-            // It will attempt to parse 2000/02/31, which will overflow to March and end up
-            // returning 03/2000. We only do this when we default the day. If an invalid day value
-            // was set to be parsed by the user, continue on and either let it overflow or return null
-            // depending on the strict value. This will be in line with the normal Date behaviour.
+                // Attempt to validate the day. Since it defaults to today, it may go out
+                // of range, for example parsing m/Y where the value is 02/2000 on the 31st of May.
+                // It will attempt to parse 2000/02/31, which will overflow to March and end up
+                // returning 03/2000. We only do this when we default the day. If an invalid day value
+                // was set to be parsed by the user, continue on and either let it overflow or return null
+                // depending on the strict value. This will be in line with the normal Date behaviour.
 
-            &quot;if (!dayMatched) {&quot;, 
-            &quot;dt.setDate(1);&quot;,
-            &quot;dt.setMonth(m);&quot;,
-            &quot;dt.setFullYear(y);&quot;,
+                &quot;if (!dayMatched) {&quot;, 
+                &quot;dt.setDate(1);&quot;,
+                &quot;dt.setMonth(m);&quot;,
+                &quot;dt.setFullYear(y);&quot;,
 
-            &quot;daysInMonth = me.getDaysInMonth(dt);&quot;,
-            &quot;if (d &gt; daysInMonth) {&quot;,
-            &quot;d = daysInMonth;&quot;,
-            &quot;}&quot;,
-            &quot;}&quot;,
+                &quot;daysInMonth = me.getDaysInMonth(dt);&quot;,
+                &quot;if (d &gt; daysInMonth) {&quot;,
+                &quot;d = daysInMonth;&quot;,
+                &quot;}&quot;,
+                &quot;}&quot;,
 
-            &quot;h  = from(h, from(def.h, dt.getHours()));&quot;,
-            &quot;i  = from(i, from(def.i, dt.getMinutes()));&quot;,
-            &quot;s  = from(s, from(def.s, dt.getSeconds()));&quot;,
-            &quot;ms = from(ms, from(def.ms, dt.getMilliseconds()));&quot;,
+                &quot;h  = from(h, from(def.h, dt.getHours()));&quot;,
+                &quot;i  = from(i, from(def.i, dt.getMinutes()));&quot;,
+                &quot;s  = from(s, from(def.s, dt.getSeconds()));&quot;,
+                &quot;ms = from(ms, from(def.ms, dt.getMilliseconds()));&quot;,
 
-            &quot;if(z &gt;= 0 &amp;&amp; y &gt;= 0){&quot;,
-            // both the year and zero-based day of year are defined and &gt;= 0.
-            // these 2 values alone provide sufficient info to create a full date object
+                &quot;if(z &gt;= 0 &amp;&amp; y &gt;= 0){&quot;,
+                // both the year and zero-based day of year are defined and &gt;= 0.
+                // these 2 values alone provide sufficient info to create a full date object
 
-            // create Date object representing January 1st for the given year
-            // handle years &lt; 100 appropriately
-            &quot;v = me.add(new Date(y &lt; 100 ? 100 : y, 0, 1, h, i, s, ms), me.YEAR, y &lt; 100 ? y - 100 : 0);&quot;,
+                // create Date object representing January 1st for the given year
+                // handle years &lt; 100 appropriately
+                &quot;v = me.add(new Date(y &lt; 100 ? 100 : y, 0, 1, h, i, s, ms), me.YEAR, y &lt; 100 ? y - 100 : 0);&quot;,
 
-            // then add day of year, checking for Date &quot;rollover&quot; if necessary
-            &quot;v = !strict? v : (strict === true &amp;&amp; (z &lt;= 364 || (me.isLeapYear(v) &amp;&amp; z &lt;= 365))? me.add(v, me.DAY, z) : null);&quot;,
-            &quot;}else if(strict === true &amp;&amp; !me.isValid(y, m + 1, d, h, i, s, ms)){&quot;, // check for Date &quot;rollover&quot;
-            &quot;v = null;&quot;, // invalid date, so return null
-            &quot;}else{&quot;,
-            &quot;if (W) {&quot;, // support ISO-8601
-            // http://en.wikipedia.org/wiki/ISO_week_date
-            //
-            // Mutually equivalent definitions for week 01 are:
-            // a. the week starting with the Monday which is nearest in time to 1 January
-            // b. the week with 4 January in it
-            // ... there are many others ...
-            //
-            // We&#39;ll use letter b above to determine the first week of the year.
-            //
-            // So, first get a Date object for January 4th of whatever calendar year is desired.
-            //
-            // Then, the first Monday of the year can easily be determined by (operating on this Date):
-            // 1. Getting the day of the week.
-            // 2. Subtracting that by one.
-            // 3. Multiplying that by 86400000 (one day in ms).
-            // 4. Subtracting this number of days (in ms) from the January 4 date (represented in ms).
-            // 
-            // Example #1 ...
-            //
-            //       January 2012
-            //   Su Mo Tu We Th Fr Sa
-            //    1  2  3  4  5  6  7
-            //    8  9 10 11 12 13 14
-            //   15 16 17 18 19 20 21
-            //   22 23 24 25 26 27 28
-            //   29 30 31
-            //
-            // 1. January 4th is a Wednesday.
-            // 2. Its day number is 3.
-            // 3. Simply substract 2 days from Wednesday.
-            // 4. The first week of the year begins on Monday, January 2. Simple!
-            //
-            // Example #2 ...
-            //       January 1992
-            //   Su Mo Tu We Th Fr Sa
-            //             1  2  3  4
-            //    5  6  7  8  9 10 11
-            //   12 13 14 15 16 17 18
-            //   19 20 21 22 23 24 25
-            //   26 27 28 29 30 31
-            // 
-            // 1. January 4th is a Saturday.
-            // 2. Its day number is 6.
-            // 3. Simply subtract 5 days from Saturday.
-            // 4. The first week of the year begins on Monday, December 30. Simple!
-            //
-            // v = CLI.Date.clearTime(new Date(week1monday.getTime() + ((W - 1) * 604800000 + 43200000)));
-            // (This is essentially doing the same thing as above but for the week rather than the day)
-            &quot;year = y || (new Date()).getFullYear();&quot;,
-            &quot;jan4 = new Date(year, 0, 4, 0, 0, 0);&quot;,
-            &quot;d = jan4.getDay();&quot;, 
-            // If the 1st is a Thursday, then the 4th will be a Sunday, so we need the appropriate
-            // day number here, which is why we use the day === checks.
-            &quot;week1monday = new Date(jan4.getTime() - ((d === 0 ? 6 : d - 1) * 86400000));&quot;,
-            // The reason for adding 43200000 (12 hours) is to avoid any complication with daylight saving
-            // switch overs. For example,  if the clock is rolled back, an hour will repeat, so adding 7 days
-            // will leave us 1 hour short (Sun &lt;date&gt; 23:00:00). By setting is to 12:00, subtraction
-            // or addition of an hour won&#39;t make any difference.
-            &quot;v = CLI.Date.clearTime(new Date(week1monday.getTime() + ((W - 1) * 604800000 + 43200000)));&quot;,
-            &quot;} else {&quot;,
-            // plain old Date object
-            // handle years &lt; 100 properly
-            &quot;v = me.add(new Date(y &lt; 100 ? 100 : y, m, d, h, i, s, ms), me.YEAR, y &lt; 100 ? y - 100 : 0);&quot;,
-            &quot;}&quot;,
-            &quot;}&quot;,
-            &quot;}&quot;,
-            &quot;}&quot;,
+                // then add day of year, checking for Date &quot;rollover&quot; if necessary
+                &quot;v = !strict? v : (strict === true &amp;&amp; (z &lt;= 364 || (me.isLeapYear(v) &amp;&amp; z &lt;= 365))? me.add(v, me.DAY, z) : null);&quot;,
+                &quot;}else if(strict === true &amp;&amp; !me.isValid(y, m + 1, d, h, i, s, ms)){&quot;, // check for Date &quot;rollover&quot;
+                &quot;v = null;&quot;, // invalid date, so return null
+                &quot;}else{&quot;,
+                &quot;if (W) {&quot;, // support ISO-8601
+                // http://en.wikipedia.org/wiki/ISO_week_date
+                //
+                // Mutually equivalent definitions for week 01 are:
+                // a. the week starting with the Monday which is nearest in time to 1 January
+                // b. the week with 4 January in it
+                // ... there are many others ...
+                //
+                // We&#39;ll use letter b above to determine the first week of the year.
+                //
+                // So, first get a Date object for January 4th of whatever calendar year is desired.
+                //
+                // Then, the first Monday of the year can easily be determined by (operating on this Date):
+                // 1. Getting the day of the week.
+                // 2. Subtracting that by one.
+                // 3. Multiplying that by 86400000 (one day in ms).
+                // 4. Subtracting this number of days (in ms) from the January 4 date (represented in ms).
+                // 
+                // Example #1 ...
+                //
+                //       January 2012
+                //   Su Mo Tu We Th Fr Sa
+                //    1  2  3  4  5  6  7
+                //    8  9 10 11 12 13 14
+                //   15 16 17 18 19 20 21
+                //   22 23 24 25 26 27 28
+                //   29 30 31
+                //
+                // 1. January 4th is a Wednesday.
+                // 2. Its day number is 3.
+                // 3. Simply substract 2 days from Wednesday.
+                // 4. The first week of the year begins on Monday, January 2. Simple!
+                //
+                // Example #2 ...
+                //       January 1992
+                //   Su Mo Tu We Th Fr Sa
+                //             1  2  3  4
+                //    5  6  7  8  9 10 11
+                //   12 13 14 15 16 17 18
+                //   19 20 21 22 23 24 25
+                //   26 27 28 29 30 31
+                // 
+                // 1. January 4th is a Saturday.
+                // 2. Its day number is 6.
+                // 3. Simply subtract 5 days from Saturday.
+                // 4. The first week of the year begins on Monday, December 30. Simple!
+                //
+                // v = CLI.Date.clearTime(new Date(week1monday.getTime() + ((W - 1) * 604800000 + 43200000)));
+                // (This is essentially doing the same thing as above but for the week rather than the day)
+                &quot;year = y || (new Date()).getFullYear();&quot;,
+                &quot;jan4 = new Date(year, 0, 4, 0, 0, 0);&quot;,
+                &quot;d = jan4.getDay();&quot;, 
+                // If the 1st is a Thursday, then the 4th will be a Sunday, so we need the appropriate
+                // day number here, which is why we use the day === checks.
+                &quot;week1monday = new Date(jan4.getTime() - ((d === 0 ? 6 : d - 1) * 86400000));&quot;,
+                // The reason for adding 43200000 (12 hours) is to avoid any complication with daylight saving
+                // switch overs. For example,  if the clock is rolled back, an hour will repeat, so adding 7 days
+                // will leave us 1 hour short (Sun &lt;date&gt; 23:00:00). By setting is to 12:00, subtraction
+                // or addition of an hour won&#39;t make any difference.
+                &quot;v = CLI.Date.clearTime(new Date(week1monday.getTime() + ((W - 1) * 604800000 + 43200000)));&quot;,
+                &quot;} else {&quot;,
+                // plain old Date object
+                // handle years &lt; 100 properly
+                &quot;v = me.add(new Date(y &lt; 100 ? 100 : y, m, d, h, i, s, ms), me.YEAR, y &lt; 100 ? y - 100 : 0);&quot;,
+                &quot;}&quot;,
+                &quot;}&quot;,
+                &quot;}&quot;,
+                &quot;}&quot;,
 
-            &quot;if(v){&quot;,
-            // favor UTC offset over GMT offset
-            &quot;if(zz != null){&quot;,
-            // reset to UTC, then add offset
-            &quot;v = me.add(v, me.SECOND, -v.getTimezoneOffset() * 60 - zz);&quot;,
-            &quot;}else if(o){&quot;,
-            // reset to GMT, then add offset
-            &quot;v = me.add(v, me.MINUTE, -v.getTimezoneOffset() + (sn == &#39;+&#39;? -1 : 1) * (hr * 60 + mn));&quot;,
-            &quot;}&quot;,
-            &quot;}&quot;,
+                &quot;if(v){&quot;,
+                // favor UTC offset over GMT offset
+                &quot;if(zz != null){&quot;,
+                // reset to UTC, then add offset
+                &quot;v = me.add(v, me.SECOND, -v.getTimezoneOffset() * 60 - zz);&quot;,
+                &quot;}else if(o){&quot;,
+                // reset to GMT, then add offset
+                &quot;v = me.add(v, me.MINUTE, -v.getTimezoneOffset() + (sn == &#39;+&#39;? -1 : 1) * (hr * 60 + mn));&quot;,
+                &quot;}&quot;,
+                &quot;}&quot;,
 
-            &quot;return v;&quot;
-        ].join(&#39;\n&#39;);
+                &quot;return v;&quot;
+            ].join(&#39;\n&#39;);
 
         // create private copy of CLI Framework&#39;s `CLI.util.Format.format()` method
         // - to remove unnecessary dependency

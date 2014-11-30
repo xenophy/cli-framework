@@ -800,8 +800,9 @@
                 } else if (strict) {
 
                     if (name !== &#39;type&#39;) {
-                        CLI.log.error(&#39;No such config &quot;&#39; + name + &#39;&quot; for class &#39; +
-                                      instance.$className);
+
+                        CLI.log.error(&#39;No such config &quot;&#39; + name + &#39;&quot; for class &#39; + instance.$className);
+
                     }
 
                     continue;

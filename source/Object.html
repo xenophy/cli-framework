@@ -33,11 +33,14 @@
 
     &quot;use strict&quot;;
 
+    // {{{ CLI.Object
+
     (function() {
 
         // The &quot;constructor&quot; for chain:
-        var TemplateClass = function(){},
-        CLIObject = CLI.Object = {
+        var CLIObject = CLI.Object = {
+
+            // {{{ chain
 
 <span id='CLI-Object-method-chain'>            /**
 </span>             * Returns a new object with the given object as the prototype chain. This method is
@@ -49,12 +52,10 @@
              * 
              * @param {Object} object The prototype chain for the new object.
              */
-            chain: Object.create || function (object) {
-                TemplateClass.prototype = object;
-                var result = new TemplateClass();
-                TemplateClass.prototype = null;
-                return result;
-            },
+            chain: Object.create,
+
+            // }}}
+            // {{{ clear
 
 <span id='CLI-Object-method-clear'>            /**
 </span>             * This method removes all keys from the given object.
@@ -62,6 +63,7 @@
              * @return {Object} The given object.
              */
             clear: function (object) {
+
                 // Safe to delete during iteration
                 for (var key in object) {
                     delete object[key];
@@ -70,27 +72,42 @@
                 return object;
             },
 
+            // }}}
+            // {{{ freeze
+
 <span id='CLI-Object-method-freeze'>            /**
 </span>             * Freezes the given object making it immutable. This operation is by default shallow
              * and does not effect objects referenced by the given object.
-             * 
+             *
              * @method
              * @param {Object} obj The object to freeze.
              * @param {Boolean} [deep=false] Pass `true` to freeze sub-objects recursively.
              * @return {Object} The given object `obj`.
              */
-            freeze: Object.freeze ? function (obj, deep) {
+            freeze: function (obj, deep) {
+
                 if (obj &amp;&amp; typeof obj === &#39;object&#39; &amp;&amp; !Object.isFrozen(obj)) {
+
                     Object.freeze(obj);
 
                     if (deep) {
+
                         for (var name in obj) {
+
                             CLIObject.freeze(obj[name], deep);
+
                         }
+
                     }
+
                 }
+
                 return obj;
-            } : CLI.identityFn,
+
+            },
+
+            // }}}
+            // {{{ toQueryObjects
 
 <span id='CLI-Object-method-toQueryObjects'>            /**
 </span>             * Converts a `name` - `value` pair to an array of objects with support for nested structures. Useful to construct
@@ -130,47 +147,67 @@
              * @return {Array}
              */
             toQueryObjects: function(name, value, recursive) {
+
                 var self = CLIObject.toQueryObjects,
-                objects = [],
-                i, ln;
+                    objects = [],
+                    i, ln;
 
                 if (CLI.isArray(value)) {
+
                     for (i = 0, ln = value.length; i &lt; ln; i++) {
+
                         if (recursive) {
+
                             objects = objects.concat(self(name + &#39;[&#39; + i + &#39;]&#39;, value[i], true));
-                        }
-                        else {
+
+                        } else {
+
                             objects.push({
                                 name: name,
                                 value: value[i]
                             });
+
                         }
+
                     }
-                }
-                else if (CLI.isObject(value)) {
+
+                } else if (CLI.isObject(value)) {
+
                     for (i in value) {
+
                         if (value.hasOwnProperty(i)) {
+
                             if (recursive) {
+
                                 objects = objects.concat(self(name + &#39;[&#39; + i + &#39;]&#39;, value[i], true));
-                            }
-                            else {
+
+                            } else {
+
                                 objects.push({
                                     name: name,
                                     value: value[i]
                                 });
+
                             }
+
                         }
+
                     }
-                }
-                else {
+
+                } else {
+
                     objects.push({
                         name: name,
                         value: value
                     });
+
                 }
 
                 return objects;
             },
+
+            // }}}
+            // {{{ toQueryString
 
 <span id='CLI-Object-method-toQueryString'>            /**
 </span>             * Takes an object and converts it to an encoded query string.
@@ -204,9 +241,10 @@
              * @return {String} queryString
              */
             toQueryString: function(object, recursive) {
+
                 var paramObjects = [],
-                params = [],
-                i, j, ln, paramObject, value;
+                    params = [],
+                    i, j, ln, paramObject, value;
 
                 for (i in object) {
                     if (object.hasOwnProperty(i)) {
@@ -229,6 +267,9 @@
 
                 return params.join(&#39;&amp;&#39;);
             },
+
+            // }}}
+            // {{{ fromQueryString
 
 <span id='CLI-Object-method-fromQueryString'>            /**
 </span>             * Converts a query string back into an object.
@@ -265,41 +306,49 @@
              * @return {Object}
              */
             fromQueryString: function(queryString, recursive) {
+
                 var parts = queryString.replace(/^\?/, &#39;&#39;).split(&#39;&amp;&#39;),
-                object = {},
-                temp, components, name, value, i, ln,
-                part, j, subLn, matchedKeys, matchedName,
-                keys, key, nextKey;
+                    object = {},
+                    temp, components, name, value, i, ln,
+                    part, j, subLn, matchedKeys, matchedName,
+                    keys, key, nextKey;
 
                 for (i = 0, ln = parts.length; i &lt; ln; i++) {
+
                     part = parts[i];
 
                     if (part.length &gt; 0) {
+
                         components = part.split(&#39;=&#39;);
                         name = decodeURIComponent(components[0]);
                         value = (components[1] !== undefined) ? decodeURIComponent(components[1]) : &#39;&#39;;
 
                         if (!recursive) {
+
                             if (object.hasOwnProperty(name)) {
+
                                 if (!CLI.isArray(object[name])) {
+
                                     object[name] = [object[name]];
+
                                 }
 
                                 object[name].push(value);
-                            }
-                            else {
+
+                            } else {
+
                                 object[name] = value;
+
                             }
-                        }
-                        else {
+
+                        } else {
+
                             matchedKeys = name.match(/(\[):?([^\]]*)\]/g);
                             matchedName = name.match(/^([^\[]+)/);
 
-                            //&lt;debug error&gt;
                             if (!matchedName) {
                                 throw new Error(&#39;[CLI.Object.fromQueryString] Malformed query string given, failed parsing name from &quot;&#39; + part + &#39;&quot;&#39;);
                             }
-                            //&lt;/debug&gt;
 
                             name = matchedName[0];
                             keys = [];
@@ -320,18 +369,25 @@
                             temp = object;
 
                             for (j = 0, subLn = keys.length; j &lt; subLn; j++) {
+
                                 key = keys[j];
 
                                 if (j === subLn - 1) {
+
                                     if (CLI.isArray(temp) &amp;&amp; key === &#39;&#39;) {
+
                                         temp.push(value);
-                                    }
-                                    else {
+
+                                    } else {
+
                                         temp[key] = value;
+
                                     }
-                                }
-                                else {
+
+                                } else {
+
                                     if (temp[key] === undefined || typeof temp[key] === &#39;string&#39;) {
+
                                         nextKey = keys[j+1];
 
                                         temp[key] = (CLI.isNumeric(nextKey) || nextKey === &#39;&#39;) ? [] : {};
@@ -339,13 +395,20 @@
 
                                     temp = temp[key];
                                 }
+
                             }
+
                         }
+
                     }
+
                 }
 
                 return object;
             },
+
+            // }}}
+            // {{{ each
 
 <span id='CLI-Object-method-each'>            /**
 </span>             * Iterates through an object and invokes the given callback function for each iteration.
@@ -373,29 +436,28 @@
              * @param {Object} [scope] The execution scope (`this`) of the callback function
              */
             each: function(object, fn, scope) {
-                var enumerables = CLI.enumerables,
-                i, property;
+
+                var i, property;
 
                 scope = scope || object;
 
                 for (property in object) {
+
                     if (object.hasOwnProperty(property)) {
+
                         if (fn.call(scope, property, object[property], object) === false) {
+
                             return;
+
                         }
+
                     }
+
                 }
 
-                if (enumerables) {
-                    for (i = enumerables.length; i--; ) {
-                        if (object.hasOwnProperty(property = enumerables[i])) {
-                            if (fn.call(scope, property, object[property], object) === false) {
-                                return;
-                            }
-                        }
-                    }
-                }
             },
+
+            // }}}
 
 <span id='CLI-Object-method-eachValue'>            /**
 </span>             * Iterates through an object and invokes the given callback function for each iteration.
@@ -443,6 +505,8 @@
                 }
             },
 
+            // {{{ merge
+
 <span id='CLI-Object-method-merge'>            /**
 </span>             * Merges any number of objects recursively without referencing them or their children.
              *
@@ -485,62 +549,93 @@
              * @return {Object} merged The destination object with all passed objects merged in.
              */
             merge: function(destination) {
+
                 var i = 1,
-                ln = arguments.length,
-                mergeFn = CLIObject.merge,
-                cloneFn = CLI.clone,
-                object, key, value, sourceKey;
+                    ln = arguments.length,
+                    mergeFn = CLIObject.merge,
+                    cloneFn = CLI.clone,
+                    object, key, value, sourceKey;
 
                 for (; i &lt; ln; i++) {
+
                     object = arguments[i];
 
                     for (key in object) {
+
                         value = object[key];
+
                         if (value &amp;&amp; value.constructor === Object) {
+
                             sourceKey = destination[key];
+
                             if (sourceKey &amp;&amp; sourceKey.constructor === Object) {
+
                                 mergeFn(sourceKey, value);
+
                             } else {
+
                                 destination[key] = cloneFn(value);
+
                             }
+
                         } else {
+
                             destination[key] = value;
+
                         }
+
                     }
+
                 }
 
                 return destination;
             },
+
+            // }}}
+            // {{{ mergeIf
 
 <span id='CLI-Object-method-mergeIf'>            /**
 </span>             * @private
              * @param destination
              */
             mergeIf: function(destination) {
+
                 var i = 1,
-                ln = arguments.length,
-                cloneFn = CLI.clone,
-                object, key, value;
+                    ln = arguments.length,
+                    cloneFn = CLI.clone,
+                    object, key, value;
 
                 for (; i &lt; ln; i++) {
+
                     object = arguments[i];
 
                     for (key in object) {
+
                         if (!(key in destination)) {
+
                             value = object[key];
 
                             if (value &amp;&amp; value.constructor === Object) {
+
                                 destination[key] = cloneFn(value);
-                            }
-                            else {
+
+                            } else {
+
                                 destination[key] = value;
+
                             }
+
                         }
+
                     }
+
                 }
 
                 return destination;
             },
+
+            // }}}
+            // {{{ getKey
 
 <span id='CLI-Object-method-getKey'>            /**
 </span>             * Returns the first matching key corresponding to the given value.
@@ -557,14 +652,22 @@
              * @param {Object} value The value to find
              */
             getKey: function(object, value) {
+
                 for (var property in object) {
+
                     if (object.hasOwnProperty(property) &amp;&amp; object[property] === value) {
+
                         return property;
+
                     }
+
                 }
 
                 return null;
             },
+
+            // }}}
+            // {{{ getValues
 
 <span id='CLI-Object-method-getValues'>            /**
 </span>             * Gets all values of the given object as an array.
@@ -578,17 +681,25 @@
              * @return {Array} An array of values from the object
              */
             getValues: function(object) {
+
                 var values = [],
-                property;
+                    property;
 
                 for (property in object) {
+
                     if (object.hasOwnProperty(property)) {
+
                         values.push(object[property]);
+
                     }
+
                 }
 
                 return values;
             },
+
+            // }}}
+            // {{{ getKeys
 
 <span id='CLI-Object-method-getKeys'>            /**
 </span>             * Gets all keys of the given object as an array.
@@ -602,190 +713,234 @@
              * @return {String[]} An array of keys from the object
              * @method
              */
-            getKeys: (typeof Object.keys == &#39;function&#39;)
-                ? function(object){
-                    if (!object) {
-                        return [];
-                    }
-                    return Object.keys(object);
+            getKeys: function(object) {
+
+                if (!object) {
+                    return [];
                 }
-                    : function(object) {
-                        var keys = [],
-                        property;
 
-                        for (property in object) {
-                            if (object.hasOwnProperty(property)) {
-                                keys.push(property);
-                            }
-                        }
+                return Object.keys(object);
+            },
 
-                        return keys;
-                    },
+            // }}}
+            // {{{ getSize
 
-<span id='CLI-Object-method-getSize'>                    /**
-</span>                     * Gets the total number of this object&#39;s own properties
-                     *
-                     *     var size = CLI.Object.getSize({
-                     *         name: &#39;Jacky&#39;,
-                     *         loves: &#39;food&#39;
-                     *     }); // size equals 2
-                     *
-                     * @param {Object} object
-                     * @return {Number} size
-                     */
-                    getSize: function(object) {
-                        var size = 0,
-                        property;
+<span id='CLI-Object-method-getSize'>            /**
+</span>             * Gets the total number of this object&#39;s own properties
+             *
+             *     var size = CLI.Object.getSize({
+             *         name: &#39;Jacky&#39;,
+             *         loves: &#39;food&#39;
+             *     }); // size equals 2
+             *
+             * @param {Object} object
+             * @return {Number} size
+             */
+            getSize: function(object) {
 
-                        for (property in object) {
-                            if (object.hasOwnProperty(property)) {
-                                size++;
-                            }
-                        }
+                var size = 0,
+                    property;
 
-                        return size;
-                    },
-
-<span id='CLI-Object-method-isEmpty'>                    /**
-</span>                     * Checks if there are any properties on this object.
-                     * @param {Object} object
-                     * @return {Boolean} `true` if there no properties on the object.
-                     */
-                    isEmpty: function(object){
-                        for (var key in object) {
-                            if (object.hasOwnProperty(key)) {
-                                return false;
-                            }
-                        }
-                        return true;    
-                    },
-
-<span id='CLI-Object-method-equals'>                    /**
-</span>                     * Shallow compares the contents of 2 objects using strict equality. Objects are
-                     * considered equal if they both have the same set of properties and the
-                     * value for those properties equals the other in the corresponding object.
-                     * 
-                     *     // Returns true
-                     *     CLI.Object.equals({
-                     *         foo: 1,
-                     *         bar: 2
-                     *     }, {
-                     *         foo: 1,
-                     *         bar: 2
-                     *     });
-                     * 
-                     * @param {Object} object1
-                     * @param {Object} object2
-                     * @return {Boolean} `true` if the objects are equal.
-                     */
-                    equals: (function() {
-                        var check = function(o1, o2) {
-                            var key;
-
-                            for (key in o1) {
-                                if (o1.hasOwnProperty(key)) {
-                                    if (o1[key] !== o2[key]) {
-                                        return false;
-                                    }    
-                                }
-                            }    
-                            return true;
-                        };
-
-                        return function(object1, object2) {
-
-                            // Short circuit if the same object is passed twice
-                            if (object1 === object2) {
-                                return true;
-                            } if (object1 &amp;&amp; object2) {
-                                // Do the second check because we could have extra keys in
-                                // object2 that don&#39;t exist in object1.
-                                return check(object1, object2) &amp;&amp; check(object2, object1);  
-                            } else if (!object1 &amp;&amp; !object2) {
-                                return object1 === object2;
-                            } else {
-                                return false;
-                            }
-                        };
-                    })(),
-
-<span id='CLI-Object-method-fork'>                    /**
-</span>                     * @private
-                     */
-                    fork: function (obj) {
-                        var CLIArray = CLI.Array,
-                        ret, key, value;
-
-                        if (obj &amp;&amp; obj.constructor === Object) {
-                            ret = CLIObject.chain(obj);
-
-                            for (key in obj) {
-                                value = obj[key];
-
-                                if (value) {
-                                    if (value.constructor === Object) {
-                                        ret[key] = CLIObject.fork(value);
-                                    } else if (value instanceof Array) {
-                                        ret[key] = CLI.Array.clone(value);
-                                    }
-                                }
-                            }
-                        } else {
-                            ret = obj;
-                        }
-
-                        return ret;
-                    },
-
-                    defineProperty: (&#39;defineProperty&#39; in Object) ? Object.defineProperty :
-                        function(object, name, descriptor) {
-                        if (!Object.prototype.__defineGetter__) {
-                            return;
-                        }
-                        if (descriptor.get) {
-                            object.__defineGetter__(name, descriptor.get);
-                        }
-
-                        if (descriptor.set) {
-                            object.__defineSetter__(name, descriptor.set);
-                        }
-                    },
-
-<span id='CLI-Object-method-classify'>                    /**
-</span>                     * @private
-                     */
-                    classify: function(object) {
-                        var prototype = object,
-                        objectProperties = [],
-                        propertyClassesMap = {},
-                        objectClass = function() {
-                            var i = 0,
-                            ln = objectProperties.length,
-                            property;
-
-                            for (; i &lt; ln; i++) {
-                                property = objectProperties[i];
-                                this[property] = new propertyClassesMap[property]();
-                            }
-                        },
-                        key, value;
-
-                        for (key in object) {
-                            if (object.hasOwnProperty(key)) {
-                                value = object[key];
-
-                                if (value &amp;&amp; value.constructor === Object) {
-                                    objectProperties.push(key);
-                                    propertyClassesMap[key] = CLIObject.classify(value);
-                                }
-                            }
-                        }
-
-                        objectClass.prototype = prototype;
-
-                        return objectClass;
+                for (property in object) {
+                    if (object.hasOwnProperty(property)) {
+                        size++;
                     }
+                }
+
+                return size;
+            },
+
+            // }}}
+            // {{{ isEmpty
+
+<span id='CLI-Object-method-isEmpty'>            /**
+</span>             * Checks if there are any properties on this object.
+             * @param {Object} object
+             * @return {Boolean} `true` if there no properties on the object.
+             */
+            isEmpty: function(object){
+
+                for (var key in object) {
+
+                    if (object.hasOwnProperty(key)) {
+
+                        return false;
+
+                    }
+                }
+
+                return true;
+            },
+
+            // }}}
+            // {{{ equals
+
+<span id='CLI-Object-method-equals'>            /**
+</span>             * Shallow compares the contents of 2 objects using strict equality. Objects are
+             * considered equal if they both have the same set of properties and the
+             * value for those properties equals the other in the corresponding object.
+             *
+             *     // Returns true
+             *     CLI.Object.equals({
+             *         foo: 1,
+             *         bar: 2
+             *     }, {
+             *         foo: 1,
+             *         bar: 2
+             *     });
+             *
+             * @param {Object} object1
+             * @param {Object} object2
+             * @return {Boolean} `true` if the objects are equal.
+             */
+            equals: (function() {
+
+                var check = function(o1, o2) {
+
+                    var key;
+
+                    for (key in o1) {
+
+                        if (o1.hasOwnProperty(key)) {
+
+                            if (o1[key] !== o2[key]) {
+
+                                return false;
+
+                            }
+
+                        }
+
+                    }
+
+                    return true;
+                };
+
+                return function(object1, object2) {
+
+                    // Short circuit if the same object is passed twice
+                    if (object1 === object2) {
+
+                        return true;
+
+                    } if (object1 &amp;&amp; object2) {
+
+                        // Do the second check because we could have extra keys in
+                        // object2 that don&#39;t exist in object1.
+                        return check(object1, object2) &amp;&amp; check(object2, object1);  
+
+                    } else if (!object1 &amp;&amp; !object2) {
+
+                        return object1 === object2;
+
+                    } else {
+
+                        return false;
+
+                    }
+
+                };
+
+            })(),
+
+            // }}}
+            // {{{ fork
+
+<span id='CLI-Object-method-fork'>            /**
+</span>             * @private
+             */
+            fork: function (obj) {
+
+                var CLIArray = CLI.Array,
+                    ret, key, value;
+
+                if (obj &amp;&amp; obj.constructor === Object) {
+
+                    ret = CLIObject.chain(obj);
+
+                    for (key in obj) {
+
+                        value = obj[key];
+
+                        if (value) {
+
+                            if (value.constructor === Object) {
+
+                                ret[key] = CLIObject.fork(value);
+
+                            } else if (value instanceof Array) {
+
+                                ret[key] = CLI.Array.clone(value);
+
+                            }
+
+                        }
+
+                    }
+
+                } else {
+
+                    ret = obj;
+
+                }
+
+                return ret;
+            },
+
+            // }}}
+            // {{{ defineProperty
+
+            defineProperty: Object.defineProperty,
+
+            // }}}
+            // {{{ classify
+
+<span id='CLI-Object-method-classify'>            /**
+</span>             * @private
+             */
+            classify: function(object) {
+                var prototype = object,
+                    objectProperties = [],
+                    propertyClassesMap = {},
+                    objectClass = function() {
+                        var i = 0,
+                        ln = objectProperties.length,
+                        property;
+
+                        for (; i &lt; ln; i++) {
+                            property = objectProperties[i];
+                            this[property] = new propertyClassesMap[property]();
+                        }
+                    },
+                    key, value;
+
+                for (key in object) {
+
+                    if (object.hasOwnProperty(key)) {
+
+                        value = object[key];
+
+                        if (value &amp;&amp; value.constructor === Object) {
+
+                            objectProperties.push(key);
+                            propertyClassesMap[key] = CLIObject.classify(value);
+
+                        }
+
+                    }
+
+                }
+
+                objectClass.prototype = prototype;
+
+                return objectClass;
+            }
+
+            // }}}
+
         };
+
+        // {{{ CLI.merge
 
 <span id='CLI-method-merge'>        /**
 </span>         * A convenient alias method for {@link CLI.Object#merge}.
@@ -796,13 +951,20 @@
          */
         CLI.merge = CLI.Object.merge;
 
+        // }}}
+        // {{{ CLI.mergeIf
+
 <span id='CLI-property-mergeIf'>        /**
 </span>         * @private
          * @member CLI
          */
         CLI.mergeIf = CLI.Object.mergeIf;
 
+        // }}}
+
     }());
+
+    // }}}
 
 })();
 
