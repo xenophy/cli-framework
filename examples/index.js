@@ -34,7 +34,6 @@ CLI.application({
 
 // }}}
 
-
 /*
  * Local variables:
  * tab-width: 4
