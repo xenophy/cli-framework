@@ -456,48 +456,58 @@ describe("CLI.String", function() {
     // }}}
     // {{{ leftPad
 
-    /*
     describe("leftPad", function() {
 
         it("should pad the left side of an empty string", function() {
-            expect(S.leftPad("", 5)).toEqual("     ");
+
+            assert.equal(S.leftPad("", 5), "     ");
+
         });
 
         it("should pad the left side of a non-empty string", function() {
-            expect(S.leftPad("Ed", 5)).toEqual("   Ed");
+
+            assert.equal(S.leftPad("Ed", 5), "   Ed");
+
         });
 
         it("should not pad a string where the character count already exceeds the pad count", function() {
-            expect(S.leftPad("Abraham", 5)).toEqual("Abraham");
+
+            assert.equal(S.leftPad("Abraham", 5), "Abraham");
+
         });
 
         it("should allow a custom padding character", function() {
-            expect(S.leftPad("Ed", 5, "0")).toEqual("000Ed");
+
+            assert.equal(S.leftPad("Ed", 5, "0"), "000Ed");
+
         });
 
     });
-   */
 
     // }}}
     // {{{ when toggling between two values
 
-    /*
     describe("when toggling between two values", function() {
 
         it("should use the first toggle value if the string is not already one of the toggle values", function() {
-            expect(S.toggle("Aaron", "Ed", "Abe")).toEqual("Ed");
+
+            assert.equal(S.toggle("Aaron", "Ed", "Abe"), "Ed");
+
         });
 
         it("should toggle to the second toggle value if the string is currently the first", function() {
-            expect(S.toggle("Ed", "Ed", "Abe")).toEqual("Abe");
+
+            assert.equal(S.toggle("Ed", "Ed", "Abe"), "Abe");
+
         });
 
         it("should toggle to the first toggle value if the string is currently the second", function() {
-            expect(S.toggle("Abe", "Ed", "Abe")).toEqual("Ed");
+
+            assert.equal(S.toggle("Abe", "Ed", "Abe"), "Ed");
+
         });
 
     });
-   */
 
     // }}}
     // {{{ trimming
