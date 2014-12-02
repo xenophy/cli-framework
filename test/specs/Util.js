@@ -1704,7 +1704,7 @@ describe("CLI.Util", function() {
 
         it("should return function", function() {
 
-            assert.equal(CLI.typeOf(function(){}), 'function');
+            assert.equal(CLI.typeOf(function() {}), 'function');
             assert.equal(CLI.typeOf(new Function()), 'function');
             assert.equal(CLI.typeOf(Object), 'function');
             assert.equal(CLI.typeOf(Array), 'function');

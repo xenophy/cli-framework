@@ -77,7 +77,7 @@ describe("CLI.Error", function() {
             });
 
             it("should log the error object to the console", function() {
-                spyOn(CLI.global.console, 'dir').andCallFake(function(err){
+                spyOn(CLI.global.console, 'dir').andCallFake(function(err) {
                     expect(err.msg).toEqual('foo');
                 });
                 try {
@@ -142,7 +142,7 @@ describe("CLI.Error", function() {
             });
 
             it("should log the error object to the console", function() {
-                spyOn(CLI.global.console, 'dir').andCallFake(function(err){
+                spyOn(CLI.global.console, 'dir').andCallFake(function(err) {
                     expect(err.msg).toEqual('foo');
                 });
                 try {
@@ -205,7 +205,7 @@ describe("CLI.Error", function() {
             });
 
             it("should log the complete metadata to the console", function() {
-                spyOn(CLI.global.console, 'dir').andCallFake(function(err){
+                spyOn(CLI.global.console, 'dir').andCallFake(function(err) {
                     expect(err.msg).toEqual('Custom error');
                     expect(err.data).not.toBe(null);
                     expect(err.data.foo).toEqual('bar');
@@ -227,7 +227,7 @@ describe("CLI.Error", function() {
 
             beforeEach(function() {
                 CLI.define('spec.CustomClass', {
-                    doSomething: function(o){
+                    doSomething: function(o) {
                         CLI.Error.raise({
                             msg: 'Custom error',
                             data: o,
@@ -259,7 +259,7 @@ describe("CLI.Error", function() {
             });
 
             it("should log the complete metadata to the console", function() {
-                spyOn(CLI.global.console, 'dir').andCallFake(function(err){
+                spyOn(CLI.global.console, 'dir').andCallFake(function(err) {
                     expect(err.msg).toEqual('Custom error');
                     expect(err.sourceClass).toEqual('spec.CustomClass');
                     expect(err.sourceMethod).toEqual('doSomething');

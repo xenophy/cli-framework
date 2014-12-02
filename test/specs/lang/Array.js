@@ -466,7 +466,7 @@ describe("CLI.Array", function() {
 
     describe("map", function() {
 
-        var emptyFn = function(v){
+        var emptyFn = function(v) {
                 return v;
             };
 
@@ -486,7 +486,7 @@ describe("CLI.Array", function() {
 
         it("should execute the function for each item in the array", function() {
 
-            assert.deepEqual(CLI.Array.map([1, 2, 3, 4, 5], function(v){
+            assert.deepEqual(CLI.Array.map([1, 2, 3, 4, 5], function(v) {
                 return v * 2;
             }), [2, 4, 6, 8, 10]);
 
@@ -721,7 +721,7 @@ describe("CLI.Array", function() {
 
         it("should add items if the filter function returns true", function() {
 
-            assert.deepEqual(CLI.Array.filter([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], function(val){
+            assert.deepEqual(CLI.Array.filter([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], function(val) {
                 return val % 2 === 0;
             }), [2, 4, 6, 8, 10]);
 
@@ -729,7 +729,7 @@ describe("CLI.Array", function() {
 
         it("should add items if the filter function returns a truthy value", function() {
 
-            assert.deepEqual(CLI.Array.filter([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], function(val){
+            assert.deepEqual(CLI.Array.filter([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], function(val) {
                 if (val % 2 === 0) {
                     return 1;
                 }
@@ -739,7 +739,7 @@ describe("CLI.Array", function() {
 
         it("should not add items if the filter function returns a falsy value", function() {
 
-            assert.deepEqual(CLI.Array.filter([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], function(val){
+            assert.deepEqual(CLI.Array.filter([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], function(val) {
                 return 0;
             }), []);
 
@@ -752,7 +752,7 @@ describe("CLI.Array", function() {
                 arrs = [],
                 data = [1, 2, 3];
 
-            CLI.Array.filter([1, 2, 3], function(val, index, arr){
+            CLI.Array.filter([1, 2, 3], function(val, index, arr) {
                 values.push(val);
                 indexes.push(index);
                 arrs.push(arr);
@@ -872,7 +872,7 @@ describe("CLI.Array", function() {
                 arrs = [],
                 data = [1, 2, 3];
 
-            CLI.Array.forEach(data, function(val, index, arr){
+            CLI.Array.forEach(data, function(val, index, arr) {
                 values.push(val);
                 indexes.push(index);
                 arrs.push(arr);
@@ -901,7 +901,7 @@ describe("CLI.Array", function() {
 
             it("should return the stopping index if iteration is halted", function() {
 
-                assert.equal(CLI.Array.each([1, 2, 3], function(val){
+                assert.equal(CLI.Array.each([1, 2, 3], function(val) {
                     return val != 2;
                 }), 1);
 
@@ -941,7 +941,7 @@ describe("CLI.Array", function() {
                     arrs = [],
                     data = [1, 2, 3];
 
-                CLI.Array.each(data, function(val, index, arr){
+                CLI.Array.each(data, function(val, index, arr) {
                     values.push(val);
                     indexes.push(index);
                     arrs.push(arr);
@@ -989,7 +989,7 @@ describe("CLI.Array", function() {
 
                 var count = 0;
 
-                CLI.Array.each([1, 2, 3, 4, 5], function(v){
+                CLI.Array.each([1, 2, 3, 4, 5], function(v) {
                     ++count;
                     return v != 2;
                 });
@@ -1008,7 +1008,7 @@ describe("CLI.Array", function() {
             it("should iterate arguments", function() {
 
                 var test, values = [], fn = function() {
-                    test = CLI.Array.each(arguments, function(val){
+                    test = CLI.Array.each(arguments, function(val) {
                         values.push(val);
                     });
                 };
@@ -1103,7 +1103,7 @@ describe("CLI.Array", function() {
                     arrs = [],
                     data = [1, 2, 3];
 
-                CLI.Array.every(data, function(val, index, arr){
+                CLI.Array.every(data, function(val, index, arr) {
 
                     values.push(val);
                     indexes.push(index);
@@ -1144,7 +1144,7 @@ describe("CLI.Array", function() {
             var count = 0,
                 result;
 
-            result = CLI.Array.every([true, true, false, true], function(v){
+            result = CLI.Array.every([true, true, false, true], function(v) {
                 ++count;
                 return v;
             });
@@ -1156,7 +1156,7 @@ describe("CLI.Array", function() {
 
         it("should return true if all values match the function", function() {
 
-            assert.equal(CLI.Array.every([1, 2, 3, 4, 5, 6, 7, 8, 9], function(v){
+            assert.equal(CLI.Array.every([1, 2, 3, 4, 5, 6, 7, 8, 9], function(v) {
                 return v < 10;
             }), true);
 
@@ -1193,7 +1193,7 @@ describe("CLI.Array", function() {
                     arrs = [],
                     data = [1, 2, 3];
 
-                CLI.Array.some(data, function(val, index, arr){
+                CLI.Array.some(data, function(val, index, arr) {
                     values.push(val);
                     indexes.push(index);
                     arrs.push(arr);
@@ -1234,7 +1234,7 @@ describe("CLI.Array", function() {
             var count = 0,
                 result;
 
-            result = CLI.Array.some([1, 2, 3, 4], function(val){
+            result = CLI.Array.some([1, 2, 3, 4], function(val) {
                 ++count;
                 return val == 3;
             });
@@ -1249,7 +1249,7 @@ describe("CLI.Array", function() {
             var count = 0,
                 result;
 
-            result = CLI.Array.some([1, 2, 3, 4, 5, 6, 7, 8, 9], function(val){
+            result = CLI.Array.some([1, 2, 3, 4, 5, 6, 7, 8, 9], function(val) {
                 ++count;
                 return val > 9;
             });
@@ -1428,7 +1428,7 @@ describe("CLI.Array", function() {
 
            it("should be able to use a sortFn that returns a Number", function() {
 
-                CLI.Array.sort(sarray, function(a,b){
+                CLI.Array.sort(sarray, function(a,b) {
                     if (a === b) {
                         return 0;
                     }
@@ -1456,7 +1456,7 @@ describe("CLI.Array", function() {
 
            it("should be able to use a sortFn that returns a Number", function() {
 
-                CLI.Array.sort(narray, function(a,b){
+                CLI.Array.sort(narray, function(a,b) {
                     return a - b;
                 });
 
@@ -1786,7 +1786,7 @@ describe("CLI.Array", function() {
         // }}}
         // {{{ tests
 
-        function tests(){
+        function tests() {
 
             it('should shallow clone', function() {
 

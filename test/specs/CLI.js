@@ -15,7 +15,7 @@ describe("CLI", function() {
 
     // {{{ before
 
-    before(function(){
+    before(function() {
 
         // require CLI
         require('../../index.js');
@@ -28,7 +28,7 @@ describe("CLI", function() {
     describe("CLI.global", function() {
 
         it("should return the global scope", function() {
-            assert(CLI.global === (function(){ return this; }).call());
+            assert(CLI.global === (function() { return this; }).call());
         });
 
     });

@@ -391,7 +391,7 @@ describe("CLI.Object", function() {
                     },
                     obj;
 
-                each(data, function(key, value, o){
+                each(data, function(key, value, o) {
                     keys.push(key);
                     values.push(value);
                     obj = o;
@@ -455,7 +455,7 @@ describe("CLI.Object", function() {
                     b: 2,
                     c: 3,
                     d: 4
-                }, function(key){
+                }, function(key) {
                     ++count;
                     return key != 'b';
                 });
@@ -661,6 +661,10 @@ describe("CLI.Object", function() {
     });
 
     // }}}
+    // {{{ eachValue
+
+
+    // }}}
     // {{{ merge
 
     describe("merge", function() {
@@ -802,6 +806,14 @@ describe("CLI.Object", function() {
         });
 
     });
+
+    // }}}
+    // {{{ mergeIf
+
+
+    // }}}
+    // {{{ freeze
+
 
     // }}}
     // {{{ toQueryObjects
@@ -1060,6 +1072,10 @@ describe("CLI.Object", function() {
         // }}}
 
     });
+
+    // }}}
+    // {{{ classify
+
 
     // }}}
 

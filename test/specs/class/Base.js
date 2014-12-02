@@ -301,7 +301,7 @@ describe("CLI.Base", function() {
 
         it("should create a method on the prototype", function() {
 
-            makeCls(function(){});
+            makeCls(function() {});
             cls.createAlias('newFn', 'oldFn');
 
             assert.equal(CLI.isFunction(cls.prototype.newFn), true);

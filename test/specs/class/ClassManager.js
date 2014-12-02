@@ -29,7 +29,7 @@ var sinon = require('sinon');
 describe("CLI.ClassManager", function() {
 
     var manager = CLI.ClassManager,
-        cls, emptyFn = function(){};
+        cls, emptyFn = function() {};
 
     beforeEach(function() {
 
@@ -38,15 +38,15 @@ describe("CLI.ClassManager", function() {
         global.My = {
 
             awesome: {
-                Class: function(){console.log(11);},
-                Class1: function(){console.log(12);},
-                Class2: function(){console.log(13);}
+                Class: function() {console.log(11);},
+                Class1: function() {console.log(12);},
+                Class2: function() {console.log(13);}
             },
 
             cool: {
-                AnotherClass: function(){console.log(21);},
-                AnotherClass1: function(){console.log(22);},
-                AnotherClass2: function(){console.log(23);}
+                AnotherClass: function() {console.log(21);},
+                AnotherClass1: function() {console.log(22);},
+                AnotherClass2: function() {console.log(23);}
             }
 
         };
@@ -111,7 +111,7 @@ describe("CLI.ClassManager", function() {
     describe("loader preprocessor", function() {
 
         beforeEach(function() {
-            cls = function(){};
+            cls = function() {};
         });
 
         /*
@@ -288,7 +288,7 @@ describe("CLI.ClassManager", function() {
                 var called = false;
 
                 subClass.addStatics({
-                    staticMethod: function(){
+                    staticMethod: function() {
                         called = true;
                     }
                 });
@@ -305,7 +305,7 @@ describe("CLI.ClassManager", function() {
 
                 subClass.addStatics({
                     staticProperty: 'something',
-                    staticMethod: function(){}
+                    staticMethod: function() {}
                 });
 
                 assert.equal(subClass.staticProperty, 'something');

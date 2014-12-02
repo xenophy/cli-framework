@@ -28,7 +28,7 @@ var sinon = require('sinon');
 
 describe("CLI.Class", function() {
 
-    var emptyFn = function(){},
+    var emptyFn = function() {},
         defaultInitConfig = function(config) {
             this.initConfig(config);
         },
@@ -36,7 +36,7 @@ describe("CLI.Class", function() {
 
     beforeEach(function() {
 
-        fn = function(){};
+        fn = function() {};
 
         mixinClass1 = CLI.define(null, {
 
@@ -3182,7 +3182,7 @@ describe("CLI.Class", function() {
                 extend: cls,
                 statics: {
                     someName: 'someOtherValue',
-                    someMethod: function(){}
+                    someMethod: function() {}
                 }
             });
 
@@ -3203,7 +3203,7 @@ describe("CLI.Class", function() {
             var called = false;
 
             subClass.addStatics({
-                staticMethod: function(){
+                staticMethod: function() {
                     called = true;
                 }
             });
@@ -3219,7 +3219,7 @@ describe("CLI.Class", function() {
 
             subClass.addStatics({
                 staticProperty: 'something',
-                staticMethod: function(){}
+                staticMethod: function() {}
             });
 
             assert.equal(subClass.staticProperty, 'something');
@@ -3238,7 +3238,7 @@ describe("CLI.Class", function() {
 
             subClass.override({
 
-                myOwnMethod: function(){
+                myOwnMethod: function() {
 
                     this.isOverridden = true;
                     this.callOverridden(arguments);
