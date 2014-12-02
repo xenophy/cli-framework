@@ -25,129 +25,245 @@ describe("CLI.Version", function() {
 
     var version = new CLI.Version("1.2.3beta");
 
-    /*
+    // {{{ toString
 
     describe("toString", function() {
+
         it("should cast to string", function() {
-            expect(version+"").toBe("1.2.3beta");
+
+            assert.equal(version+"", "1.2.3beta");
+
         });
+
     });
+
+    // }}}
+    // {{{ getMajor
 
     describe("getMajor", function() {
+
         it("should return 1", function() {
-            expect(version.getMajor()).toBe(1);
+
+            assert.equal(version.getMajor(), 1);
+
         });
+
     });
+
+    // }}}
+    // {{{ getMinor
 
     describe("getMinor", function() {
+
         it("should return 2", function() {
-            expect(version.getMinor()).toBe(2);
+
+            assert.equal(version.getMinor(), 2);
+
         });
+
     });
+
+    // }}}
+    // {{{ getPatch
 
     describe("getPatch", function() {
+
         it("should return 3", function() {
-            expect(version.getPatch()).toBe(3);
+
+            assert.equal(version.getPatch(), 3);
+
         });
+
     });
+
+    // }}}
+    // {{{ getBuild
 
     describe("getBuild", function() {
+
         it("should return 0", function() {
-            expect(version.getBuild()).toBe(0);
+
+            assert.equal(version.getBuild(), 0);
+
         });
+
     });
+
+    // }}}
+    // {{{ getRelease
 
     describe("getRelease", function() {
+
         it("should return beta", function() {
-            expect(version.getRelease()).toBe("beta");
+
+            assert.equal(version.getRelease(), "beta");
+
         });
+
     });
+
+    // }}}
+    // {{{ getShortVersion
 
     describe("getShortVersion", function() {
+
         it("should return 123", function() {
-            expect(version.getShortVersion()).toBe("123");
+
+            assert.equal(version.getShortVersion(), "123");
+
         });
+
     });
+
+    // }}}
+    // {{{ toArray
 
     describe("toArray", function() {
+
         it("should return [1, 2, 3, 0, 'beta']", function() {
-            expect(version.toArray()).toEqual([1, 2, 3, 0, 'beta']);
+
+            assert.deepEqual(version.toArray(), [1, 2, 3, 0, 'beta']);
+
         });
+
     });
+
+    // }}}
+    // {{{ isGreaterThan
 
     describe("isGreaterThan", function() {
+
         it("should be greater than 1.2.3alpha", function() {
-            expect(version.isGreaterThan("1.2.3alpha")).toBeTruthy();
+
+            assert.equal(version.isGreaterThan("1.2.3alpha"), true);
+
         });
+
         it("should not be greater than 1.2.3RC", function() {
-            expect(version.isGreaterThan("1.2.3RC")).toBeFalsy();
+
+            assert.equal(version.isGreaterThan("1.2.3RC"), false);
+
         });
+
     });
+
+    // }}}
+    // {{{ isLessThan
 
     describe("isLessThan", function() {
+
         it("should not be smaller than 1.2.3alpha", function() {
-            expect(version.isLessThan("1.2.3alpha")).toBeFalsy();
+
+            assert.equal(version.isLessThan("1.2.3alpha"), false);
+
         });
+
         it("should be smaller than 1.2.3RC", function() {
-            expect(version.isLessThan("1.2.3RC")).toBeTruthy();
+
+            assert.equal(version.isLessThan("1.2.3RC"), true);
+
         });
+
     });
+
+    // }}}
+    // {{{ equals
 
     describe("equals", function() {
+
         it("should equals 1.2.3beta", function() {
-            expect(version.equals("1.2.3beta")).toBeTruthy();
+
+            assert.equal(version.equals("1.2.3beta"), true);
+
         });
+
     });
 
+    // }}}
+    // {{{ compareTo
+
     describe("compareTo", function () {
-        function compareTo (v1, v2, expected) {
+
+        function compareTo(v1, v2, expected) {
+
             var v = new CLI.Version(v1);
             var c = v.compareTo(v2);
+
             if (c !== expected) {
+
                 // give a better failure message than "expected 1 to be 0":
-                expect('new Version('+v1+').compareTo('+v2+') == ' + c).toBe(expected);
+                assert.equal('new Version('+v1+').compareTo('+v2+') == ' + c, expected);
+
             } else {
-                expect(c).toBe(expected);
+
+                assert.equal(c, expected);
+
             }
         }
 
+        // {{{ Zero padding vs
+
         describe("Zero padding vs", function () {
+
+            // {{{ Upper bound
+
             describe("Upper bound", function () {
+
                 it('should be less than', function () {
                     compareTo('2.3', '^2.3.0', -1);
                     compareTo('2.3', '^2.3', -1);
                     compareTo('2.3', '^2', -1);
                 });
+
                 it('should be greater than', function () {
                     compareTo('2.3', '^2.2', 1);
                     compareTo('2.3', '^1', 1);
                 });
+
             });
 
+            // }}}
+            // {{{ Prefix match
+
             describe("Prefix match", function () {
+
                 it('should be less than', function () {
                     compareTo('2.3', '~2.3.1', -1);
                     compareTo('2.3', '~2.4', -1);
                     compareTo('2.3', '~3', -1);
                 });
+
                 it('should be equal', function () {
                     compareTo('2.3', '~2', 0);
                     compareTo('2.3', '~2.3', 0);
                     compareTo('2.3', '~2.3.0', 0);
                 });
+
                 it('should be greater than', function () {
                     compareTo('2.3', '~2.2', 1);
                     compareTo('2.3', '~1', 1);
                 });
+
             });
+
+            // }}}
+
         });
 
+        // }}}
+        // {{{ Upper bound vs
+
         describe("Upper bound vs", function () {
+
+            // {{{ Zero padding
+
             describe("Zero padding", function () {
+
                 it('should be less than', function () {
                     compareTo('^2.3', '2.4', -1);
                     compareTo('^2.3', '3', -1);
                 });
+
                 it('should be greater than', function () {
                     compareTo('^2.3', '1', 1);
                     compareTo('^2.3', '2', 1);
@@ -155,163 +271,268 @@ describe("CLI.Version", function() {
                     compareTo('^2.3', '2.2', 1);
                     compareTo('^2.3', '2.3.9', 1);
                 });
+
             });
 
+            // }}}
+            // {{{ Upper bound
+
             describe("Upper bound", function () {
+
                 it('should be less than', function () {
                     compareTo('^2.3', '^2.4', -1);
                     compareTo('^2.3', '^3', -1);
                 });
+
                 it('should be equal', function () {
                     compareTo('^2.3', '^2.3', 0);
                 });
+
                 it('should be greater than', function () {
                     compareTo('^2.3', '^2.2', 1);
                     compareTo('^2.3', '^1', 1);
                 });
+
             });
 
+            // }}}
+            // {{{ Prefix match
+
             describe("Prefix match", function () {
+
                 it('should be less than', function () {
                     compareTo('^2.3', '~2.4', -1);
                     compareTo('^2.3', '~3', -1);
                 });
+
                 it('should be equal', function () {
                     compareTo('^2.3', '~2.3', 0);
                     compareTo('^2.3', '~2', 0);
                 });
+
                 it('should be greater than', function () {
                     compareTo('^2.3', '~2.2', 1);
                     compareTo('^2.3', '~1', 1);
                 });
+
             });
+
+            // }}}
+
         }); // Upper bound
 
+        // }}}
+        // {{{ Prefix match vs
+
         describe("Prefix match vs", function () {
+
+            // {{{ Zero padding
+
             describe("Zero padding", function () {
+
                 it('should be less than', function () {
                     compareTo('~2.3', '2.4', -1);
                     compareTo('~2.3', '3', -1);
                 });
+
                 it('should be equal', function () {
                     compareTo('~2.3', '2.3.4.5', 0);
                     compareTo('~2.3', '2.3.4', 0);
                     compareTo('~2.3', '2.3', 0);
                 });
+
                 it('should be greater than', function () {
                     compareTo('~2.3', '2.2', 1);
                     compareTo('~2.3', '2', 1);
                     compareTo('~2.3', '1', 1);
                 });
+
             });
 
+            // }}}
+            // {{{ Upper bound
+
             describe("Upper bound", function () {
+
                 it('should be less than', function () {
                     compareTo('~2.3', '^2.4', -1);
                     compareTo('~2.3', '^2', -1);
                 });
+
                 it('should be equal', function () {
                     compareTo('~2.3', '^2.3.4', 0);
                     compareTo('~2.3', '^2.3', 0);
                 });
+
                 it('should be greater than', function () {
                     compareTo('~2.3', '^2.2', 1);
                     compareTo('~2.3', '^2.1', 1);
                     compareTo('~2.3', '^1', 1);
                 });
+
             });
 
+            // }}}
+            // {{{ Prefix match
+
             describe("Prefix match", function () {
+
                 it('should be less than', function () {
                     compareTo('~2.3', '~2.4', -1);
                     compareTo('~2.3', '~3', -1);
                 });
+
                 it('should be equal', function () {
                     compareTo('~2.3', '~2.3.4', 0);
                     compareTo('~2.3', '~2.3', 0);
                     compareTo('~2.3', '~2', 0);
                 });
+
                 it('should be greater than', function () {
                     compareTo('~2.3', '~2.2', 1);
                     compareTo('~2.3', '~1', 1);
                 });
+
             });
+
+            // }}}
+
         }); // Prefix match
+
+        // }}}
+
     }); // compareTo
 
+    // }}}
+    // {{{ match
+
     describe("match", function() {
+
         it("should match integer 1", function() {
-            expect(version.match(1)).toBeTruthy();
+
+            assert.equal(version.match(1), true);
+
         });
+
         it("should match float 1.2", function() {
-            expect(version.match(1.2)).toBeTruthy();
+
+            assert.equal(version.match(1.2), true);
+
         });
+
         it("should match string 1.2.3", function() {
-            expect(version.match("1.2.3")).toBeTruthy();
+
+            assert.equal(version.match("1.2.3"), true);
+
         });
+
         it("should not match string 1.2.3alpha", function() {
-            expect(version.match("1.2.3alpha")).toBeFalsy();
+
+            assert.equal(version.match("1.2.3alpha"), false);
+
         });
+
     });
-    
-   describe("setVersion", function() {
+
+    // }}}
+    // {{{ setVersion
+
+    describe("setVersion", function() {
+
         it("should return an instance of CLI.Version", function() {
+
             CLI.setVersion("test", "1.0.1");
-            expect(CLI.getVersion("test") instanceof CLI.Version).toBe(true);
+
+            assert.equal(CLI.getVersion("test") instanceof CLI.Version, true);
+
         });
+
     });
-    
+
+    // }}}
+    // {{{ statics
+
     describe("statics", function() {
+
+        // {{{ getComponentValue
+
         describe("getComponentValue", function() {
+
             it("should return 0", function() {
-                expect(CLI.Version.getComponentValue(undefined)).toBe(0);
+
+                assert.equal(CLI.Version.getComponentValue(undefined), 0);
             });
 
             it("should return -2", function() {
-                expect(CLI.Version.getComponentValue(-2)).toBe(-2);
+
+                assert.equal(CLI.Version.getComponentValue(-2), -2);
+
             });
 
             it("should return 2", function() {
-                expect(CLI.Version.getComponentValue("2")).toBe(2);
+
+                assert.equal(CLI.Version.getComponentValue("2"), 2);
             });
 
             it("should return -5", function() {
-                expect(CLI.Version.getComponentValue("alpha")).toBe(-5);
+
+                assert.equal(CLI.Version.getComponentValue("alpha"), -5);
             });
 
             it("should return unknown", function() {
-                expect(CLI.Version.getComponentValue("unknown")).toBe("unknown");
+
+                assert.equal(CLI.Version.getComponentValue("unknown"), "unknown");
+
             });
+
         });
 
+        // }}}
+        // {{{ compare
+
         describe("compare", function() {
+
             it("should return 1", function() {
-                expect(CLI.Version.compare("1.2.3beta", "1.2.2")).toBe(1);
-                expect(CLI.Version.compare("1.2.3beta", 1)).toBe(1);
-                expect(CLI.Version.compare("1.2.3beta", "1.2.3dev")).toBe(1);
-                expect(CLI.Version.compare("1.2.3beta", "1.2.3alpha")).toBe(1);
-                expect(CLI.Version.compare("1.2.3beta", "1.2.3a")).toBe(1);
-                expect(CLI.Version.compare("1.2.3beta", "1.2.3alpha")).toBe(1);
+
+                assert.equal(CLI.Version.compare("1.2.3beta", "1.2.2"), 1);
+                assert.equal(CLI.Version.compare("1.2.3beta", 1), 1);
+                assert.equal(CLI.Version.compare("1.2.3beta", "1.2.3dev"), 1);
+                assert.equal(CLI.Version.compare("1.2.3beta", "1.2.3alpha"), 1);
+                assert.equal(CLI.Version.compare("1.2.3beta", "1.2.3a"), 1);
+                assert.equal(CLI.Version.compare("1.2.3beta", "1.2.3alpha"), 1);
+
             });
 
             it("should return -1", function() {
-                expect(CLI.Version.compare("1.2.3beta", 2)).toBe(-1);
-                expect(CLI.Version.compare("1.2.3beta", "1.2.4")).toBe(-1);
-                expect(CLI.Version.compare("1.2.3beta", "1.2.3RC")).toBe(-1);
-                expect(CLI.Version.compare("1.2.3beta", "1.2.3rc")).toBe(-1);
-                expect(CLI.Version.compare("1.2.3beta", "1.2.3#")).toBe(-1);
-                expect(CLI.Version.compare("1.2.3beta", "1.2.3pl")).toBe(-1);
-                expect(CLI.Version.compare("1.2.3beta", "1.2.3p")).toBe(-1);
+
+                assert.equal(CLI.Version.compare("1.2.3beta", 2), -1);
+                assert.equal(CLI.Version.compare("1.2.3beta", "1.2.4"), -1);
+                assert.equal(CLI.Version.compare("1.2.3beta", "1.2.3RC"), -1);
+                assert.equal(CLI.Version.compare("1.2.3beta", "1.2.3rc"), -1);
+                assert.equal(CLI.Version.compare("1.2.3beta", "1.2.3#"), -1);
+                assert.equal(CLI.Version.compare("1.2.3beta", "1.2.3pl"), -1);
+                assert.equal(CLI.Version.compare("1.2.3beta", "1.2.3p"), -1);
+
             });
 
             it("should return 0", function() {
-                expect(CLI.Version.compare("1.2.3beta", "1.2.3b")).toBe(0);
-                expect(CLI.Version.compare("1.2.3beta", "1.2.3beta")).toBe(0);
+
+                assert.equal(CLI.Version.compare("1.2.3beta", "1.2.3b"), 0);
+                assert.equal(CLI.Version.compare("1.2.3beta", "1.2.3beta"), 0);
+
             });
-        });    
+
+        });
+
+        // }}}
+
     });
 
+    // }}}
+    // {{{ checkVersion
+
     describe('checkVersion', function () {
+
         var oldVers = CLI.versions,
             versions1 = {
                 // we specify full versions here because this is what Cmd will generate
@@ -326,248 +547,458 @@ describe("CLI.Version", function() {
         afterEach(function () {
             CLI.versions = oldVers;
         });
+
         beforeEach(function () {
             CLI.versions = versions1;
         });
 
+        // {{{ Default package
+
         describe('Default package', function () {
+
+            // {{{ simple versions check
+
             describe('simple versions check', function () {
+
                 it('should handle match', function () {
+
                     var result = CLI.checkVersion('4.2.2');
-                    expect(result).toBe(true);
+
+                    assert.equal(result, true);
+
                 });
 
                 it('should handle mismatch', function () {
+
                     var result = CLI.checkVersion('4.2.1');
-                    expect(result).toBe(false);
+
+                    assert.equal(result, false);
+
                 });
+
             });
+
+            // }}}
+            // {{{ simple version range check
 
             describe('simple version range check', function () {
+
                 it('should handle match', function () {
+
                     var result = CLI.checkVersion('4.2.0-4.2.2');
-                    expect(result).toBe(true);
+
+                    assert.equal(result, true);
+
                 });
 
                 it('should handle mismatch', function () {
+
                     var result = CLI.checkVersion('3.4-4.2.1');
-                    expect(result).toBe(false);
+
+                    assert.equal(result, false);
+
                 });
+
             });
+
+            // }}}
+            // {{{ no lower bound version range check
 
             describe('no lower bound version range check', function () {
+
                 it('should handle match', function () {
+
                     var result = CLI.checkVersion(' - 4.2.2');
-                    expect(result).toBe(true);
+
+                    assert.equal(result, true);
+
                 });
 
                 it('should handle mismatch', function () {
+
                     var result = CLI.checkVersion(' -4.2.1');
-                    expect(result).toBe(false);
+
+                    assert.equal(result, false);
+
                 });
+
             });
 
+            // }}}
+            // {{{ no upper bound version range check
+
             describe('no upper bound version range check', function () {
+
                 it('should handle match using "-"', function () {
+
                     var result = CLI.checkVersion('4.2.0 -');
-                    expect(result).toBe(true);
+
+                    assert.equal(result, true);
                 });
 
                 it('should handle match using "+"', function () {
+
                     var result = CLI.checkVersion('4.2.0 + ');
-                    expect(result).toBe(true);
+
+                    assert.equal(result, true);
+
                 });
 
                 it('should handle mismatch using "-"', function () {
+
                     var result = CLI.checkVersion('4.4-');
-                    expect(result).toBe(false);
+
+                    assert.equal(result, false);
+
                 });
 
                 it('should handle mismatch using "+"', function () {
+
                     var result = CLI.checkVersion('4.4+');
-                    expect(result).toBe(false);
+
+                    assert.equal(result, false);
+
                 });
+
             });
+
+            // }}}
+            // {{{ matchAny compound version check
 
             describe('matchAny compound version check', function () {
+
                 it('should find matching version', function () {
+
                     var result = CLI.checkVersion(['4.2.1', '4.2.2']);
-                    expect(result).toBe(true);
+
+                    assert.equal(result, true);
+
                 });
 
                 it('should find matching version in range', function () {
+
                     var result = CLI.checkVersion(['4.2.0', '4.2.1 - 4.3']);
-                    expect(result).toBe(true);
+
+                    assert.equal(result, true);
+
                 });
 
                 it('should find mismatching version', function () {
+
                     var result = CLI.checkVersion(['4.2.1', '4.2.3']);
-                    expect(result).toBe(false);
+
+                    assert.equal(result, false);
+
                 });
 
                 it('should find mismatching version not in range', function () {
+
                     var result = CLI.checkVersion(['4.2.1', '4.2.3 - 4.5']);
-                    expect(result).toBe(false);
+
+                    assert.equal(result, false);
+
                 });
+
             });
+
+            // }}}
+            // {{{ matchAll compound version check
 
             describe('matchAll compound version check', function () {
+
                 it('should find matching version', function () {
+
                     var result = CLI.checkVersion(['4.2.2', '4.2.2'], true);
-                    expect(result).toBe(true);
+
+                    assert.equal(result, true);
+
                 });
 
                 it('should find matching version in range', function () {
+
                     var result = CLI.checkVersion(['4.2.2', '4.2.1 - 4.3'], true);
-                    expect(result).toBe(true);
+
+                    assert.equal(result, true);
+
                 });
 
                 it('should find mismatching version', function () {
+
                     var result = CLI.checkVersion(['4.2.2', '4.2.3'], true);
-                    expect(result).toBe(false);
+
+                    assert.equal(result, false);
+
                 });
 
                 it('should find mismatching version not in range', function () {
+
                     var result = CLI.checkVersion(['4.2.2', '4.2.3 - 4.5'], true);
-                    expect(result).toBe(false);
+
+                    assert.equal(result, false);
+
                 });
+
             });
+
+            // }}}
+
         }); // Default package
 
+        // }}}
+        // {{{ Named package
+
         describe('Named package', function () {
+
+            // {{{ simple versions check
+
             describe('simple versions check', function () {
+
                 it('should handle match', function () {
+
                     var result = CLI.checkVersion('jazz@5.2.2');
-                    expect(result).toBe(true);
+
+                    assert.equal(result, true);
+
                 });
 
                 it('should handle mismatch', function () {
+
                     var result = CLI.checkVersion('jazz @ 5.2.1');
-                    expect(result).toBe(false);
+
+                    assert.equal(result, false);
+
                 });
 
                 it('should handle mismatch on unknown package', function () {
+
                     var result = CLI.checkVersion('zip@1.2');
-                    expect(result).toBe(false);
+
+                    assert.equal(result, false);
+
                 });
+
             });
+
+            // }}}
+            // {{{ simple version range check
 
             describe('simple version range check', function () {
+
                 it('should handle match', function () {
+
                     var result = CLI.checkVersion('jazz @5.2.0 -5.2.2');
-                    expect(result).toBe(true);
+
+                    assert.equal(result, true);
+
                 });
 
                 it('should handle mismatch', function () {
+
                     var result = CLI.checkVersion('jazz@3.4-5.2.1');
-                    expect(result).toBe(false);
+
+                    assert.equal(result, false);
+
                 });
+
             });
+
+            // }}}
+            // {{{ no lower bound version range check
 
             describe('no lower bound version range check', function () {
+
                 it('should handle match', function () {
+
                     var result = CLI.checkVersion('jazz@-5.2.2');
-                    expect(result).toBe(true);
+
+                    assert.equal(result, true);
+
                 });
 
                 it('should handle mismatch', function () {
+
                     var result = CLI.checkVersion('jazz@-5.2.1');
-                    expect(result).toBe(false);
+
+                    assert.equal(result, false);
+
                 });
+
             });
 
+            // }}}
+            // {{{ no upper bound version range check
+
             describe('no upper bound version range check', function () {
+
                 it('should handle match using "-"', function () {
+
                     var result = CLI.checkVersion('jazz@5.2.0-');
-                    expect(result).toBe(true);
+
+                    assert.equal(result, true);
+
                 });
 
                 it('should handle match using "+"', function () {
+
                     var result = CLI.checkVersion('jazz@5.2.0+');
-                    expect(result).toBe(true);
+
+                    assert.equal(result, true);
+
                 });
 
                 it('should handle mismatch using "-"', function () {
+
                     var result = CLI.checkVersion('jazz@5.4-');
-                    expect(result).toBe(false);
+
+                    assert.equal(result, false);
+
                 });
 
                 it('should handle mismatch using "+"', function () {
+
                     var result = CLI.checkVersion('jazz@5.4+');
-                    expect(result).toBe(false);
+
+                    assert.equal(result, false);
+
                 });
+
             });
+
+            // }}}
+            // {{{ matchAny compound version check
 
             describe('matchAny compound version check', function () {
+
                 it('should find matching version', function () {
+
                     var result = CLI.checkVersion(['jazz@5.2.1', 'jazz@5.2.2']);
-                    expect(result).toBe(true);
+
+                    assert.equal(result, true);
+
                 });
 
                 it('should find matching version in range', function () {
+
                     var result = CLI.checkVersion(['jazz@5.2.0', 'jazz@5.2.1-5.3']);
-                    expect(result).toBe(true);
+
+                    assert.equal(result, true);
+
                 });
 
                 it('should find mismatching version', function () {
+
                     var result = CLI.checkVersion(['jazz@5.2.1', 'jazz@5.2.3']);
-                    expect(result).toBe(false);
+
+                    assert.equal(result, false);
+
                 });
 
                 it('should find mismatching version not in range', function () {
+
                     var result = CLI.checkVersion(['jazz@5.2.1', 'jazz@5.2.3-5.5']);
-                    expect(result).toBe(false);
+
+                    assert.equal(result, false);
+
                 });
+
             });
+
+            // }}}
+            // {{{ matchAll compound version check
 
             describe('matchAll compound version check', function () {
+
                 it('should find matching version', function () {
+
                     var result = CLI.checkVersion(['jazz@5.2.2', 'jazz@5.2.2'], true);
-                    expect(result).toBe(true);
+
+                    assert.equal(result, true);
+
                 });
 
                 it('should find matching version in range', function () {
+
                     var result = CLI.checkVersion(['jazz@5.2.2', 'jazz@5.2.1-5.3'], true);
-                    expect(result).toBe(true);
+
+                    assert.equal(result, true);
+
                 });
 
                 it('should find mismatching version', function () {
+
                     var result = CLI.checkVersion(['jazz@5.2.2', 'jazz@5.2.3'], true);
-                    expect(result).toBe(false);
+
+                    assert.equal(result, false);
+
                 });
 
                 it('should find mismatching version not in range', function () {
+
                     var result = CLI.checkVersion(['jazz@5.2.2', 'jazz@5.2.3-5.5'], true);
-                    expect(result).toBe(false);
+
+                    assert.equal(result, false);
+
                 });
+
             });
+
+            // }}}
+
         }); // Named package
 
+        // }}}
+        // {{{ Multiple packages
+
         describe('Multiple packages', function () {
+
+            // {{{ matchAny
+
             describe('matchAny', function () {
+
                 it('should find basic match', function () {
+
                     var result = CLI.checkVersion(['4.2.2', 'jazz@5.2.2']);
-                    expect(result).toBe(true);
+
+                    assert.equal(result, true);
+
                 });
 
                 it('should find AND match', function () {
+
                     var result = CLI.checkVersion({
                         and: ['4.2.2', 'jazz@5.2.2']
                     });
-                    expect(result).toBe(true);
+
+                    assert.equal(result, true);
+
                 });
+
             });
+
+            // }}}
+            // {{{ matchAll
 
             describe('matchAll', function () {
+
                 it('should find basic match', function () {
+
                     var result = CLI.checkVersion(['4.2.2', 'jazz@5.2.2'], true);
-                    expect(result).toBe(true);
+
+                    assert.equal(result, true);
+
                 });
+
             });
+
         }); // Multiple packages
 
+        // }}}
+        // {{{ Complex criteria
+
         describe('Complex criteria', function () {
+
             it('should find basic "and" match', function () {
+
                 var result = CLI.checkVersion({
                     and: [
                         '4.2.2', // T
@@ -575,10 +1006,12 @@ describe("CLI.Version", function() {
                     ]
                 });
 
-                expect(result).toBe(true);
+                assert.equal(result, true);
+
             });
 
             it('should find basic "and" match with "not"', function () {
+
                 var result = CLI.checkVersion({
                     not: true,
                     and: [
@@ -587,10 +1020,12 @@ describe("CLI.Version", function() {
                     ]
                 });
 
-                expect(result).toBe(false);
+                assert.equal(result, false);
+
             });
 
             it('should find basic "or" match', function () {
+
                 var result = CLI.checkVersion({
                     or: [
                         '4.2.1', // F
@@ -598,10 +1033,12 @@ describe("CLI.Version", function() {
                     ]
                 }, true);
 
-                expect(result).toBe(true);
+                assert.equal(result, true);
+
             });
 
             it('should find basic "or" match with "not"', function () {
+
                 var result = CLI.checkVersion({
                     not: true,
                     or: [
@@ -610,10 +1047,12 @@ describe("CLI.Version", function() {
                     ]
                 }, true);
 
-                expect(result).toBe(false);
+                assert.equal(result, false);
+
             });
 
             it('should handle nested matches', function () {
+
                 //foo: new CLI.Version('3.0.2.123'),
                 //bar: new CLI.Version('1.5'),
                 //jazz: new CLI.Version('5.2.2.456')
@@ -639,11 +1078,17 @@ describe("CLI.Version", function() {
                     }
                 ]);
 
-                expect(result).toBe(true);
+                assert.equal(result, true);
+
             });
+
         });
+
+        // }}}
+
     });
-   */
+
+    // }}}
 
 });
 

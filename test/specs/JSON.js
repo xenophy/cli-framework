@@ -23,231 +23,341 @@ require('../../index.js');
 
 describe("CLI.JSON", function() {
 
-    var nativeJson;
-
     beforeEach(function() {
-        nativeJson = CLI.USE_NATIVE_JSON;
-        CLI.USE_NATIVE_JSON = false;
 
     });
 
     afterEach(function() {
-        CLI.USE_NATIVE_JSON = nativeJson;
     });
 
-    /*
+    // {{{ encode
+
     describe("encode", function() {
+
         var encode = CLI.JSON.encode;
 
+        // {{{ numbers encoding
+
         describe("numbers encoding", function() {
+
             it("should convert integer to string", function() {
-                expect(encode(15)).toEqual("15");
+
+                assert.equal(encode(15), "15");
+
             });
 
             it("should convert float to string", function() {
-                expect(encode(14.7)).toEqual("14.7");
+
+                assert.equal(encode(14.7), "14.7");
+
             });
 
             it("should convert Infinity to null string", function() {
-                expect(encode(Infinity)).toEqual("null");
+
+                assert.equal(encode(Infinity), "null");
+
             });
 
             it("should convert NaN to null string", function() {
-                expect(encode(NaN)).toEqual("null");
+
+                assert.equal(encode(NaN), "null");
+
             });
+
         });
 
+        // }}}
+        // {{{ encoding of not defined values
+
         describe("encoding of not defined values", function() {
+
             it("should convert undefined to null string", function() {
-                expect(encode(undefined)).toEqual("null");
+
+                assert.equal(encode(undefined), undefined);
+
             });
 
             it("should convert null to null string", function() {
-                expect(encode(null)).toEqual("null");
+
+                assert.equal(encode(null), "null");
+
             });
+
         });
+
+        // }}}
+        // {{{ encoding function
 
         describe("encoding function", function() {
+
             it("should convert function to null string", function() {
-                expect(encode(CLI.emptyFn)).toEqual("null");
+
+                assert.equal(encode(CLI.emptyFn), undefined);
+
             });
+
         });
 
+        // }}}
+        // {{{ boolean encoding
+
         describe("boolean encoding", function() {
+
             it("should convert true to 'true'' string", function() {
-                expect(encode(true)).toEqual("true");
+
+                assert.equal(encode(true), "true");
+
             });
 
             it("should convert null to 'false' string", function() {
-                expect(encode(false)).toEqual("false");
+
+                assert.equal(encode(false), "false");
+
             });
+
         });
 
+        // }}}
+        // {{{ array encoding
+
         describe("array encoding", function() {
+
             it("should convert empty array", function() {
-                expect(encode([])).toEqual("[]");
+
+                assert.equal(encode([]), "[]");
+
             });
-            
+
             it("should convert array of numbers to string", function() {
-                expect(encode([1, 2, 3])).toEqual("[1,2,3]");
+
+                assert.equal(encode([1, 2, 3]), "[1,2,3]");
+
             });
 
             it("should convert array of strings to string", function() {
-                expect(encode(["a", "b", "c"])).toEqual("[\"a\",\"b\",\"c\"]");
+
+                assert.equal(encode(["a", "b", "c"]), "[\"a\",\"b\",\"c\"]");
+
             });
 
             it("should encode array including function member to string", function() {
-                expect(encode([1, CLI.emptyFn, 3])).toEqual("[1,null,3]");
+
+                assert.equal(encode([1, CLI.emptyFn, 3]), "[1,null,3]");
+
             });
 
             it("should convert array including undefined member to string", function() {
-                expect(encode([1, undefined, 3])).toEqual("[1,null,3]");
+
+                assert.equal(encode([1, undefined, 3]), "[1,null,3]");
+
             });
 
             it("should convert array including null member to string", function() {
-                expect(encode([1, null, 3])).toEqual("[1,null,3]");
+
+                assert.equal(encode([1, null, 3]), "[1,null,3]");
+
             });
+
         });
 
+        // }}}
+        // {{{ string encoding
+
         describe("string encoding", function() {
+
             it("should convert string", function() {
-                expect(encode("You're fired!")).toEqual("\"You're fired!\"");
+
+                assert.equal(encode("You're fired!"), "\"You're fired!\"");
+
             });
 
             it("should convert string with international character", function() {
-                expect(encode("You're fired!")).toEqual("\"You're fired!\"");
+
+                assert.equal(encode("You're fired!"), "\"You're fired!\"");
+
             });
 
             it("should convert string with tab character", function() {
-                expect(encode("a\tb")).toEqual("\"a\\tb\"");
+
+                assert.equal(encode("a\tb"), "\"a\\tb\"");
+
             });
 
             it("should convert string with carriage return character", function() {
-                expect(encode("a\rb")).toEqual("\"a\\rb\"");
+
+                assert.equal(encode("a\rb"), "\"a\\rb\"");
+
             });
 
             it("should convert string with form feed character", function() {
-                expect(encode("a\fb")).toEqual("\"a\\fb\"");
+
+                assert.equal(encode("a\fb"), "\"a\\fb\"");
+
             });
 
             it("should convert string with new line character", function() {
-                expect(encode("a\nb")).toEqual("\"a\\nb\"");
+
+                assert.equal(encode("a\nb"), "\"a\\nb\"");
+
             });
 
             it("should convert string with vertical tab character", function() {
-                expect(encode("a\x0bb")).toEqual("\"a\\u000bb\"");
+
+                assert.equal(encode("a\x0bb"), "\"a\\u000bb\"");
+
             });
 
             it("should convert string with backslash character", function() {
-                expect(encode("a\\b")).toEqual("\"a\\\\b\"");
+
+                assert.equal(encode("a\\b"), "\"a\\\\b\"");
+
             });
+
         });
+
+        // }}}
+        // {{{ object encoding
 
         describe("object encoding", function() {
+
             it("should convert empty object", function() {
-                expect(encode({})).toEqual("{}");
+
+                assert.equal(encode({}), "{}");
+
             });
-            
+
             it("should ignore undefined properties", function() {
-                expect(encode({
+
+                assert.equal(encode({
                     foo: "bar",
                     bar: undefined
-                })).toEqual("{\"foo\":\"bar\"}");
+                }), "{\"foo\":\"bar\"}");
+
             });
-            
+
             it("should convert empty object with null property", function() {
-                expect(encode({
+
+                assert.equal(encode({
                     foo: "bar",
                     bar: null
-                })).toEqual("{\"foo\":\"bar\",\"bar\":null}");
+                }), "{\"foo\":\"bar\",\"bar\":null}");
+
             });
-            
+
             it("should ignore function properties", function() {
-                expect(encode({
+
+                assert.equal(encode({
                     foo: "bar",
                     bar: CLI.emptyFn
-                })).toEqual("{\"foo\":\"bar\"}");
+                }), "{\"foo\":\"bar\"}");
+
             });
-            
-            it("should not encode dom object", function() {
-               expect(encode(document.body)).toBe('undefined');
-            });
-            
-            it("should handle encoding unknown child objects", function() {
-                expect(encode({
-                    prop: document.body
-                })).toBe('{"prop":undefined}');
-            });
+
         });
 
-        describe('encodeDate', function() {
+        // }}}
+        // {{{ encodeDate
+
+        xdescribe('encodeDate', function() {
+
             var date;
-            
+
             it("should encode a date object", function() {
+
                 date = new Date("October 13, 1983 04:04:00");
-    
-                expect(encode(date)).toEqual("\"1983-10-13T04:04:00\"");
+
+                assert.equal(encode(date), "\"1983-10-13T04:04:00\"");
+
             });
-            
+
             it("should format integers to have at least two digits", function() {
+
                 date = new Date("August 9, 1983 06:03:02");
-                
-                expect(encode(date)).toEqual("\"1983-08-09T06:03:02\"");            
+
+                assert.equal(encode(date), "\"1983-08-09T06:03:02\"");
+
             });
+
         });
-        
+
+        // }}}
+        // {{{ mix all possibilities
+
         describe("mix all possibilities", function() {
+
             it("should encode data", function() {
-                 expect(encode({
+
+                assert.equal(encode({
                     arr: [1, CLI.emptyFn, undefined, 2, [1, 2, 3], {a: 1, b: null}],
                     foo: "bar",
                     woo: {
                         chu: "a\tb"
                     }
-                 })).toEqual("{\"arr\":[1,null,null,2,[1,2,3],{\"a\":1,\"b\":null}],\"foo\":\"bar\",\"woo\":{\"chu\":\"a\\tb\"}}");
+                }), "{\"arr\":[1,null,null,2,[1,2,3],{\"a\":1,\"b\":null}],\"foo\":\"bar\",\"woo\":{\"chu\":\"a\\tb\"}}");
+
             });
+
         });
+
+        // }}}
+
     });
 
-   */
-
-  /*
+    // }}}
+    // {{{ decode
 
     describe("decode", function() {
+
         it("should decode data", function() {
-            expect(CLI.decode("{\"arr\":[1,null,null,2,[1,2,3],{\"a\":1,\"b\":null}],\"foo\":\"bar\",\"woo\":{\"chu\":\"a\\tb\"}}")).toEqual({
-                    arr: [1, null, null, 2, [1, 2, 3], {a: 1, b: null}],
-                    foo: "bar",
-                    woo: {
-                        chu: "a\tb"
-                    }            
+
+            assert.deepEqual(CLI.decode("{\"arr\":[1,null,null,2,[1,2,3],{\"a\":1,\"b\":null}],\"foo\":\"bar\",\"woo\":{\"chu\":\"a\\tb\"}}"), {
+                arr: [1, null, null, 2, [1, 2, 3], {a: 1, b: null}],
+                foo: "bar",
+                woo: {
+                    chu: "a\tb"
+                }
             });
+
         });
-        
+
         it("should raise an CLI.Error with invalid data", function() {
-            expect(function() {
+
+            beginSilent();
+
+            assert.throws(function() {
                 CLI.decode('{foo:"bar", x}');
-            }).toRaiseExtError();
+            });
+
+            endSilent();
+
         });
-            
+
+        // {{{ with safe param
+
         describe("with safe param", function() {
+
             it("should decode valid data", function() {
-                expect(CLI.decode("{\"foo\":\"bar\"}", true)).toEqual({
-                    foo: "bar"        
+
+                assert.deepEqual(CLI.decode("{\"foo\":\"bar\"}", true), {
+                    foo: "bar"
                 });
+
             });
-            
+
             it("should return null with invalid data", function() {
-                expect(CLI.decode('{foo+"bar"}', true)).toBeNull();
+
+                assert.equal(CLI.decode('{foo+"bar"}', true), null);
+
             });
+
         });
+
+        // }}}
+
     });
 
-   */
-
-  /*
-
     it('should encode and decode an object', function() {
+
         var object = {
             a: [0, 1, 2],
             s: "It's-me-Jacky!!",
@@ -270,24 +380,24 @@ describe("CLI.JSON", function() {
             }
         };
 
-        expect(CLI.JSON.decode(CLI.JSON.encode(object))).toEqual(object);
+        assert.deepEqual(CLI.JSON.decode(CLI.JSON.encode(object)), object);
     });
 
-   */
-    
-  /*
+    // {{{ aliases
+
     describe("aliases", function() {
+
         it("should alias CLI.JSON.decode with CLI.decode", function() {
-            expect(CLI.decode).toBe(CLI.JSON.decode);
+            assert.equal(CLI.decode, CLI.JSON.decode);
         });
 
         it("should alias CLI.JSON.encode with CLI.encode", function() {
-            expect(CLI.encode).toBe(CLI.JSON.encode);
+            assert.equal(CLI.encode, CLI.JSON.encode);
         });
+
     });
 
-
-   */
+    // }}}
 
 });
 
