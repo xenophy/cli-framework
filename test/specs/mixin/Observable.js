@@ -23,8 +23,10 @@ require('../../../index.js');
 
 describe("CLI.mixin.Observable", function() {
 
-    /*
+    // {{{ unit tests
+
     describe("unit tests", function() {
+
         var dispatcher, foo, bar, baz, fooId, barId, fn, scope, options, order;
 
         var Foo = CLI.define(null, {
@@ -38,6 +40,7 @@ describe("CLI.mixin.Observable", function() {
         });
 
         var Bar = CLI.define(null, {
+
             extend: 'CLI.mixin.Observable',
 
             observableType: 'bar',
@@ -76,12 +79,22 @@ describe("CLI.mixin.Observable", function() {
             baz.destroy();
         });
 
+        // {{{ getObservableId()
+
         describe("getObservableId()", function() {
+
             it("should return the correct value", function() {
-                expect(foo.getObservableId()).toEqual('#' + foo.getId());
+
+                assert.equal(foo.getObservableId(), '#' + foo.getId());
+
             });
+
         });
 
+        // }}}
+        // {{{ doAddListener()
+
+        /*
         describe("doAddListener()", function() {
             it("should invoke dispatcher's addListener", function() {
                 spyOn(dispatcher, 'addListener');
@@ -99,7 +112,12 @@ describe("CLI.mixin.Observable", function() {
                 expect(dispatcher.addListener).toHaveBeenCalledWith('foo', fooId, 'bar', fn, foo, options, order, foo);
             });
         });
+       */
 
+        // }}}
+        // {{{ doRemoveListener()
+
+        /*
         describe("doRemoveListener()", function() {
             it("should invoke dispatcher's removeListener", function() {
                 spyOn(dispatcher, 'removeListener');
@@ -117,7 +135,12 @@ describe("CLI.mixin.Observable", function() {
                 expect(dispatcher.removeListener).toHaveBeenCalledWith('foo', fooId, 'bar', fn, foo, options, order, foo);
             });
         });
+       */
 
+        // }}}
+        // {{{ addListener()
+
+        /*
         describe("addListener()", function() {
             it("should invoke doAddListener", function() {
                 spyOn(foo, 'doAddListener');
@@ -129,8 +152,8 @@ describe("CLI.mixin.Observable", function() {
 
             it("should invoke doAddListener() multiple times for multiple listeners", function() {
                 var one = jasmine.createSpy(),
-                    two = jasmine.createSpy(),
-                    scope = {};
+                two = jasmine.createSpy(),
+                scope = {};
 
                 spyOn(foo, 'doAddListener');
 
@@ -153,19 +176,19 @@ describe("CLI.mixin.Observable", function() {
 
             it("should allow different scopes for different listeners", function() {
                 var one = jasmine.createSpy(),
-                    two = jasmine.createSpy(),
-                    scope1 = {},
-                    scope2 = {},
-                    listener1 = {
-                        fn: one,
-                        scope: scope1,
-                        single: true
-                    },
-                    listener2 = {
-                        fn: two,
-                        scope: scope2,
-                        delay: 100
-                    };
+                two = jasmine.createSpy(),
+                scope1 = {},
+                scope2 = {},
+                listener1 = {
+                    fn: one,
+                    scope: scope1,
+                    single: true
+                },
+                listener2 = {
+                    fn: two,
+                    scope: scope2,
+                    delay: 100
+                };
 
                 spyOn(foo, 'doAddListener');
 
@@ -181,10 +204,10 @@ describe("CLI.mixin.Observable", function() {
 
             it("should not mutate the options object", function() {
                 var fooOptions = {
-                        foo: 'onFoo',
-                        scope: 'this'
-                    },
-                    fooClone = CLI.clone(fooOptions);
+                    foo: 'onFoo',
+                    scope: 'this'
+                },
+                fooClone = CLI.clone(fooOptions);
 
                 var Foo = CLI.define(null, {
                     extend: 'CLI.mixin.Observable',
@@ -195,15 +218,15 @@ describe("CLI.mixin.Observable", function() {
                 });
 
                 var foo = new Foo(),
-                    barOptions = {
-                        bar: foo.onBar,
-                        scope: foo
-                    },
-                    barClone = CLI.clone(barOptions),
-                    bazOptions = {
-                        isBaz: true
-                    },
-                    bazClone = CLI.clone(bazOptions);
+                barOptions = {
+                    bar: foo.onBar,
+                    scope: foo
+                },
+                barClone = CLI.clone(barOptions),
+                bazOptions = {
+                    isBaz: true
+                },
+                bazClone = CLI.clone(bazOptions);
 
                 foo.on(barOptions);
                 foo.on('baz', foo.onBaz, foo, bazOptions);
@@ -217,7 +240,12 @@ describe("CLI.mixin.Observable", function() {
                 expect(bazOptions).toEqual(bazClone);
             });
         });
+       */
 
+        // }}}
+        // {{{ removeListener()
+
+        /*
         describe("removeListener()", function() {
             it("should invoke doRemoveListener", function() {
                 spyOn(foo, 'doRemoveListener');
@@ -229,8 +257,8 @@ describe("CLI.mixin.Observable", function() {
 
             it("should invoke doRemoveListener() multiple times for multiple listeners", function() {
                 var one = jasmine.createSpy(),
-                    two = jasmine.createSpy(),
-                    scope = {};
+                two = jasmine.createSpy(),
+                scope = {};
 
                 spyOn(foo, 'doRemoveListener');
 
@@ -249,7 +277,12 @@ describe("CLI.mixin.Observable", function() {
                 expect(foo.doRemoveListener.argsForCall[1]).toEqual(['two', two, scope, expectedOptions, order]);
             });
         });
+       */
 
+        // }}}
+        // {{{ fireEvent()
+
+        /*
         describe("fireEvent()", function() {
             it("should invoke dispatcher's dispatchEvent", function() {
                 var args = ['testeventname', 'foo', 'bar'];
@@ -261,7 +294,12 @@ describe("CLI.mixin.Observable", function() {
                 expect(dispatcher.dispatchEvent).toHaveBeenCalledWith('foo', fooId, 'testeventname', ['foo', 'bar'], undefined, undefined);
             });
         });
+       */
 
+        // }}}
+        // {{{ clearListeners()
+
+        /*
         describe("clearListeners()", function() {
             it("should invoke dispatcher's clearListeners()", function() {
                 spyOn(dispatcher, 'clearListeners');
@@ -272,7 +310,12 @@ describe("CLI.mixin.Observable", function() {
                 expect(dispatcher.clearListeners).toHaveBeenCalledWith('foo', fooId, foo);
             });
         });
+       */
 
+        // }}}
+        // {{{ relayEvents
+
+        /*
         describe("relayEvents", function() {
             it("should support string format", function() {
                 var spy = spyOn(foo, 'doFireEvent');
@@ -323,16 +366,21 @@ describe("CLI.mixin.Observable", function() {
                 expect(spy.calls[1].object).toBe(foo);
             });
         });
+       */
 
+        // }}}
+        // {{{ suspend/resume events
+
+        /*
         describe("suspend/resume events", function () {
             var employee,
-                employeeFiredFn,
-                employeeQuitFn,
-                employeeAskFn,
-                employeeFiredListener,
-                employeeQuitListener,
-                employeeAskListener,
-                employeeListeners;
+            employeeFiredFn,
+            employeeQuitFn,
+            employeeAskFn,
+            employeeFiredListener,
+            employeeQuitListener,
+            employeeAskListener,
+            employeeListeners;
 
             function generateFireEventTraffic() {
                 employee.fireEvent("fired", "I'm fired :s (1)");
@@ -374,11 +422,15 @@ describe("CLI.mixin.Observable", function() {
                 employee = null;
             });
 
+            // {{{ suspended events to be fired after resumeEvents
+
             describe("suspended events to be fired after resumeEvents", function() {
                 beforeEach(function () {
                     employee.suspendEvents(true);
                     generateFireEventTraffic();
                 });
+
+                // {{{ when suspended
 
                 describe("when suspended", function () {
                     it("should not call fired event handler", function () {
@@ -390,7 +442,13 @@ describe("CLI.mixin.Observable", function() {
                     });
                 });
 
+                // }}}
+                // {{{ on resume
+
                 describe("on resume", function () {
+
+                    // {{{ without discarding
+
                     describe("without discarding", function() {
                         beforeEach(function() {
                             employee.resumeEvents();
@@ -405,6 +463,9 @@ describe("CLI.mixin.Observable", function() {
                         });
                     });
 
+                    // }}}
+                    // {{{ with discarding
+
                     describe("with discarding", function() {
                         beforeEach(function() {
                             employee.resumeEvents(true);
@@ -418,14 +479,26 @@ describe("CLI.mixin.Observable", function() {
                             expect(employeeQuitFn).not.toHaveBeenCalled();
                         });
                     });
+
+                    // }}}
+
                 });
+
+                // }}}
+
             });
 
+            // }}}
+            // {{{ discard suspended events
+
             describe("discard suspended events", function () {
+
                 beforeEach(function () {
                     employee.suspendEvents();
                     generateFireEventTraffic();
                 });
+
+                // {{{ when suspended
 
                 describe("when suspended", function () {
                     it("should not call fired event handler", function () {
@@ -437,7 +510,11 @@ describe("CLI.mixin.Observable", function() {
                     });
                 });
 
+                // }}}
+                // {{{ on resume
+
                 describe("on resume", function () {
+
                     beforeEach(function () {
                         //will discard the event queue
                         employee.resumeEvents(true);
@@ -450,10 +527,18 @@ describe("CLI.mixin.Observable", function() {
                     it("should not call quit event handler", function () {
                         expect(employeeQuitFn).not.toHaveBeenCalled();
                     });
+
                 });
+
+                // }}}
+
             });
 
+            // }}}
+            // {{{ multiple suspend/resume
+
             describe("multiple suspend/resume", function() {
+
                 it("should not fire events if there are more suspend than resume calls", function() {
                     employee.suspendEvents();
                     employee.suspendEvents();
@@ -484,9 +569,14 @@ describe("CLI.mixin.Observable", function() {
                     expect(employeeFiredFn).toHaveBeenCalled();
                     expect(employeeQuitFn).toHaveBeenCalled();
                 });
+
             });
 
+            // }}}
+            // {{{ specific events
+
             describe("specific events", function() {
+
                 it("should be able to suspend a specific event", function() {
                     employee.suspendEvent('fired');
                     generateFireEventTraffic();
@@ -495,7 +585,7 @@ describe("CLI.mixin.Observable", function() {
 
                 it("should be able to suspend a specific event before anything is bound", function() {
                     var o = new CLI.util.Observable(),
-                        called = false;
+                    called = false;
 
                     o.suspendEvent('foo');
                     o.on('foo', function() {
@@ -520,10 +610,18 @@ describe("CLI.mixin.Observable", function() {
                     generateFireEventTraffic();
                     expect(employeeFiredFn).not.toHaveBeenCalled();
                 });
+
             });
 
+            // }}}
+            // {{{ isSuspended
+
             describe("isSuspended", function() {
+
+                // {{{ all events
+
                 describe("all events", function() {
+
                     it("should return false if all events aren't suspended", function() {
                         expect(employee.isSuspended()).toBe(false);
                     });
@@ -538,7 +636,11 @@ describe("CLI.mixin.Observable", function() {
                         employee.suspendEvents();
                         expect(employee.isSuspended()).toBe(true);
                     });
+
                 });
+
+                // }}}
+                // {{{ specific event
 
                 describe("specific event", function() {
                     it("should return false if the specific event is not suspended", function() {
@@ -561,13 +663,24 @@ describe("CLI.mixin.Observable", function() {
                         expect(employee.isSuspended('fired')).toBe(true);
                     });
                 });
+
+                // }}}
+
             });
+
+            // }}}
+
         });
+       */
+
+        /*
+        // }}}
+        // {{{ enableBubble()
 
         describe("enableBubble()", function() {
             it("should bubble the event from foo -> bar -> baz", function() {
                 var barSpy = jasmine.createSpy(),
-                    bazSpy = jasmine.createSpy();
+                bazSpy = jasmine.createSpy();
 
                 spyOn(foo, 'getBubbleTarget').andReturn(bar);
                 spyOn(bar, 'getBubbleTarget').andReturn(baz);
@@ -641,6 +754,8 @@ describe("CLI.mixin.Observable", function() {
             });
         });
 
+        // {{{ listeners config
+
         describe("listeners config", function() {
             it("should be initialized before any fireEvent()", function() {
                 var listenerFn = jasmine.createSpy();
@@ -675,6 +790,8 @@ describe("CLI.mixin.Observable", function() {
                 expect(listenerFn).toHaveBeenCalled();
             });
         });
+
+        // {{{ destroy()
 
         describe("destroy()", function() {
             it("should fire a 'destroy' event", function() {
@@ -713,6 +830,8 @@ describe("CLI.mixin.Observable", function() {
             });
         });
 
+        // {{{ resolveListenerScope
+
         describe("resolveListenerScope", function() {
             beforeEach(function() {
                 foo = new Foo();
@@ -735,7 +854,7 @@ describe("CLI.mixin.Observable", function() {
                 expect(function() {
                     foo.resolveListenerScope('controller');
                 }).toThrow(
-                    'scope: "controller" can only be specified on classes that derive from CLI.Component or CLI.Widget'
+                'scope: "controller" can only be specified on classes that derive from CLI.Component or CLI.Widget'
                 );
             });
         });
@@ -746,6 +865,8 @@ describe("CLI.mixin.Observable", function() {
     // that end-to-end functionality works as expected.  For example, when I listen for
     // event "x" with "y" options, I expect my handler to be called with certain parameters
     // and scope when I trigger a dom event that should cause event "x" to fire.
+    // {{{ add/remove listener functional specs
+
     describe("add/remove listener functional specs", function() {
         function makeSuite(delegated) {
 
@@ -785,10 +906,10 @@ describe("CLI.mixin.Observable", function() {
                         id: 'parent',
                         cn: [
                             {
-                                id: 'child',
-                                cls: 'child',
-                                cn: { id: 'grandchild', cls: 'grandchild' }
-                            }
+                            id: 'child',
+                            cls: 'child',
+                            cn: { id: 'grandchild', cls: 'grandchild' }
+                        }
                         ]
                     });
 
@@ -799,6 +920,8 @@ describe("CLI.mixin.Observable", function() {
                 afterEach(function() {
                     element.destroy();
                 });
+
+                // {{{ addListener
 
                 describe("addListener", function() {
                     itFiresMouseEvents("should handle an event", function() {
@@ -893,6 +1016,8 @@ describe("CLI.mixin.Observable", function() {
                         fire(grandchild);
                         expect(handler).toHaveBeenCalled();
                     });
+
+                    // {{{ propagation
 
                     describe("propagation", function() {
                         var results;
@@ -1017,6 +1142,8 @@ describe("CLI.mixin.Observable", function() {
                     });
                 });
 
+                // {{{ removeListener
+
                 describe("removeListener", function() {
                     it("should remove the event listener", function() {
                         addListener();
@@ -1081,10 +1208,12 @@ describe("CLI.mixin.Observable", function() {
                     });
                 });
 
+                // {{{ clearListeners
+
                 describe("clearListeners", function() {
                     itFiresMouseEvents("should remove all the listeners", function() {
                         var handler3 = jasmine.createSpy(),
-                            handler4 = jasmine.createSpy();
+                        handler4 = jasmine.createSpy();
 
                         element.on({
                             click: handler
@@ -1121,6 +1250,8 @@ describe("CLI.mixin.Observable", function() {
         makeSuite(false);
     });
 
+    // {{{ event name normalization
+
     describe("event name normalization", function() {
         var spy, o;
 
@@ -1128,6 +1259,8 @@ describe("CLI.mixin.Observable", function() {
             spy = jasmine.createSpy();
             o = new CLI.mixin.Observable();
         });
+
+        // {{{ firing
 
         describe("firing", function() {
             it("should match when firing with lower case", function() {
@@ -1142,6 +1275,8 @@ describe("CLI.mixin.Observable", function() {
                 expect(spy).toHaveBeenCalled();
             });
         });
+
+        // {{{ removing
 
         describe("removing", function() {
             it("should match when removing with lower case", function() {
@@ -1159,6 +1294,8 @@ describe("CLI.mixin.Observable", function() {
             });
         });
 
+        // {{{ hasListener(s)
+
         describe("hasListener(s)", function() {
             it("should use lower case for hasListeners", function() {
                 o.on('FOO', spy);
@@ -1170,6 +1307,8 @@ describe("CLI.mixin.Observable", function() {
                 expect(o.hasListener('foo')).toBe(true);
             });
         });
+
+        // {{{ suspend/resume
 
         describe("suspend/resume", function() {
             it("should ignore case when asking if an event is suspended", function() {
@@ -1188,6 +1327,8 @@ describe("CLI.mixin.Observable", function() {
             });
         });
 
+        // {{{ bubbling
+
         describe("bubbling", function() {
             it("should ignore case when bubbling events", function() {
                 var other = new CLI.mixin.Observable();
@@ -1201,6 +1342,8 @@ describe("CLI.mixin.Observable", function() {
             });
         });
     });
+
+    // {{{ hasListeners
 
     describe("hasListeners", function() {
         var dispatcher;
@@ -1241,7 +1384,7 @@ describe("CLI.mixin.Observable", function() {
 
         it("should chain the prototype of the observable instance's hasListeners object to the dispatchers hasListeners object for the given observableType", function() {
             var hasListeners = dispatcher.hasListeners,
-                foo = new spec.Foo();
+            foo = new spec.Foo();
 
             hasListeners.foo.someEvent = 5;
 
@@ -1250,7 +1393,7 @@ describe("CLI.mixin.Observable", function() {
 
         it("should not add the observableType to the dispatcher's hasListeners if it already exists", function() {
             var hasListeners = dispatcher.hasListeners,
-                fooListeners;
+            fooListeners;
 
             new spec.Foo();
             fooListeners = hasListeners.foo;
@@ -1323,7 +1466,7 @@ describe("CLI.mixin.Observable", function() {
 
         it('should only decrement hasListeners when a listener is actually removed', function() {
             var foo = new spec.Foo(),
-                event1Counter = 0;
+            event1Counter = 0;
 
             foo.addListener('event1', function() {
                 event1Counter++;
@@ -1342,6 +1485,8 @@ describe("CLI.mixin.Observable", function() {
         });
 
     });
+
+    // {{{ scope: this
 
     describe("scope: this", function() {
         var Cls;
@@ -1378,6 +1523,8 @@ describe("CLI.mixin.Observable", function() {
         });
     });
 
+    // {{{ scope: controller
+
     describe("scope: controller", function() {
         var Cls;
 
@@ -1404,6 +1551,8 @@ describe("CLI.mixin.Observable", function() {
             }).toThrow();
         });
     });
+
+    // {{{ Event Normalization
 
     describe("Event Normalization", function() {
         var target, fire, events, secondaryEvents, listeners;
@@ -1548,9 +1697,11 @@ describe("CLI.mixin.Observable", function() {
         }
     });
 
+    // {{{ declarative listeners
+
     describe("declarative listeners", function() {
         var ParentMixin, ChildMixin, ParentClass, ChildClass,
-            result = [];
+        result = [];
 
         beforeEach(function() {
             ParentMixin = CLI.define(null, {
@@ -1669,9 +1820,8 @@ describe("CLI.mixin.Observable", function() {
             new Cls();
             expect(spy).not.toHaveBeenCalled();
         });
+       */
     });
-
-   */
 
 });
 
