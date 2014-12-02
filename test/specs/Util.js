@@ -1573,6 +1573,10 @@ describe("CLI.Util", function() {
             extApplySpy = sinon.spy(CLI, "apply");
         });
 
+        afterEach(function() {
+            CLI.apply.restore();
+        });
+
         it("should apply override", function() {
 
             var override = {foo: true};
