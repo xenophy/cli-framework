@@ -1173,6 +1173,63 @@ describe("CLI.String", function() {
     });
 
     // }}}
+    // {{{ createVarName
+
+    describe("createVarName", function() {
+
+        it("should not change name", function() {
+
+            assert.equal(S.createVarName('foo'), 'foo');
+
+        });
+
+        it("should change name", function() {
+
+            assert.equal(S.createVarName('1foo'), 'foo');
+
+        });
+
+    });
+
+    // }}}
+    // {{{ hasHtmlCharacters
+
+    describe("hasHtmlCharacters", function() {
+
+        it("should return true with have html char", function() {
+
+            assert.equal(S.hasHtmlCharacters('<p>hoge</p>'), true);
+
+        });
+
+        it("should return false with don't have html char", function() {
+
+            assert.equal(S.hasHtmlCharacters('hoge'), false);
+
+        });
+
+    });
+
+    // }}}
+    // {{{ createRegex
+
+    describe("createRegex", function() {
+
+        it("should return not null with 'hello' regex", function() {
+
+            assert.notEqual('hello'.match(CLI.String.createRegex('hello')), null);
+
+        });
+
+        it("should return not null with 'world' regex", function() {
+
+            assert.notEqual('people in the world.'.match(CLI.String.createRegex('world', false, false, false)), null);
+
+        });
+
+    });
+
+    // }}}
 
 });
 
