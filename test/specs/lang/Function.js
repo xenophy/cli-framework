@@ -219,8 +219,8 @@ describe("CLI.Function", function() {
     describe("bindCallback", function() {
 
         var scope = {
-            myFunc: function() {
-                return arguments;
+            myFunc: function(arg1, arg2) {
+                return [arg1, arg2];
             }
         };
 
@@ -228,8 +228,11 @@ describe("CLI.Function", function() {
         var bindCb = CLI.Function.bindCallback('myFunc', scope, ['foo', 'bar']);
 
         assert.equal(CLI.isFunction(scope.myFunc), true);
+        assert.deepEqual(bindCb(), {
+            0: 'foo',
+            1: 'bar'
+        });
         assert.notEqual(scope.myFunc, bindCb);
-
     });
 
     // }}}
