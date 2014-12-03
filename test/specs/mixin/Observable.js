@@ -34,7 +34,8 @@ describe("CLI.mixin.Observable", function() {
 
         var dispatcher, foo, bar, baz, fooId, barId, fn, scope, options, order;
 
-        var Foo = CLI.define(null, {
+        //var Foo = CLI.define(null, {
+        var Foo = CLI.define('CLITest.mixin.Observable-Foo', {
             extend: 'CLI.mixin.Observable',
 
             observableType: 'foo',
@@ -44,7 +45,8 @@ describe("CLI.mixin.Observable", function() {
             }
         });
 
-        var Bar = CLI.define(null, {
+        //var Bar = CLI.define(null, {
+        var Bar = CLI.define('CLITest.mixin.Observable-Bar', {
 
             extend: 'CLI.mixin.Observable',
 
@@ -55,7 +57,8 @@ describe("CLI.mixin.Observable", function() {
             }
         });
 
-        var Baz = CLI.define(null, {
+        //var Baz = CLI.define(null, {
+        var Baz = CLI.define('CLITest.mixin.Observable-Baz', {
             extend: 'CLI.mixin.Observable',
 
             observableType: 'bar',
@@ -209,36 +212,40 @@ describe("CLI.mixin.Observable", function() {
 
             });
 
-            /*
             it("should allow different scopes for different listeners", function() {
-                var one = jasmine.createSpy(),
-                two = jasmine.createSpy(),
-                scope1 = {},
-                scope2 = {},
-                listener1 = {
-                    fn: one,
-                    scope: scope1,
-                    single: true
-                },
-                listener2 = {
-                    fn: two,
-                    scope: scope2,
-                    delay: 100
-                };
 
-                spyOn(foo, 'doAddListener');
+                var one = sinon.spy(),
+                    two = sinon.spy(),
+                    scope1 = {},
+                    scope2 = {},
+                    listener1 = {
+                        fn: one,
+                        scope: scope1,
+                        single: true
+                    },
+                    listener2 = {
+                        fn: two,
+                        scope: scope2,
+                        delay: 100
+                    };
+
+                var spy = sinon.spy(foo, 'doAddListener');
 
                 foo.addListener({
                     one: listener1,
                     two: listener2
                 });
 
-                expect(foo.doAddListener.callCount).toBe(2);
-                expect(foo.doAddListener.argsForCall[0]).toEqual(['one', one, scope1, listener1, order]);
-                expect(foo.doAddListener.argsForCall[1]).toEqual(['two', two, scope2, listener2, order]);
+                assert.equal(spy.callCount, 2);
+                assert.deepEqual(spy.args[0], ['one', one, scope1, listener1, order]);
+                assert.deepEqual(spy.args[1], ['two', two, scope2, listener2, order]);
+
+                spy.restore();
+
             });
 
             it("should not mutate the options object", function() {
+
                 var fooOptions = {
                     foo: 'onFoo',
                     scope: 'this'
@@ -254,15 +261,15 @@ describe("CLI.mixin.Observable", function() {
                 });
 
                 var foo = new Foo(),
-                barOptions = {
-                    bar: foo.onBar,
-                    scope: foo
-                },
-                barClone = CLI.clone(barOptions),
-                bazOptions = {
-                    isBaz: true
-                },
-                bazClone = CLI.clone(bazOptions);
+                    barOptions = {
+                        bar: foo.onBar,
+                        scope: foo
+                    },
+                    barClone = CLI.clone(barOptions),
+                    bazOptions = {
+                        isBaz: true
+                    },
+                    bazClone = CLI.clone(bazOptions);
 
                 foo.on(barOptions);
                 foo.on('baz', foo.onBaz, foo, bazOptions);
@@ -271,33 +278,37 @@ describe("CLI.mixin.Observable", function() {
                 foo.fireEvent('bar');
                 foo.fireEvent('baz');
 
-                expect(fooOptions).toEqual(fooClone);
-                expect(barOptions).toEqual(barClone);
-                expect(bazOptions).toEqual(bazClone);
+                assert.deepEqual(fooOptions, fooClone);
+                assert.deepEqual(barOptions, barClone);
+                assert.deepEqual(bazOptions, bazClone);
             });
-           */
 
         });
 
         // }}}
         // {{{ removeListener()
 
-        /*
         describe("removeListener()", function() {
+
             it("should invoke doRemoveListener", function() {
-                spyOn(foo, 'doRemoveListener');
+
+                var spy = sinon.spy(foo, 'doRemoveListener');
 
                 foo.removeListener('bar', fn, scope, options, order);
 
-                expect(foo.doRemoveListener).toHaveBeenCalledWith('bar', fn, scope, options, order);
+                assert.equal(spy.calledWith('bar', fn, scope, options, order), true);
+
+                spy.restore();
+
             });
 
             it("should invoke doRemoveListener() multiple times for multiple listeners", function() {
-                var one = jasmine.createSpy(),
-                two = jasmine.createSpy(),
-                scope = {};
 
-                spyOn(foo, 'doRemoveListener');
+                var one = sinon.spy(),
+                    two = sinon.spy(),
+                    scope = {};
+
+                var spy = sinon.spy(foo, 'doRemoveListener');
 
                 foo.removeListener({
                     one: one,
@@ -309,82 +320,100 @@ describe("CLI.mixin.Observable", function() {
                     scope: scope
                 };
 
-                expect(foo.doRemoveListener.callCount).toBe(2);
-                expect(foo.doRemoveListener.argsForCall[0]).toEqual(['one', one, scope, expectedOptions, order]);
-                expect(foo.doRemoveListener.argsForCall[1]).toEqual(['two', two, scope, expectedOptions, order]);
+                assert.equal(spy.callCount, 2);
+                assert.deepEqual(spy.args[0], ['one', one, scope, expectedOptions, order]);
+                assert.deepEqual(spy.args[1], ['two', two, scope, expectedOptions, order]);
+
+                spy.restore();
+
             });
+
         });
-       */
 
         // }}}
         // {{{ fireEvent()
 
-        /*
         describe("fireEvent()", function() {
+
             it("should invoke dispatcher's dispatchEvent", function() {
+
                 var args = ['testeventname', 'foo', 'bar'];
 
-                spyOn(dispatcher, 'dispatchEvent');
+                var spy = sinon.spy(dispatcher, 'dispatchEvent');
 
                 foo.fireEvent.apply(foo, args);
 
-                expect(dispatcher.dispatchEvent).toHaveBeenCalledWith('foo', fooId, 'testeventname', ['foo', 'bar'], undefined, undefined);
+                assert.equal(spy.calledWith('foo', fooId, 'testeventname', ['foo', 'bar'], undefined, undefined), true);
+
+                spy.restore();
+
             });
         });
-       */
 
         // }}}
         // {{{ clearListeners()
 
-        /*
         describe("clearListeners()", function() {
+
             it("should invoke dispatcher's clearListeners()", function() {
-                spyOn(dispatcher, 'clearListeners');
+
+                var spy = sinon.spy(dispatcher, 'clearListeners');
 
                 foo.on('foo', fn);
                 foo.clearListeners();
 
-                expect(dispatcher.clearListeners).toHaveBeenCalledWith('foo', fooId, foo);
+                assert.equal(spy.calledWith('foo', fooId, foo), true);
+
+                spy.restore();
+
             });
         });
-       */
 
         // }}}
         // {{{ relayEvents
 
-        /*
         describe("relayEvents", function() {
+
             it("should support string format", function() {
-                var spy = spyOn(foo, 'doFireEvent');
+
+                var spy = sinon.spy(foo, 'doFireEvent');
 
                 foo.relayEvents(bar, 'bar', 'foo');
 
                 bar.fireEvent('bar');
 
-                expect(spy).toHaveBeenCalled();
-                expect(spy.callCount).toBe(1);
-                expect(spy.calls[0].args[0]).toEqual('foobar');
-                expect(spy.calls[0].object).toBe(foo);
+                assert.equal(spy.called, true);
+                assert.equal(spy.callCount, 1);
+                assert.equal(spy.lastCall.args[0], 'foobar');
+                assert.equal(spy.lastCall.thisValue, foo);
+
+                spy.restore();
+
             });
 
             it("should support array format", function() {
-                var spy = spyOn(foo, 'doFireEvent');
+
+                var spy = sinon.spy(foo, 'doFireEvent');
 
                 foo.relayEvents(bar, ['bar', 'baz'], 'foo');
 
                 bar.fireEvent('bar');
                 bar.fireEvent('baz');
 
-                expect(spy).toHaveBeenCalled();
-                expect(spy.callCount).toBe(2);
-                expect(spy.calls[0].args[0]).toEqual('foobar');
-                expect(spy.calls[0].object).toBe(foo);
-                expect(spy.calls[1].args[0]).toEqual('foobaz');
-                expect(spy.calls[1].object).toBe(foo);
+                assert.equal(spy.called, true);
+                assert.equal(spy.callCount, 2);
+                assert.equal(spy.firstCall.args[0], 'foobar');
+                assert.equal(spy.firstCall.thisValue, foo);
+                assert.equal(spy.lastCall.args[0], 'foobaz');
+                assert.equal(spy.lastCall.thisValue, foo);
+
+                spy.restore();
+
             });
 
             it("should support object format", function() {
-                var spy = spyOn(foo, 'doFireEvent');
+
+                var spy = sinon.spy(foo, 'doFireEvent');
 
                 foo.relayEvents(bar, {
                     bar: 'newbar',
@@ -395,29 +424,31 @@ describe("CLI.mixin.Observable", function() {
 
                 bar.fireEvent('baz');
 
-                expect(spy).toHaveBeenCalled();
-                expect(spy.callCount).toBe(2);
-                expect(spy.calls[0].args[0]).toEqual('foonewbar');
-                expect(spy.calls[0].object).toBe(foo);
-                expect(spy.calls[1].args[0]).toEqual('foonewbaz');
-                expect(spy.calls[1].object).toBe(foo);
+                assert.equal(spy.called, true);
+                assert.equal(spy.callCount, 2);
+                assert.equal(spy.firstCall.args[0], 'foonewbar');
+                assert.equal(spy.firstCall.thisValue, foo);
+                assert.equal(spy.lastCall.args[0], 'foonewbaz');
+                assert.equal(spy.lastCall.thisValue, foo);
+
+                spy.restore();
             });
+
         });
-       */
 
         // }}}
         // {{{ suspend/resume events
 
-        /*
         describe("suspend/resume events", function () {
+
             var employee,
-            employeeFiredFn,
-            employeeQuitFn,
-            employeeAskFn,
-            employeeFiredListener,
-            employeeQuitListener,
-            employeeAskListener,
-            employeeListeners;
+                employeeFiredFn,
+                employeeQuitFn,
+                employeeAskFn,
+                employeeFiredListener,
+                employeeQuitListener,
+                employeeAskListener,
+                employeeListeners;
 
             function generateFireEventTraffic() {
                 employee.fireEvent("fired", "I'm fired :s (1)");
@@ -427,22 +458,26 @@ describe("CLI.mixin.Observable", function() {
             };
 
             beforeEach(function() {
-                employeeFiredFn = jasmine.createSpy("employeeFiredFn");
-                employeeQuitFn = jasmine.createSpy("employeeQuitFn");
-                employeeAskFn = jasmine.createSpy("employeeAskFn");
+
+                employeeFiredFn = sinon.spy();
+                employeeQuitFn = sinon.spy();
+                employeeAskFn = sinon.spy();
 
                 employeeFiredListener = {
                     fn    : employeeFiredFn,
                     scope : fakeScope
                 };
+
                 employeeQuitListener = {
                     fn    : employeeQuitFn,
                     scope : fakeScope
                 };
+
                 employeeAskListener = {
                     fn    : employeeAskFn,
                     scope : fakeScope
                 };
+
                 employeeListeners = {
                     ask_salary_augmentation : employeeAskListener,
                     fired                   : employeeFiredListener,
@@ -452,31 +487,39 @@ describe("CLI.mixin.Observable", function() {
                 employee = new CLI.mixin.Observable({
                     listeners : employeeListeners
                 });
+
             });
 
             afterEach(function() {
+
                 employee.destroy();
                 employee = null;
+
             });
 
             // {{{ suspended events to be fired after resumeEvents
 
             describe("suspended events to be fired after resumeEvents", function() {
+
                 beforeEach(function () {
+
                     employee.suspendEvents(true);
                     generateFireEventTraffic();
+
                 });
 
                 // {{{ when suspended
 
                 describe("when suspended", function () {
+
                     it("should not call fired event handler", function () {
-                        expect(employeeFiredFn).not.toHaveBeenCalled();
+                        assert.equal(employeeFiredFn.called, false);
                     });
 
                     it("should not call quit event handler", function () {
-                        expect(employeeQuitFn).not.toHaveBeenCalled();
+                        assert.equal(employeeQuitFn.called, false);
                     });
+
                 });
 
                 // }}}
@@ -487,16 +530,17 @@ describe("CLI.mixin.Observable", function() {
                     // {{{ without discarding
 
                     describe("without discarding", function() {
+
                         beforeEach(function() {
                             employee.resumeEvents();
                         });
 
                         it("should call fired event handler two times", function() {
-                            expect(employeeFiredFn.callCount).toEqual(2);
+                            assert.equal(employeeFiredFn.callCount, 2);
                         });
 
                         it("should call quit event handler two times", function() {
-                            expect(employeeQuitFn.callCount).toEqual(2);
+                            assert.equal(employeeQuitFn.callCount, 2);
                         });
                     });
 
@@ -504,17 +548,19 @@ describe("CLI.mixin.Observable", function() {
                     // {{{ with discarding
 
                     describe("with discarding", function() {
+
                         beforeEach(function() {
                             employee.resumeEvents(true);
                         });
 
                         it("should not call fired event handler", function() {
-                            expect(employeeFiredFn).not.toHaveBeenCalled();
+                            assert.equal(employeeFiredFn.called, false);
                         });
 
                         it("should call quit event handler two times", function() {
-                            expect(employeeQuitFn).not.toHaveBeenCalled();
+                            assert.equal(employeeQuitFn.called, false);
                         });
+
                     });
 
                     // }}}
@@ -538,13 +584,15 @@ describe("CLI.mixin.Observable", function() {
                 // {{{ when suspended
 
                 describe("when suspended", function () {
+
                     it("should not call fired event handler", function () {
-                        expect(employeeFiredFn).not.toHaveBeenCalled();
+                        assert.equal(employeeFiredFn.called, false);
                     });
 
                     it("should not call quit event handler", function () {
-                        expect(employeeQuitFn).not.toHaveBeenCalled();
+                        assert.equal(employeeQuitFn.called, false);
                     });
+
                 });
 
                 // }}}
@@ -553,16 +601,18 @@ describe("CLI.mixin.Observable", function() {
                 describe("on resume", function () {
 
                     beforeEach(function () {
+
                         //will discard the event queue
                         employee.resumeEvents(true);
+
                     });
 
                     it("should not call fired event handler", function () {
-                        expect(employeeFiredFn).not.toHaveBeenCalled();
+                        assert.equal(employeeFiredFn.called, false);
                     });
 
                     it("should not call quit event handler", function () {
-                        expect(employeeQuitFn).not.toHaveBeenCalled();
+                        assert.equal(employeeQuitFn.called, false);
                     });
 
                 });
@@ -577,15 +627,18 @@ describe("CLI.mixin.Observable", function() {
             describe("multiple suspend/resume", function() {
 
                 it("should not fire events if there are more suspend than resume calls", function() {
+
                     employee.suspendEvents();
                     employee.suspendEvents();
                     employee.resumeEvents();
                     generateFireEventTraffic();
-                    expect(employeeFiredFn).not.toHaveBeenCalled();
-                    expect(employeeQuitFn).not.toHaveBeenCalled();
+
+                    assert.equal(employeeFiredFn.called, false);
+                    assert.equal(employeeQuitFn.called, false);
                 });
 
                 it("should fire events if the suspend/resume calls match", function() {
+
                     employee.suspendEvents();
                     employee.suspendEvents();
                     employee.suspendEvents();
@@ -593,18 +646,23 @@ describe("CLI.mixin.Observable", function() {
                     employee.resumeEvents();
                     employee.resumeEvents();
                     generateFireEventTraffic();
-                    expect(employeeFiredFn).toHaveBeenCalled();
-                    expect(employeeQuitFn).toHaveBeenCalled();
+
+                    assert.equal(employeeFiredFn.called, true);
+                    assert.equal(employeeQuitFn.called, true);
+
                 });
 
                 it("should ignore extra resumeEvents calls", function() {
+
                     employee.suspendEvents();
                     employee.resumeEvents();
                     employee.resumeEvents();
                     employee.resumeEvents();
                     generateFireEventTraffic();
-                    expect(employeeFiredFn).toHaveBeenCalled();
-                    expect(employeeQuitFn).toHaveBeenCalled();
+
+                    assert.equal(employeeFiredFn.called, true);
+                    assert.equal(employeeQuitFn.called, true);
+
                 });
 
             });
@@ -615,37 +673,49 @@ describe("CLI.mixin.Observable", function() {
             describe("specific events", function() {
 
                 it("should be able to suspend a specific event", function() {
+
                     employee.suspendEvent('fired');
                     generateFireEventTraffic();
-                    expect(employeeFiredFn).not.toHaveBeenCalled();
+
+                    assert.equal(employeeFiredFn.called, false);
+
                 });
 
                 it("should be able to suspend a specific event before anything is bound", function() {
-                    var o = new CLI.util.Observable(),
-                    called = false;
+
+                    var o = new CLI.mixin.Observable(),
+                        called = false;
 
                     o.suspendEvent('foo');
                     o.on('foo', function() {
                         called = true;
                     });
                     o.fireEvent('foo', o);
-                    expect(called).toBe(false);
+
+                    assert.equal(called, false);
+
                 });
 
                 it("should begin firing events after resuming a specific event", function() {
+
                     employee.suspendEvent('fired');
                     generateFireEventTraffic();
                     employee.resumeEvent('fired');
                     generateFireEventTraffic();
-                    expect(employeeFiredFn.callCount).toBe(2);
+
+                    assert.equal(employeeFiredFn.callCount, 2);
+
                 });
 
                 it("should not resume firing if suspend is called more than resume", function() {
+
                     employee.suspendEvent('fired');
                     employee.suspendEvent('fired');
                     employee.resumeEvent('fired');
                     generateFireEventTraffic();
-                    expect(employeeFiredFn).not.toHaveBeenCalled();
+
+                    assert.equal(employeeFiredFn.called, false);
+
                 });
 
             });
@@ -660,18 +730,26 @@ describe("CLI.mixin.Observable", function() {
                 describe("all events", function() {
 
                     it("should return false if all events aren't suspended", function() {
-                        expect(employee.isSuspended()).toBe(false);
+
+                        assert.equal(employee.isSuspended(), false);
+
                     });
 
                     it("should return false after suspending and then resuming all events", function() {
+
                         employee.suspendEvents();
                         employee.resumeEvents();
-                        expect(employee.isSuspended()).toBe(false);
+
+                        assert.equal(employee.isSuspended(), false);
+
                     });
 
                     it("should return true when events are globally suspended", function() {
+
                         employee.suspendEvents();
-                        expect(employee.isSuspended()).toBe(true);
+
+                        assert.equal(employee.isSuspended(), true);
+
                     });
 
                 });
@@ -680,25 +758,38 @@ describe("CLI.mixin.Observable", function() {
                 // {{{ specific event
 
                 describe("specific event", function() {
+
                     it("should return false if the specific event is not suspended", function() {
-                        expect(employee.isSuspended('fired')).toBe(false);
+
+                        assert.equal(employee.isSuspended('fired'), false);
+
                     });
 
                     it("should return false if the specific event is suspended then resumed", function() {
+
                         employee.suspendEvent('fired');
                         employee.resumeEvent('fired');
-                        expect(employee.isSuspended('fired')).toBe(false);
+
+                        assert.equal(employee.isSuspended('fired'), false);
+
                     });
 
                     it("should return true if a specific event is suspended", function() {
+
                         employee.suspendEvent('fired');
-                        expect(employee.isSuspended('fired')).toBe(true);
+
+                        assert.equal(employee.isSuspended('fired'), true);
+
                     });
 
                     it("should return true if all events are suspended and the specific event is not", function() {
+
                         employee.suspendEvents();
-                        expect(employee.isSuspended('fired')).toBe(true);
+
+                        assert.equal(employee.isSuspended('fired'), true);
+
                     });
+
                 });
 
                 // }}}
@@ -708,94 +799,15 @@ describe("CLI.mixin.Observable", function() {
             // }}}
 
         });
-       */
 
-        /*
         // }}}
-        // {{{ enableBubble()
-
-        describe("enableBubble()", function() {
-            it("should bubble the event from foo -> bar -> baz", function() {
-                var barSpy = jasmine.createSpy(),
-                bazSpy = jasmine.createSpy();
-
-                spyOn(foo, 'getBubbleTarget').andReturn(bar);
-                spyOn(bar, 'getBubbleTarget').andReturn(baz);
-
-                foo.enableBubble('foo');
-                bar.addListener('foo', barSpy);
-                baz.addListener('foo', bazSpy);
-
-                foo.fireEvent('foo', 'test');
-
-                expect(barSpy).toHaveBeenCalled();
-                expect(barSpy.callCount).toBe(1);
-                expect(barSpy.mostRecentCall.args[0]).toBe('test');
-
-                expect(bazSpy).toHaveBeenCalled();
-                expect(bazSpy.callCount).toBe(1);
-                expect(bazSpy.mostRecentCall.args[0]).toBe('test');
-            });
-
-            it("should make it possible to pause / resume / stop event bubbling", function() {
-                runs(function() {
-                    var me = this;
-
-                    this.one = jasmine.createSpy().andCallFake(function() {
-                        var controller = arguments[arguments.length - 1];
-                        controller.pause();
-
-                        CLI.defer(function() {
-                            controller.resume();
-                        }, 50);
-                    });
-
-                    this.resumed = false;
-
-                    this.two = jasmine.createSpy().andCallFake(function() {
-                        me.resumed = true;
-
-                        var controller = arguments[arguments.length - 1];
-                        controller.stop();
-                    });
-
-                    this.three = jasmine.createSpy();
-
-                    spyOn(foo, 'getBubbleTarget').andReturn(bar);
-                    spyOn(bar, 'getBubbleTarget').andReturn(baz);
-
-                    foo.enableBubble('foo');
-                    bar.addListener('foo', this.one);
-                    bar.addListener('foo', this.two);
-                    baz.addListener('foo', this.three);
-
-                    foo.fireEvent('foo', 'test');
-
-                    expect(this.one).toHaveBeenCalled();
-                    expect(this.two).not.toHaveBeenCalled();
-                    expect(this.three).not.toHaveBeenCalled();
-                });
-
-                runs(function() {
-                    var me = this;
-
-                    waitsFor(function() {
-                        return me.resumed;
-                    }, "resume bubbling events", 100);
-                });
-
-                runs(function() {
-                    expect(this.two).toHaveBeenCalled();
-                    expect(this.three).not.toHaveBeenCalled();
-                });
-            });
-        });
-
         // {{{ listeners config
 
         describe("listeners config", function() {
+
             it("should be initialized before any fireEvent()", function() {
-                var listenerFn = jasmine.createSpy();
+
+                var listenerFn = sinon.spy();
                 var Boo = CLI.define(null, {
                     mixins: [CLI.mixin.Observable],
 
@@ -822,12 +834,18 @@ describe("CLI.mixin.Observable", function() {
                         this.fireEvent('boo');
                     }
                 });
+
                 var boo = new Boo;
 
-                expect(listenerFn).toHaveBeenCalled();
+                assert.equal(listenerFn.called, true);
+
             });
+
         });
 
+        // }}}
+
+       /*
         // {{{ destroy()
 
         describe("destroy()", function() {

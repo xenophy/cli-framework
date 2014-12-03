@@ -71,6 +71,37 @@
 
     };
 
+    global.getMostRecentCall = function(spy) {
+
+        var result = {};
+
+        spy.getCalls().forEach(function(cl) {
+
+            result[cl.callId] = result[cl.callId] || 0;
+            result[cl.callId]++;
+
+        });
+
+        var maxCnt = 0;
+        var maxKey;
+
+        CLI.iterate(result, function(key, cnt) {
+            if (maxCnt < cnt) {
+                maxCnt = cnt;
+                maxKey = key;
+            }
+        });
+
+        var mostRecentCall = null;
+        spy.getCalls().forEach(function(cl) {
+            if (cl.callId == maxKey) {
+                mostRecentCall = cl;
+            }
+        });
+
+        return mostRecentCall;
+
+    };
 
 })();
 
