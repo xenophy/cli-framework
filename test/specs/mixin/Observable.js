@@ -14,6 +14,11 @@ require('../../helper.js');
 var assert = require('power-assert');
 
 // }}}
+// {{{ sinon
+
+var sinon = require('sinon');
+
+// }}}
 // {{{ require CLI
 
 require('../../../index.js');
@@ -61,22 +66,26 @@ describe("CLI.mixin.Observable", function() {
         });
 
         beforeEach(function() {
-            dispatcher = new CLI.event.Dispatcher();
-            foo = new Foo();
-            bar = new Bar();
-            baz = new Baz();
-            fooId = foo.getObservableId();
-            barId = bar.getObservableId();
-            fn = function() {};
-            scope = {};
-            options = {};
-            order = undefined;
+
+            dispatcher  = new CLI.event.Dispatcher();
+            foo         = new Foo();
+            bar         = new Bar();
+            baz         = new Baz();
+            fooId       = foo.getObservableId();
+            barId       = bar.getObservableId();
+            fn          = function() {};
+            scope       = {};
+            options     = {};
+            order       = undefined;
+
         });
 
         afterEach(function() {
+
             foo.destroy();
             bar.destroy();
             baz.destroy();
+
         });
 
         // {{{ getObservableId()
@@ -94,68 +103,89 @@ describe("CLI.mixin.Observable", function() {
         // }}}
         // {{{ doAddListener()
 
-        /*
         describe("doAddListener()", function() {
+
             it("should invoke dispatcher's addListener", function() {
-                spyOn(dispatcher, 'addListener');
+
+                var spy = sinon.spy(dispatcher, 'addListener');
 
                 foo.doAddListener('bar', fn, scope, options, order);
 
-                expect(dispatcher.addListener).toHaveBeenCalledWith('foo', fooId, 'bar', fn, scope, options, order, foo);
+                assert.deepEqual(spy.lastCall.args, ['foo', fooId, 'bar', fn, scope, options, order, foo]);
+
+                spy.restore();
+
             });
 
             it("should invoke dispatcher's addListener with scope 'this' if not given", function() {
-                spyOn(dispatcher, 'addListener');
+
+                var spy = sinon.spy(dispatcher, 'addListener');
 
                 foo.doAddListener('bar', fn, null, options, order);
 
-                expect(dispatcher.addListener).toHaveBeenCalledWith('foo', fooId, 'bar', fn, foo, options, order, foo);
+                assert.deepEqual(spy.lastCall.args, ['foo', fooId, 'bar', fn, foo, options, order, foo]);
+
+                spy.restore();
+
             });
+
         });
-       */
 
         // }}}
         // {{{ doRemoveListener()
 
-        /*
         describe("doRemoveListener()", function() {
+
             it("should invoke dispatcher's removeListener", function() {
-                spyOn(dispatcher, 'removeListener');
+
+                var spy = sinon.spy(dispatcher, 'removeListener');
 
                 foo.doRemoveListener('bar', fn, scope, options, order);
 
-                expect(dispatcher.removeListener).toHaveBeenCalledWith('foo', fooId, 'bar', fn, scope, options, order, foo);
+                assert.deepEqual(spy.lastCall.args, ['foo', fooId, 'bar', fn, scope, options, order, foo]);
+
+                spy.restore();
+
             });
 
             it("should invoke dispatcher's removeListener with scope 'this' if not specified", function() {
-                spyOn(dispatcher, 'removeListener');
+
+                var spy = sinon.spy(dispatcher, 'removeListener');
 
                 foo.doRemoveListener('bar', fn, null, options, order);
 
-                expect(dispatcher.removeListener).toHaveBeenCalledWith('foo', fooId, 'bar', fn, foo, options, order, foo);
+                assert.deepEqual(spy.lastCall.args, ['foo', fooId, 'bar', fn, foo, options, order, foo]);
+
+                spy.restore();
+
             });
+
         });
-       */
 
         // }}}
         // {{{ addListener()
 
-        /*
         describe("addListener()", function() {
+
             it("should invoke doAddListener", function() {
-                spyOn(foo, 'doAddListener');
+
+                var spy = sinon.spy(dispatcher, 'doAddListener');
 
                 foo.addListener('bar', fn, scope, options, order);
 
-                expect(foo.doAddListener).toHaveBeenCalledWith('bar', fn, scope, options, order);
+                assert.equal(spy.calledWith('foo', fooId, 'bar', fn, scope, {type: 'bar'}, order), true);
+
+                spy.restore();
+
             });
 
             it("should invoke doAddListener() multiple times for multiple listeners", function() {
-                var one = jasmine.createSpy(),
-                two = jasmine.createSpy(),
-                scope = {};
 
-                spyOn(foo, 'doAddListener');
+                var one = sinon.spy(),
+                    two = sinon.spy(),
+                    scope = {};
+
+                var spy = sinon.spy(foo, 'doAddListener');
 
                 foo.addListener({
                     one: one,
@@ -166,14 +196,20 @@ describe("CLI.mixin.Observable", function() {
 
                 var expectedOptions = {
                     scope: scope,
-                    single: true
+                    single: true,
+                    type: "one"
                 };
 
-                expect(foo.doAddListener.callCount).toBe(2);
-                expect(foo.doAddListener.argsForCall[0]).toEqual(['one', one, scope, expectedOptions, order]);
-                expect(foo.doAddListener.argsForCall[1]).toEqual(['two', two, scope, expectedOptions, order]);
+                assert.equal(spy.callCount, 2);
+
+                assert.deepEqual(spy.args[0], ['one', one, scope, expectedOptions, order]);
+                assert.deepEqual(spy.args[1], ['two', two, scope, expectedOptions, order]);
+
+                spy.restore();
+
             });
 
+            /*
             it("should allow different scopes for different listeners", function() {
                 var one = jasmine.createSpy(),
                 two = jasmine.createSpy(),
@@ -239,8 +275,9 @@ describe("CLI.mixin.Observable", function() {
                 expect(barOptions).toEqual(barClone);
                 expect(bazOptions).toEqual(bazClone);
             });
+           */
+
         });
-       */
 
         // }}}
         // {{{ removeListener()
