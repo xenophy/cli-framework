@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+
+/*!
+ * This file is part of CLI Framework
+ */
+
+<span id='CLI-app-Application'>/**
+</span> * @class CLI.app.Application
+ *
+ */
+
+(function() {
+
+    &quot;use strict&quot;;
+
+    // {{{ CLI.app.Application
+
+    CLI.define(&#39;CLI.app.Application&#39;, {
+
+        // {{{ mixins
+
+        mixins: [&#39;CLI.mixin.Observable&#39;],
+
+        // }}}
+        // {{{ config
+
+<span id='CLI-app-Application-cfg-appFolder'>        /**
+</span>         * @cfg {String} appFolder
+         * The path to the directory which contains all application&#39;s classes.
+         * This path will be registered via {@link CLI.Loader#setPath} for the namespace specified
+         * in the {@link #name name} config.
+         */
+        appFolder: &#39;app&#39;,
+        // NOTE - this config has to be processed by CLI.application
+
+        config: {
+
+<span id='CLI-app-Application-cfg-name'>            /**
+</span>             * @cfg {String} name
+             * The name of your application. This will also be the namespace for your views, controllers
+             * models and stores. Don&#39;t use spaces or special characters in the name. **Application name
+             * is mandatory**.
+             */
+            name: &#39;&#39;,
+
+        },
+
+        // }}}
+        // {{{ constructor
+
+<span id='CLI-app-Application-method-constructor'>        /**
+</span>         * Creates new Application.
+         * @param {Object} [config] Config object.
+         */
+        constructor: function(config) {
+
+            var me = this;
+
+            me.mixins.observable.constructor.call(me, config);
+
+            //need to have eventbus property set before we initialize the config
+            me.initConfig(config);
+
+            if (CLI.isEmpty(me.getName())) {
+                CLI.Error.raise(&quot;[CLI.app.Application] Name property is required&quot;);
+            }
+
+            //me.doInit(me);
+            //me.initNamespace();
+            me.onBeforeLaunch();
+
+        },
+
+        // }}}
+        // {{{ launch
+
+        launch: CLI.emptyFn,
+
+        // }}}
+        // {{{ onBeforeLaunch
+
+<span id='CLI-app-Application-method-onBeforeLaunch'>        /**
+</span>         * @private
+         */
+        onBeforeLaunch: function() {
+
+            var me      = this,
+                argv    = require(&#39;optimist&#39;).argv,
+                main, mainClsName, mainCls;
+
+            me.launch.call(me.scope || me);
+            me.launched = true;
+
+//            me.fireEvent(&#39;launch&#39;, me);
+
+            try {
+
+
+                main = argv._[0] || &#39;help&#39;;
+
+                if (argv._.length &gt;= 1 &amp;&amp; main === &#39;help&#39;) {
+
+                    var tmp = CLI.Array.clone(argv._);
+
+                    CLI.Array.splice(tmp, 0, 1);
+
+                    mainClsName = CLI.String.format(&#39;{0}.{1}.{2}&#39;, me.getName(), tmp.join(&#39;.&#39;), CLI.String.capitalize(main));
+                    mainCls = CLI.create(mainClsName);
+
+                } else {
+
+                    main = &#39;Main&#39;;
+
+                    var tmp = CLI.Array.clone(argv._);
+
+                    mainClsName = CLI.String.format(&#39;{0}.{1}.{2}&#39;, me.getName(), tmp.join(&#39;.&#39;), CLI.String.capitalize(main));
+
+                    mainCls = CLI.create(mainClsName);
+
+                }
+
+            } catch(e) {
+
+                try {
+
+                    main = &#39;help&#39;;
+                    mainClsName = CLI.String.format(&#39;{0}.{1}&#39;, me.getName(), CLI.String.capitalize(main));
+                    mainCls = CLI.create(mainClsName);
+
+                } catch(e) {
+
+                    CLI.Error.raise(CLI.String.format(&#39;you should set {0}.{1} class as {2}/{1}.js.&#39;, me.getName(), CLI.String.capitalize(main), CLI.Loader.getPath(me.getName())));
+
+                }
+
+            }
+
+            mainCls.run.apply(mainCls, []);
+
+        }
+
+        // }}}
+
+    });
+
+    // }}}
+    // {{{ CLI.application
+
+    CLI.application = function(config) {
+
+        var createApp = function (App) {
+
+            CLI.app.Application.instance = new App();
+
+        },
+        paths = config.paths,
+        ns;
+
+        if (typeof config === &quot;string&quot;) {
+
+            CLI.require(config, function() {
+
+                createApp(CLI.ClassManager.get(config));
+
+            });
+
+        } else {
+
+            config = CLI.apply({
+                extend: &#39;CLI.app.Application&#39; // can be replaced by config!
+            }, config);
+
+            // We have to process `paths` before creating Application class,
+            // or `requires` won&#39;t work.
+            CLI.Loader.setPath(config.name, config.appFolder || require(&#39;path&#39;).dirname(require.main.filename) + &#39;/app&#39;);
+
+            if (paths) {
+
+                for (ns in paths) {
+
+                    if (paths.hasOwnProperty(ns)) {
+
+                        CLI.Loader.setPath(ns, paths[ns]);
+
+                    }
+
+                }
+
+            }
+
+            config[&#39;paths processed&#39;] = true;
+
+            // Let CLI.define do the hard work but don&#39;t assign a class name.
+            CLI.define(config.name + &quot;.$application&quot;, config, function () {
+                createApp(this);
+            });
+
+        }
+
+    };
+
+    // }}}
+
+})();
+
+/*
+ * Local variables:
+ * tab-width: 4
+ * c-basic-offset: 4
+ * c-hanging-comment-ender-p: nil
+ * End:
+ */
+</pre>
+</body>
+</html>

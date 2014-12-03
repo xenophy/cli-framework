@@ -23,10 +23,10 @@
 
 <span id='CLI-util-Format'>/**
 </span> * @class CLI.util.Format
- *  
+ *
  * This class is a centralized place for formatting functions. It includes
  * functions to format various different types of data, such as text, dates and numeric values.
- *  
+ *
  * ## Localization
  *
  * This class contains several options for localization. These can be set once the library has loaded,
@@ -46,7 +46,7 @@
  *
  * There are two helper functions that return a new function that can be used in conjunction with
  * grid renderers:
- *  
+ *
  *     columns: [{
  *         dataIndex: &#39;date&#39;,
  *         renderer: CLI.util.Format.dateRenderer(&#39;Y-m-d&#39;)
@@ -54,7 +54,7 @@
  *         dataIndex: &#39;time&#39;,
  *         renderer: CLI.util.Format.numberRenderer(&#39;0.000&#39;)
  *     }]
- *  
+ *
  * Functions that only take a single argument can also be passed directly:
  *
  *     columns: [{
@@ -64,11 +64,11 @@
  *         dataIndex: &#39;productCode&#39;,
  *         renderer: CLI.util.Format.uppercase
  *     }]
- *  
+ *
  * ## Using with XTemplates
  *
  * XTemplates can also directly use CLI.util.Format functions:
- *  
+ *
  *     new CLI.XTemplate([
  *         &#39;Date: {startDate:date(&quot;Y-m-d&quot;)}&#39;,
  *         &#39;Cost: {cost:usMoney}&#39;
@@ -76,16 +76,14 @@
  *
  * @singleton
  */
-
-
-(function() {
-
-    &quot;use strict&quot;;
-
 CLI.define(&#39;CLI.util.Format&#39;, function () {
+
     var me; // holds our singleton instance
 
     return {
+
+        // {{{ requires
+
         requires: [
             &#39;CLI.Error&#39;,
             &#39;CLI.Number&#39;,
@@ -93,14 +91,22 @@ CLI.define(&#39;CLI.util.Format&#39;, function () {
             &#39;CLI.Date&#39;
         ],
 
+        // }}}
+        // {{{ singleton
+
         singleton: true,
+
+        // }}}
+        // {{{ defaultDateFormat
 
 <span id='CLI-util-Format-property-defaultDateFormat'>        /**
 </span>         * The global default date format.
          */
         defaultDateFormat: &#39;m/d/Y&#39;,
 
-        //&lt;locale&gt;
+        // }}}
+        // {{{ thousandSeparator
+
 <span id='CLI-util-Format-property-thousandSeparator'>        /**
 </span>         * @property {String} thousandSeparator
          * The character that the {@link #number} function uses as a thousand separator.
@@ -108,9 +114,10 @@ CLI.define(&#39;CLI.util.Format&#39;, function () {
          * This may be overridden in a locale file.
          */
         thousandSeparator: &#39;,&#39;,
-        //&lt;/locale&gt;
 
-        //&lt;locale&gt;
+        // }}}
+        // {{{ decimalSeparator
+
 <span id='CLI-util-Format-property-decimalSeparator'>        /**
 </span>         * @property {String} decimalSeparator
          * The character that the {@link #number} function uses as a decimal point.
@@ -118,9 +125,10 @@ CLI.define(&#39;CLI.util.Format&#39;, function () {
          * This may be overridden in a locale file.
          */
         decimalSeparator: &#39;.&#39;,
-        //&lt;/locale&gt;
 
-        //&lt;locale&gt;
+        // }}}
+        // {{{ currencyPrecision
+
 <span id='CLI-util-Format-property-currencyPrecision'>        /**
 </span>         * @property {Number} currencyPrecision
          * The number of decimal places that the {@link #currency} function displays.
@@ -128,9 +136,10 @@ CLI.define(&#39;CLI.util.Format&#39;, function () {
          * This may be overridden in a locale file.
          */
         currencyPrecision: 2,
-        //&lt;/locale&gt;
 
-         //&lt;locale&gt;
+        // }}}
+        // {{{ currencySign
+
 <span id='CLI-util-Format-property-currencySign'>        /**
 </span>         * @property {String} currencySign
          * The currency sign that the {@link #currency} function displays.
@@ -138,7 +147,9 @@ CLI.define(&#39;CLI.util.Format&#39;, function () {
          * This may be overridden in a locale file.
          */
         currencySign: &#39;$&#39;,
-        //&lt;/locale&gt;
+
+        // }}}
+        // {{{ percentSign
 
 <span id='CLI-util-Format-property-percentSign'>        /**
 </span>         * @property {String} percentSign
@@ -148,7 +159,9 @@ CLI.define(&#39;CLI.util.Format&#39;, function () {
          */
         percentSign: &#39;%&#39;,
 
-        //&lt;locale&gt;
+        // }}}
+        // {{{ currencyAtEnd
+
 <span id='CLI-util-Format-property-currencyAtEnd'>        /**
 </span>         * @property {Boolean} currencyAtEnd
          * This may be set to &lt;code&gt;true&lt;/code&gt; to make the {@link #currency} function
@@ -157,30 +170,66 @@ CLI.define(&#39;CLI.util.Format&#39;, function () {
          * This may be overridden in a locale file.
          */
         currencyAtEnd: false,
-        //&lt;/locale&gt;
+
+        // }}}
+        // {{{ stripTagsRe
 
         stripTagsRe: /&lt;\/?[^&gt;]+&gt;/gi,
+
+        // }}}
+        // {{{ stripScriptsRe
+
         stripScriptsRe: /(?:&lt;script.*?&gt;)((\n|\r|.)*?)(?:&lt;\/script&gt;)/ig,
+
+        // }}}
+        // {{{ nl2brRe
+
         nl2brRe: /\r?\n/g,
+
+        // }}}
+        // {{{ hashRe
+
         hashRe: /#+$/,
+
+        // }}}
+        // {{{ allHashes
+
         allHashes: /^#+$/,
+
+        // }}}
+        // {{{ formatPattern
 
         // Match a format string characters to be able to detect remaining &quot;literal&quot; characters
         formatPattern: /[\d,\.#]+/,
 
+        // }}}
+        // {{{ formatCleanRe
+
         // A RegExp to remove from a number format string, all characters except digits and &#39;.&#39;
         formatCleanRe: /[^\d\.#]/g,
+
+        // }}}
+        // {{{ I18NFormatCleanRe
 
         // A RegExp to remove from a number format string, all characters except digits and the local decimal separator.
         // Created on first use. The local decimal separator character must be initialized for this to be created.
         I18NFormatCleanRe: null,
 
+        // }}}
+        // {{{ formatFns
+
         // Cache ofg number formatting functions keyed by format string
         formatFns: {},
+
+        // }}}
+        // {{{ constructor
 
         constructor: function () {
             me = this; // we are a singleton, so cache our this pointer in scope
         },
+
+        // }}}
+        // {{{ undef
 
 <span id='CLI-util-Format-method-undef'>        /**
 </span>         * Checks a reference and converts it to empty string if it is undefined.
@@ -190,6 +239,9 @@ CLI.define(&#39;CLI.util.Format&#39;, function () {
         undef : function(value) {
             return value !== undefined ? value : &quot;&quot;;
         },
+
+        // }}}
+        // {{{ defaultValue
 
 <span id='CLI-util-Format-method-defaultValue'>        /**
 </span>         * Checks a reference and converts it to the default value if it&#39;s empty.
@@ -201,6 +253,9 @@ CLI.define(&#39;CLI.util.Format&#39;, function () {
             return value !== undefined &amp;&amp; value !== &#39;&#39; ? value : defaultValue;
         },
 
+        // }}}
+        // {{{ substr
+
 <span id='CLI-util-Format-method-substr'>        /**
 </span>         * Returns a substring from within an original string.
          * @param {String} value The original text
@@ -209,16 +264,12 @@ CLI.define(&#39;CLI.util.Format&#39;, function () {
          * @return {String} The substring
          * @method
          */
-        substr : &#39;ab&#39;.substr(-1) != &#39;b&#39;
-        ? function (value, start, length) {
-            var str = String(value);
-            return (start &lt; 0)
-                ? str.substr(Math.max(str.length + start, 0), length)
-                : str.substr(start, length);
-        }
-        : function(value, start, length) {
+        substr : function(value, start, length) {
             return String(value).substr(start, length);
         },
+
+        // }}}
+        // {{{ lowercase
 
 <span id='CLI-util-Format-method-lowercase'>        /**
 </span>         * Converts a string to all lower case letters.
@@ -229,6 +280,9 @@ CLI.define(&#39;CLI.util.Format&#39;, function () {
             return String(value).toLowerCase();
         },
 
+        // }}}
+        // {{{ uppercase
+
 <span id='CLI-util-Format-method-uppercase'>        /**
 </span>         * Converts a string to all upper case letters.
          * @param {String} value The text to convert
@@ -238,6 +292,9 @@ CLI.define(&#39;CLI.util.Format&#39;, function () {
             return String(value).toUpperCase();
         },
 
+        // }}}
+        // {{{ usMoney
+
 <span id='CLI-util-Format-method-usMoney'>        /**
 </span>         * Format a number as US currency.
          * @param {Number/String} value The numeric value to format
@@ -246,6 +303,9 @@ CLI.define(&#39;CLI.util.Format&#39;, function () {
         usMoney : function(v) {
             return me.currency(v, &#39;$&#39;, 2);
         },
+
+        // }}}
+        // {{{ currency
 
 <span id='CLI-util-Format-method-currency'>        /**
 </span>         * Format a number as a currency.
@@ -258,33 +318,44 @@ CLI.define(&#39;CLI.util.Format&#39;, function () {
          * @return {String} The formatted currency string
          */
         currency: function(v, currencySign, decimals, end) {
+
             var negativeSign = &#39;&#39;,
                 format = &quot;,0&quot;,
                 i = 0;
+
             v = v - 0;
+
             if (v &lt; 0) {
                 v = -v;
                 negativeSign = &#39;-&#39;;
             }
+
             decimals = CLI.isDefined(decimals) ? decimals : me.currencyPrecision;
             format += (decimals &gt; 0 ? &#39;.&#39; : &#39;&#39;);
+
             for (; i &lt; decimals; i++) {
                 format += &#39;0&#39;;
             }
+
             v = me.number(v, format);
+
             if ((end || me.currencyAtEnd) === true) {
                 return CLI.String.format(&quot;{0}{1}{2}&quot;, negativeSign, v, currencySign || me.currencySign);
             } else {
                 return CLI.String.format(&quot;{0}{1}{2}&quot;, negativeSign, currencySign || me.currencySign, v);
             }
+
         },
+
+        // }}}
+        // {{{ date
 
 <span id='CLI-util-Format-method-date'>        /**
 </span>         * Formats the passed date using the specified format pattern.
          * Note that this uses the native Javascript Date.parse() method and is therefore subject to its idiosyncrasies.
          * Most formats assume the local timezone unless specified. One notable exception is &#39;YYYY-MM-DD&#39; (note the dashes)
          * which is typically interpreted in UTC and can cause date shifting.
-         * 
+         *
          * @param {String/Date} value The value to format. Strings must conform to the format
          * expected by the JavaScript Date object&#39;s
          * [parse() method](http://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Date/parse).
@@ -300,84 +371,9 @@ CLI.define(&#39;CLI.util.Format&#39;, function () {
             }
             return CLI.Date.dateFormat(v, format || CLI.Date.defaultFormat);
         },
-        /* TODO - reconcile with Touch version:
-        date: function(value, format) {
-            var date = value;
-            if (!value) {
-                return &quot;&quot;;
-            }
-            if (!CLI.isDate(value)) {
-                date = new Date(Date.parse(value));
-                if (isNaN(date)) {
-                    // Dates with ISO 8601 format are not well supported by mobile devices, this can work around the issue.
-                    if (this.iso8601TestRe.test(value)) {
-                        // Fix for older android browsers to properly implement ISO 8601 formatted dates with timezone
-                        if (CLI.os.is.Android &amp;&amp; CLI.os.version.isLessThan(&quot;3.0&quot;)) {
 
-                             //* This code is modified from the following source: &lt;https://github.com/csnover/js-iso8601&gt;
-                             //* © 2011 Colin Snover &lt;http://zetafleet.com&gt;
-                             //* Released under MIT license.
-
-                            var potentialUndefinedKeys = [ 1, 4, 5, 6, 7, 10, 11 ];
-                            var dateParsed, minutesOffset = 0;
-
-                            // Capture Groups
-                            // 1 YYYY (optional)
-                            // 2 MM
-                            // 3 DD
-                            // 4 HH
-                            // 5 mm (optional)
-                            // 6 ss (optional)
-                            // 7 msec (optional)
-                            // 8 Z (optional)
-                            // 9 ± (optional)
-                            // 10 tzHH (optional)
-                            // 11 tzmm (optional)
-                            if ((dateParsed = /^(\d{4}|[+\-]\d{6})(?:-(\d{2})(?:-(\d{2}))?)?(?:T(\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{3}))?)?(?:(Z)|([+\-])(\d{2})(?::(\d{2}))?)?)?$/.exec(value))) {
-
-                                //Set any undefined values needed for Date to 0
-                                for (var i = 0, k; (k = potentialUndefinedKeys[i]); ++i) {
-                                    dateParsed[k] = +dateParsed[k] || 0;
-                                }
-
-                                // Fix undefined month and decrement
-                                dateParsed[2] = (+dateParsed[2] || 1) - 1;
-                                //fix undefined days
-                                dateParsed[3] = +dateParsed[3] || 1;
-
-                                // Correct for timezone
-                                if (dateParsed[8] !== &#39;Z&#39; &amp;&amp; dateParsed[9] !== undefined) {
-                                    minutesOffset = dateParsed[10] * 60 + dateParsed[11];
-
-                                    if (dateParsed[9] === &#39;+&#39;) {
-                                        minutesOffset = 0 - minutesOffset;
-                                    }
-                                }
-
-                                // Calculate valid date
-                                date = new Date(Date.UTC(dateParsed[1], dateParsed[2], dateParsed[3], dateParsed[4], dateParsed[5] + minutesOffset, dateParsed[6], dateParsed[7]));
-                            }
-                        } else {
-                            date = value.split(this.iso8601SplitRe);
-                            date = new Date(date[0], date[1] - 1, date[2], date[3], date[4], date[5]);
-                        }
-                    }
-                }
-                if (isNaN(date)) {
-                    // Dates with the format &quot;2012-01-20&quot; fail, but &quot;2012/01/20&quot; work in some browsers. We&#39;ll try and
-                    // get around that.
-                    date = new Date(Date.parse(value.replace(this.dashesRe, &quot;/&quot;)));
-                    //&lt;debug&gt;
-                    if (isNaN(date)) {
-                        CLI.Logger.error(&quot;Cannot parse the passed value &quot; + value + &quot; into a valid date&quot;);
-                    }
-                    //&lt;/debug&gt;
-                }
-                value = date;
-            }
-            return CLI.Date.format(value, format || CLI.util.Format.defaultDateFormat);
-        },
-        */
+        // }}}
+        // {{{ dateRenderer
 
 <span id='CLI-util-Format-method-dateRenderer'>        /**
 </span>         * Returns a date rendering function that can be reused to apply a date format multiple times efficiently.
@@ -389,6 +385,9 @@ CLI.define(&#39;CLI.util.Format&#39;, function () {
                 return me.date(v, format);
             };
         },
+
+        // }}}
+        // {{{ hex
 
 <span id='CLI-util-Format-method-hex'>        /**
 </span>         * Returns the given number as a base 16 string at least `digits` in length. If
@@ -406,20 +405,37 @@ CLI.define(&#39;CLI.util.Format&#39;, function () {
          * @returns {string}
          */
         hex: function (value, digits) {
+
             var s = parseInt(value || 0, 10).toString(16);
+
             if (digits) {
+
                 if (digits &lt; 0) {
+
                     digits = -digits;
+
                     if (s.length &gt; digits) {
+
                         s = s.substring(s.length - digits);
+
                     }
+
                 }
+
                 while (s.length &lt; digits) {
+
                     s = &#39;0&#39; + s;
+
                 }
+
             }
+
             return s;
+
         },
+
+        // }}}
+        // {{{ or
 
 <span id='CLI-util-Format-method-or'>        /**
 </span>         * Returns this result:
@@ -434,8 +450,13 @@ CLI.define(&#39;CLI.util.Format&#39;, function () {
          * @param {Mixed} orValue
          */
         or: function (value, orValue) {
+
             return value || orValue;
+
         },
+
+        // }}}
+        // {{{ pick
 
 <span id='CLI-util-Format-method-pick'>        /**
 </span>         * If `value` is a number, returns the argument from that index. For example
@@ -462,14 +483,22 @@ CLI.define(&#39;CLI.util.Format&#39;, function () {
          * @param {Mixed} secondValue
          */
         pick: function (value, firstValue, secondValue) {
+
             if (CLI.isNumber(value)) {
+
                 var ret = arguments[value + 1];
+
                 if (ret) {
                     return ret;
                 }
+
             }
+
             return value ? secondValue : firstValue;
         },
+
+        // }}}
+        // {{{ stripTags
 
 <span id='CLI-util-Format-method-stripTags'>        /**
 </span>         * Strips all HTML tags.
@@ -480,6 +509,9 @@ CLI.define(&#39;CLI.util.Format&#39;, function () {
             return !v ? v : String(v).replace(me.stripTagsRe, &quot;&quot;);
         },
 
+        // }}}
+        // {{{ stripScripts
+
 <span id='CLI-util-Format-method-stripScripts'>        /**
 </span>         * Strips all script tags.
          * @param {Object} value The text from which to strip script tags
@@ -489,34 +521,58 @@ CLI.define(&#39;CLI.util.Format&#39;, function () {
             return !v ? v : String(v).replace(me.stripScriptsRe, &quot;&quot;);
         },
 
+        // }}}
+        // {{{ fileSize
+
 <span id='CLI-util-Format-method-fileSize'>        /**
 </span>         * Simple format for a file size (xxx bytes, xxx KB, xxx MB).
          * @param {Number/String} size The numeric value to format
          * @return {String} The formatted file size
          */
-        fileSize : (function(){
+        fileSize : (function() {
+
             var byteLimit = 1024,
                 kbLimit = 1048576,
                 mbLimit = 1073741824;
-                
+
             return function(size) {
+
                 var out;
+
                 if (size &lt; byteLimit) {
+
                     if (size === 1) {
-                        out = &#39;1 byte&#39;;    
+
+                        out = &#39;1 byte&#39;;
+
                     } else {
+
                         out = size + &#39; bytes&#39;;
+
                     }
+
                 } else if (size &lt; kbLimit) {
+
                     out = (Math.round(((size*10) / byteLimit))/10) + &#39; KB&#39;;
+
                 } else if (size &lt; mbLimit) {
+
                     out = (Math.round(((size*10) / kbLimit))/10) + &#39; MB&#39;;
+
                 } else {
+
                     out = (Math.round(((size*10) / mbLimit))/10) + &#39; GB&#39;;
+
                 }
+
                 return out;
+
             };
+
         })(),
+
+        // }}}
+        // {{{ math
 
 <span id='CLI-util-Format-method-math'>        /**
 </span>         * It does simple math for use in a template, for example:
@@ -526,16 +582,25 @@ CLI.define(&#39;CLI.util.Format&#39;, function () {
          * @return {Function} A function that operates on the passed value.
          * @method
          */
-        math : (function(){
+        math : (function() {
+
             var fns = {};
 
-            return function(v, a){
+            return function(v, a) {
+
                 if (!fns[a]) {
+
                     fns[a] = CLI.functionFactory(&#39;v&#39;, &#39;return v &#39; + a + &#39;;&#39;);
+
                 }
+
                 return fns[a](v);
             };
+
         }()),
+
+        // }}}
+        // {{{ round
 
 <span id='CLI-util-Format-method-round'>        /**
 </span>         * Rounds the passed number to the required decimal precision.
@@ -546,15 +611,25 @@ CLI.define(&#39;CLI.util.Format&#39;, function () {
          * @return {Number} The rounded value.
          */
         round : function(value, precision) {
+
             var result = Number(value);
+
             if (typeof precision === &#39;number&#39;) {
+
                 precision = Math.pow(10, precision);
                 result = Math.round(value * precision) / precision;
+
             } else if (precision === undefined) {
+
                 result = Math.round(result);
+
             }
+
             return result;
         },
+
+        // }}}
+        // {{{ number
 
 <span id='CLI-util-Format-method-number'>        /**
 </span>         * Formats the passed number according to the passed format string.
@@ -581,7 +656,7 @@ CLI.define(&#39;CLI.util.Format&#39;, function () {
          * can be specified as `&#39;0.000,00&#39;`. This would be equivalent to using `&#39;0,000.00&#39;` when using US style formatting.
          *
          * Examples (123456.789):
-         * 
+         *
          * - `0` - (123457) show only digits, no precision
          * - `0.00` - (123456.79) show only digits, 2 precision
          * - `0.0000` - (123456.7890) show only digits, 4 precision
@@ -596,13 +671,15 @@ CLI.define(&#39;CLI.util.Format&#39;, function () {
          * @return {String} The formatted number.
          */
         number : function(v, formatString) {
+
             if (!formatString) {
                 return v;
             }
+
             if (isNaN(v)) {
                 return &#39;&#39;;
             }
-            
+
             var formatFn = me.formatFns[formatString];
 
             // Generate formatting function to be cached and reused keyed by the format string.
@@ -625,23 +702,29 @@ CLI.define(&#39;CLI.util.Format&#39;, function () {
                 // Then split the format string into pre and post decimal segments according to *what* the
                 // decimal separator is. If they are specifying &quot;/i&quot;, they are using the local convention in the format string.
                 if (formatString.substr(formatString.length - 2) === &#39;/i&#39;) {
+
                     // In a vast majority of cases, the separator will never change over the lifetime of the application.
                     // So we&#39;ll only regenerate this if we really need to
                     if (!me.I18NFormatCleanRe || me.lastDecimalSeparator !== decimalSeparator) {
                         me.I18NFormatCleanRe = new RegExp(&#39;[^\\d\\&#39; + decimalSeparator + &#39;]&#39;,&#39;g&#39;);
                         me.lastDecimalSeparator = decimalSeparator;
                     }
+
                     formatString = formatString.substr(0, formatString.length - 2);
                     hasComma = formatString.indexOf(comma) !== -1;
                     splitFormat = formatString.replace(me.I18NFormatCleanRe, &#39;&#39;).split(decimalSeparator);
+
                 } else {
+
                     hasComma = formatString.indexOf(&#39;,&#39;) !== -1;
                     splitFormat = formatString.replace(me.formatCleanRe, &#39;&#39;).split(&#39;.&#39;);
+
                 }
+
                 extraChars = formatString.replace(me.formatPattern, &#39;&#39;);
 
                 if (splitFormat.length &gt; 2) {
-                    //&lt;debug&gt;
+
                     CLI.Error.raise({
                         sourceClass: &quot;CLI.util.Format&quot;,
                         sourceMethod: &quot;number&quot;,
@@ -649,26 +732,31 @@ CLI.define(&#39;CLI.util.Format&#39;, function () {
                         formatString: formatString,
                         msg: &quot;Invalid number format, should have no more than 1 decimal&quot;
                     });
-                    //&lt;/debug&gt;
+
                 } else if (splitFormat.length === 2) {
+
                     precision = splitFormat[1].length;
 
                     // Formatting ending in .##### means maximum 5 trailing significant digits
                     trimTrailingZeroes = splitFormat[1].match(me.hashRe);
+
                     if (trimTrailingZeroes) {
+
                         len = trimTrailingZeroes[0].length;
                         // Need to escape, since this will be &#39;.&#39; by default
                         trimPart = &#39;trailingZeroes=new RegExp(CLI.String.escapeRegex(utilFormat.decimalSeparator) + &quot;*0{0,&#39; + len + &#39;}$&quot;)&#39;;
+
                     }
+
                 }
-                
+
                 // The function we create is called immediately and returns a closure which has access to vars and some fixed values; RegExes and the format string.
                 code = [
                     &#39;var utilFormat=CLI.util.Format,extNumber=CLI.Number,neg,absVal,fnum,parts&#39; +
                         (hasComma ? &#39;,thousandSeparator,thousands=[],j,n,i&#39; : &#39;&#39;) +
                         (extraChars  ? &#39;,formatString=&quot;&#39; + formatString + &#39;&quot;,formatPattern=/[\\d,\\.#]+/&#39; : &#39;&#39;) +
                         &#39;,trailingZeroes;&#39; +
-                    &#39;return function(v){&#39; +
+                    &#39;return function(v) {&#39; +
                     &#39;if(typeof v!==&quot;number&quot;&amp;&amp;isNaN(v=extNumber.from(v,NaN)))return&quot;&quot;;&#39; +
                     &#39;neg=v&lt;0;&#39;,
                     &#39;absVal=Math.abs(v);&#39;,
@@ -677,41 +765,50 @@ CLI.define(&#39;CLI.util.Format&#39;, function () {
                 ];
 
                 if (hasComma) {
+
                     // If we have to insert commas...
-                    
+
                     // split the string up into whole and decimal parts if there are decimals
                     if (precision) {
                         code[code.length] = &#39;parts=fnum.split(&quot;.&quot;);&#39;;
                         code[code.length] = &#39;fnum=parts[0];&#39;;
                     }
+
                     code[code.length] =
                         &#39;if(absVal&gt;=1000) {&#39;;
                             code[code.length] = &#39;thousandSeparator=utilFormat.thousandSeparator;&#39; +
                             &#39;thousands.length=0;&#39; +
                             &#39;j=fnum.length;&#39; +
                             &#39;n=fnum.length%3||3;&#39; +
-                            &#39;for(i=0;i&lt;j;i+=n){&#39; +
-                                &#39;if(i!==0){&#39; +
+                            &#39;for(i=0;i&lt;j;i+=n) {&#39; +
+                                &#39;if(i!==0) {&#39; +
                                     &#39;n=3;&#39; +
                                 &#39;}&#39; +
                                 &#39;thousands[thousands.length]=fnum.substr(i,n);&#39; +
                             &#39;}&#39; +
-                            &#39;fnum=thousands.join(thousandSeparator);&#39; + 
+                            &#39;fnum=thousands.join(thousandSeparator);&#39; +
                         &#39;}&#39;;
+
                     if (precision) {
+
                         code[code.length] = &#39;fnum += utilFormat.decimalSeparator+parts[1];&#39;;
+
                     }
-                    
+
                 } else if (precision) {
+
                     // If they are using a weird decimal separator, split and concat using it
-                    code[code.length] = &#39;if(utilFormat.decimalSeparator!==&quot;.&quot;){&#39; +
+                    code[code.length] = &#39;if(utilFormat.decimalSeparator!==&quot;.&quot;) {&#39; +
                         &#39;parts=fnum.split(&quot;.&quot;);&#39; +
                         &#39;fnum=parts[0]+utilFormat.decimalSeparator+parts[1];&#39; +
                     &#39;}&#39;;
+
                 }
 
                 if (trimTrailingZeroes) {
+
                     code[code.length] = &#39;fnum=fnum.replace(trailingZeroes,&quot;&quot;);&#39;;
+
                 }
 
                 /*
@@ -725,16 +822,26 @@ CLI.define(&#39;CLI.util.Format&#39;, function () {
 
                 // If there were extra characters around the formatting string, replace the format string part with the formatted number.
                 if (extraChars) {
+
                     code[code.length] = &#39;formatString.replace(formatPattern, fnum);&#39;;
+
                 } else {
+
                     code[code.length] = &#39;fnum;&#39;;
+
                 }
+
                 code[code.length] = &#39;};&#39;;
 
                 formatFn = me.formatFns[originalFormatString] = CLI.functionFactory(&#39;CLI&#39;, code.join(&#39;&#39;))(CLI);
             }
+
             return formatFn(v);
+
         },
+
+        // }}}
+        // {{{ numberRenderer
 
 <span id='CLI-util-Format-method-numberRenderer'>        /**
 </span>         * Returns a number rendering function that can be reused to apply a number format multiple
@@ -744,10 +851,17 @@ CLI.define(&#39;CLI.util.Format&#39;, function () {
          * @return {Function} The number formatting function
          */
         numberRenderer : function(format) {
+
             return function(v) {
+
                 return me.number(v, format);
+
             };
+
         },
+
+        // }}}
+        // {{{ percent
 
 <span id='CLI-util-Format-method-percent'>        /**
 </span>         * Formats the passed number as a percentage according to the passed format string.
@@ -758,29 +872,47 @@ CLI.define(&#39;CLI.util.Format&#39;, function () {
          * @return {String} The formatted percentage.
          */
         percent: function (value, formatString) {
+
             return me.number(value * 100, formatString || &#39;0&#39;) + me.percentSign;
+
         },
+
+        // }}}
+        // {{{ attributes
 
 <span id='CLI-util-Format-method-attributes'>        /**
 </span>         * Formats an object of name value properties as HTML element attribute values suitable for using when creating textual markup.
          * @param {Object} attributes An object containing the HTML attributes as properties eg: `{height:40, vAlign:&#39;top&#39;}`
          */
         attributes: function(attributes) {
+
             if (typeof attributes === &#39;object&#39;) {
+
                 var result = [],
                     name;
 
                 for (name in attributes) {
+
                     if (attributes.hasOwnProperty(name)) {
-                        result.push(name, &#39;=&quot;&#39;, name === &#39;style&#39; ? 
+
+                        result.push(name, &#39;=&quot;&#39;, name === &#39;style&#39; ?
                                 CLI.DomHelper.generateStyles(attributes[name], null, true) :
                                 CLI.htmlEncode(attributes[name]), &#39;&quot; &#39;);
+
                     }
+
                 }
+
                 attributes = result.join(&#39;&#39;);
+
             }
+
             return attributes || &#39;&#39;;
+
         },
+
+        // }}}
+        // {{{ plural
 
 <span id='CLI-util-Format-method-plural'>        /**
 </span>         * Selectively do a plural form of a word based on a numeric value. For example, in a template,
@@ -795,6 +927,9 @@ CLI.define(&#39;CLI.util.Format&#39;, function () {
             return v +&#39; &#39; + (v === 1 ? s : (p ? p : s+&#39;s&#39;));
         },
 
+        // }}}
+        // {{{ nl2br
+
 <span id='CLI-util-Format-method-nl2br'>        /**
 </span>         * Converts newline characters to the HTML tag `&lt;br/&gt;`
          *
@@ -805,12 +940,18 @@ CLI.define(&#39;CLI.util.Format&#39;, function () {
             return CLI.isEmpty(v) ? &#39;&#39; : v.replace(me.nl2brRe, &#39;&lt;br/&gt;&#39;);
         },
 
+        // }}}
+        // {{{ capitalize
+
 <span id='CLI-util-Format-method-capitalize'>        /**
 </span>         * Alias for {@link CLI.String#capitalize}.
          * @method
          * @inheritdoc CLI.String#capitalize
          */
         capitalize: CLI.String.capitalize,
+
+        // }}}
+        // {{{ uncapitalize
 
 <span id='CLI-util-Format-method-uncapitalize'>        /**
 </span>         * Alias for {@link CLI.String#uncapitalize}.
@@ -819,12 +960,18 @@ CLI.define(&#39;CLI.util.Format&#39;, function () {
          */
         uncapitalize: CLI.String.uncapitalize,
 
+        // }}}
+        // {{{ ellipsis
+
 <span id='CLI-util-Format-method-ellipsis'>        /**
 </span>         * Alias for {@link CLI.String#ellipsis}.
          * @method
          * @inheritdoc CLI.String#ellipsis
          */
         ellipsis: CLI.String.ellipsis,
+
+        // }}}
+        // {{{ escape
 
 <span id='CLI-util-Format-method-escape'>        /**
 </span>         * Alias for {@link CLI.String#escape}.
@@ -833,12 +980,18 @@ CLI.define(&#39;CLI.util.Format&#39;, function () {
          */
         escape: CLI.String.escape,
 
+        // }}}
+        // {{{ escapeRegex
+
 <span id='CLI-util-Format-method-escapeRegex'>        /**
 </span>         * Alias for {@link CLI.String#escapeRegex}.
          * @method
          * @inheritdoc CLI.String#escapeRegex
          */
         escapeRegex : CLI.String.escapeRegex,
+
+        // }}}
+        // {{{ htmlDecode
 
 <span id='CLI-util-Format-method-htmlDecode'>        /**
 </span>         * Alias for {@link CLI.String#htmlDecode}.
@@ -847,12 +1000,18 @@ CLI.define(&#39;CLI.util.Format&#39;, function () {
          */
         htmlDecode: CLI.String.htmlDecode,
 
+        // }}}
+        // {{{ htmlEncode
+
 <span id='CLI-util-Format-method-htmlEncode'>        /**
 </span>         * Alias for {@link CLI.String#htmlEncode}.
          * @method
          * @inheritdoc CLI.String#htmlEncode
          */
         htmlEncode: CLI.String.htmlEncode,
+
+        // }}}
+        // {{{ leftPad
 
 <span id='CLI-util-Format-method-leftPad'>        /**
 </span>         * Alias for {@link CLI.String#leftPad}.
@@ -861,6 +1020,9 @@ CLI.define(&#39;CLI.util.Format&#39;, function () {
          */
         leftPad: CLI.String.leftPad,
 
+        // }}}
+        // {{{ toggle
+
 <span id='CLI-util-Format-method-toggle'>        /**
 </span>         * Alias for {@link CLI.String#toggle}.
          * @method
@@ -868,12 +1030,18 @@ CLI.define(&#39;CLI.util.Format&#39;, function () {
          */
         toggle: CLI.String.toggle,
 
+        // }}}
+        // {{{ trim
+
 <span id='CLI-util-Format-method-trim'>        /**
 </span>         * Alias for {@link CLI.String#trim}.
          * @method
          * @inheritdoc CLI.String#trim
          */
         trim : CLI.String.trim,
+
+        // }}}
+        // {{{ parseBox
 
 <span id='CLI-util-Format-method-parseBox'>        /**
 </span>         * Parses a number or string representing margin sizes into an object.
@@ -884,19 +1052,22 @@ CLI.define(&#39;CLI.util.Format&#39;, function () {
          * @return {Object} An object with margin sizes for top, right, bottom and left
          */
         parseBox : function(box) {
+
             box = box || 0;
 
             if (typeof box === &#39;number&#39;) {
+
                 return {
                     top   : box,
                     right : box,
                     bottom: box,
                     left  : box
                 };
-             }
+
+            }
 
             var parts  = box.split(&#39; &#39;),
-                ln = parts.length;
+            ln = parts.length;
 
             if (ln === 1) {
                 parts[1] = parts[2] = parts[3] = parts[0];
@@ -916,11 +1087,22 @@ CLI.define(&#39;CLI.util.Format&#39;, function () {
                 left  :parseInt(parts[3], 10) || 0
             };
         }
+
+        // }}}
+
     };
+
 });
 
-})();
+// }}}
 
+/*
+ * Local variables:
+ * tab-width: 4
+ * c-basic-offset: 4
+ * c-hanging-comment-ender-p: nil
+ * End:
+ */
 </pre>
 </body>
 </html>

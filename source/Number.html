@@ -32,32 +32,47 @@
 
     &quot;use strict&quot;;
 
+    // {{{ CLI.Number
+
     CLI.Number = new function() {
+
         var CLINumber = this,
-        isToFixedBroken = (0.9).toFixed() !== &#39;1&#39;,
-        math = Math,
-        ClipDefault = {
-            count: false,
-            inclusive: false,
-            wrap: true
-        };
+            math = Math,
+            ClipDefault = {
+                count: false,
+                inclusive: false,
+                wrap: true
+            };
 
         CLI.apply(CLINumber, {
+
+            // {{{ Clip
+
             Clip: {
+
                 DEFAULT: ClipDefault,
 
                 COUNT: CLI.applyIf({
+
                     count: true
+
                 }, ClipDefault),
 
                 INCLUSIVE: CLI.applyIf({
+
                     inclusive: true
+
                 }, ClipDefault),
 
                 NOWRAP: CLI.applyIf({
+
                     wrap: false
+
                 }, ClipDefault)
             },
+
+            // }}}
+            // {{{ clipIndices
 
 <span id='CLI-Number-method-clipIndices'>            /**
 </span>             * Coerces a given index into a valid index given a `length`.
@@ -108,33 +123,47 @@
              * given `length` and `end` will not be less-than `begin`.
              */
             clipIndices: function (length, indices, options) {
+
                 options = options || ClipDefault;
 
                 var defaultValue = 0, // default value for &quot;begin&quot;
-                wrap = options.wrap,
-                begin, end, i;
+                    wrap = options.wrap,
+                    begin, end, i;
 
                 indices = indices || [];
+
                 for (i = 0; i &lt; 2; ++i) {
+
                     // names are off on first pass but used this way so things make sense
                     // following the loop..
                     begin = end;  // pick up and keep the result from the first loop
                     end = indices[i];
+
                     if (end == null) {
+
                         end = defaultValue;
+
                     } else if (i &amp;&amp; options.count) {
+
                         end += begin; // this is the length not &quot;end&quot; so convert to &quot;end&quot;
                         end = (end &gt; length) ? length : end;
+
                     } else {
+
                         if (wrap) {
                             end = (end &lt; 0) ? (length + end) : end;
                         }
+
                         if (i &amp;&amp; options.inclusive) {
                             ++end;
                         }
+
                         end = (end &lt; 0) ? 0 : ((end &gt; length) ? length : end);
+
                     }
+
                     defaultValue = length; // default value for &quot;end&quot;
+
                 }
 
                 // after loop:
@@ -143,8 +172,12 @@
 
                 indices[0] = begin;
                 indices[1] = (end &lt; begin) ? begin : end;
+
                 return indices;
             },
+
+            // }}}
+            // {{{ constrain
 
 <span id='CLI-Number-method-constrain'>            /**
 </span>             * Checks whether or not the passed number is within a desired range.  If the number is already within the
@@ -156,6 +189,7 @@
              * @return {Number} The constrained value if outside the range, otherwise the current value
              */
             constrain: function(number, min, max) {
+
                 var x = parseFloat(number);
 
                 // (x &lt; Nan) || (x &lt; undefined) == false
@@ -174,7 +208,11 @@
 
                 // Operators are faster than Math.min/max. See http://jsperf.com/number-constrain
                 return (x &lt; min) ? min : ((x &gt; max) ? max : x);
+
             },
+
+            // }}}
+            // {{{ snap
 
 <span id='CLI-Number-method-snap'>            /**
 </span>             * Snaps the passed number between stopping points based upon a passed increment value.
@@ -193,6 +231,7 @@
              * @return {Number} The value of the nearest snap target.
              */
             snap : function(value, increment, minValue, maxValue) {
+
                 var m;
 
                 // If no value passed, or minValue was passed and value is less than minValue (anything &lt; undefined is false)
@@ -202,18 +241,33 @@
                 }
 
                 if (increment) {
+
                     m = value % increment;
+
                     if (m !== 0) {
+
                         value -= m;
+
                         if (m * 2 &gt;= increment) {
+
                             value += increment;
+
                         } else if (m * 2 &lt; -increment) {
+
                             value -= increment;
+
                         }
+
                     }
+
                 }
+
                 return CLINumber.constrain(value, minValue,  maxValue);
+
             },
+
+            // }}}
+            // {{{ snapInRange
 
 <span id='CLI-Number-method-snapInRange'>            /**
 </span>             * Snaps the passed number between stopping points based upon a passed increment value.
@@ -232,6 +286,7 @@
              * @return {Number} The value of the nearest snap target.
              */
             snapInRange : function(value, increment, minValue, maxValue) {
+
                 var tween;
 
                 // default minValue to zero
@@ -253,26 +308,32 @@
 
                 // If constraining within a maximum, ensure the maximum is on a snap point
                 if (maxValue !== undefined) {
+
                     if (value &gt; (maxValue = CLINumber.snapInRange(maxValue, increment, minValue))) {
+
                         value = maxValue;
+
                     }
+
                 }
 
                 return value;
             },
+
+            // }}}
+            // {{{ toFixed
 
 <span id='CLI-Number-method-toFixed'>            /**
 </span>             * Formats a number using fixed-point notation
              * @param {Number} value The number to format
              * @param {Number} precision The number of digits to show after the decimal point
              */
-            toFixed: isToFixedBroken ? function(value, precision) {
-                precision = precision || 0;
-                var pow = math.pow(10, precision);
-                return (math.round(value * pow) / pow).toFixed(precision);
-            } : function(value, precision) {
+            toFixed: function(value, precision) {
                 return value.toFixed(precision);
             },
+
+            // }}}
+            // {{{ from
 
 <span id='CLI-Number-method-from'>            /**
 </span>             * Validate that a value is numeric and convert it to a number if necessary. Returns the specified default value if
@@ -286,12 +347,16 @@
              * @return {Number} value, if numeric, defaultValue otherwise
              */
             from: function(value, defaultValue) {
+
                 if (isFinite(value)) {
                     value = parseFloat(value);
                 }
 
                 return !isNaN(value) ? value : defaultValue;
             },
+
+            // }}}
+            // {{{ randomInt
 
 <span id='CLI-Number-method-randomInt'>            /**
 </span>             * Returns a random integer between the specified range (inclusive)
@@ -303,6 +368,9 @@
                 return math.floor(math.random() * (to - from + 1) + from);
             },
 
+            // }}}
+            // {{{ correctFloat
+
 <span id='CLI-Number-method-correctFloat'>            /**
 </span>             * Corrects floating point numbers that overflow to a non-precise
              * value because of their floating nature, for example `0.1 + 0.2`
@@ -310,14 +378,21 @@
              * @return {Number} The correctly rounded number
              */
             correctFloat: function(n) {
+
                 // This is to correct the type of errors where 2 floats end with
                 // a long string of decimals, eg 0.1 + 0.2. When they overflow in this
                 // manner, they usually go to 15-16 decimals, so we cut it off at 14.
                 return parseFloat(n.toPrecision(14));
+
             }
+
+            // }}}
+
         });
 
     };
+
+    // }}}
 
 })();
 

@@ -1,0 +1,1612 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+
+/*!
+ * This file is part of CLI Framework
+ */
+
+<span id='global-property-'>/**
+</span> * Mixin that provides a common interface for publishing events. Classes using this mixin can use the {@link #fireEvent}
+ * and {@link #fireAction} methods to notify listeners of events on the class.
+ *
+ * Classes can also define a {@link #listeners} config to add an event handler to the current object. See
+ * {@link #addListener} for more details.
+ *
+ * ## Example
+ *
+ *     CLI.define(&#39;Employee&#39;, {
+ *         mixins: [&#39;CLI.mixin.Observable&#39;],
+ *
+ *         config: {
+ *             fullName: &#39;&#39;
+ *         },
+ *
+ *         constructor: function(config) {
+ *             this.initConfig(config);  // We need to initialize the config options when the class is instantiated
+ *         },
+ *
+ *         quitJob: function() {
+ *              this.fireEvent(&#39;quit&#39;);
+ *         }
+ *     });
+ *
+ *     var newEmployee = CLI.create(&#39;Employee&#39;, {
+ *
+ *         fullName: &#39;Ed Spencer&#39;,
+ *
+ *         listeners: {
+ *             quit: function() { // This function will be called when the &#39;quit&#39; event is fired
+ *                 // By default, &quot;this&quot; will be the object that fired the event.
+ *                 console.log(this.getFullName() + &quot; has quit!&quot;);
+ *             }
+ *         }
+ *     });
+ *
+ *     newEmployee.quitJob(); // Will log &#39;Ed Spencer has quit!&#39;
+ *
+ *  @aside guide events
+ */
+CLI.define(&#39;CLI.mixin.Observable&#39;, {
+
+    // {{{ requires
+
+    requires: [&#39;CLI.event.Dispatcher&#39;],
+
+    // }}}
+    // {{{ extend
+
+    extend: &#39;CLI.Mixin&#39;,
+
+    // }}}
+    // {{{ mixins
+
+    mixins: [&#39;CLI.mixin.Identifiable&#39;],
+
+    // }}}
+    // {{{ mixinConfig
+
+    mixinConfig: {
+        id: &#39;observable&#39;,
+        after: {
+            destroy: &#39;destroy&#39;
+        }
+    },
+
+    // }}}
+    // {{{ isObservable
+
+    // @private
+    isObservable: true,
+
+    // }}}
+    // {{{ observableType
+
+    observableType: &#39;observable&#39;,
+
+    // }}}
+    // {{{ validIdRe
+
+    validIdRe: CLI.validIdRe,
+
+    // }}}
+    // {{{ observableIdPrefix
+
+    observableIdPrefix: &#39;#&#39;,
+
+    // }}}
+    // {{{ listenerOptionsRegex
+
+    listenerOptionsRegex: /^(?:scope|order|delegate|single|delay|buffer|args|prepend|destroyable)$/,
+
+    // }}}
+    // {{{ eventFiringSuspended
+
+    eventFiringSuspended: 0,
+
+    // }}}
+    // {{{ hasListeners
+
+<span id='global-property-hasListeners'>    /**
+</span>     * @property {Object} hasListeners
+     * @readonly
+     * This object holds a key for any event that has a listener. The listener may be set
+     * directly on the instance, or on its class or a super class or
+     * on the {@link CLI.app.EventBus MVC EventBus}. The values of this object are truthy
+     * (a non-zero number) and falsy (0 or undefined). They do not represent an exact count
+     * of listeners. The value for an event is truthy if the event must be fired and is
+     * falsy if there is no need to fire the event.
+     *
+     * The intended use of this property is to avoid the expense of fireEvent calls when
+     * there are no listeners. This can be particularly helpful when one would otherwise
+     * have to call fireEvent hundreds or thousands of times. It is used like this:
+     *
+     *      if (this.hasListeners.foo) {
+     *          this.fireEvent(&#39;foo&#39;, this, arg1);
+     *      }
+     */
+
+    // }}}
+    // {{{ config
+
+    config: {
+
+        // {{{ listeners
+
+<span id='global-cfg-listeners'>        /**
+</span>         * @cfg {Object} listeners
+         *
+         * A config object containing one or more event handlers to be added to this object during initialization. This
+         * should be a valid listeners `config` object as specified in the {@link #addListener} example for attaching
+         * multiple handlers at once.
+         *
+         * See the [Event guide](#!/guide/events) for more
+         *
+         * __Note:__ It is bad practice to specify a listener&#39;s `config` when you are defining a class using `CLI.define()`.
+         * Instead, only specify listeners when you are instantiating your class with `CLI.create()`.
+         * @accessor
+         */
+        listeners: {
+
+            // {{{ $value
+
+            $value: null,
+
+            // }}}
+            // {{{ merge
+
+            // this merge function allows listeners to be defined declaratively without
+            // the config system merging the listeners object with that of its superclass.
+            // This is accomplished by adding the listeners to an array along with the
+            // listeners of its superclass &amp; mixins (see getDeclaredListeners). This array
+            // is then recursively processed by applyListeners().  The end result is that
+            // instances will have all the listeners that were defined on themselves,
+            // their class, and all base classes and mixins.
+            merge: function (newValue, oldValue, target) {
+
+                var value = newValue,
+                    scope, namedScope;
+
+                if (target.isInstance) {
+
+                    if (target._hasDeclaredListeners) {
+
+                       value = [ target.self.getDeclaredListeners(), newValue ];
+
+                    }
+
+                } else {
+
+                    if (!target.listeners) {
+
+                        target.listeners = target.getDeclaredListeners();
+
+                    }
+
+                    if (newValue) {
+
+                        // Allow listener scope resolution mechanism to know if the listeners
+                        // were declared on the class.  This is only necessary when scope
+                        // is unspecified, or when scope is &#39;controller&#39;.  We use special private
+                        // named scopes of &quot;self&quot; and &quot;self.controller&quot; to indicate either
+                        // unspecified scope, or scope declared as controller on the class
+                        // body.  To avoid iterating the listeners object multiple times, we
+                        // only put this special scope on the outermost object at this point
+                        // and allow addListener to handle scope:&#39;controller&#39; declared on
+                        // inner objects of the listeners config.
+                        scope = newValue.scope;
+
+                        if (!scope) {
+
+                            newValue.scope = &#39;self&#39;;
+
+                        } else {
+
+                            namedScope = CLI._namedScopes[scope];
+
+                            if (namedScope &amp;&amp; namedScope.isController) {
+                                newValue.scope = &#39;self.controller&#39;;
+                            }
+
+                        }
+
+                        // setting _hasDeclaredListeners on the prototype of classes that
+                        // have declared listeners allows instances to avoid the recursive
+                        // descent into the nested arrays of declared listeners on their
+                        // superclasses if no superclasses have declared listeners.
+                        target.prototype._hasDeclaredListeners = true;
+                        target.listeners.push(newValue);
+
+                    }
+
+                }
+
+                return value;
+
+            }
+
+            // }}}
+
+        }
+
+        // }}}
+
+    },
+
+    // }}}
+    // {{{ inheritableStatics
+
+    inheritableStatics: {
+
+        getDeclaredListeners: function() {
+
+            var me = this,
+                superclass = me.superclass,
+                listeners = me.listeners,
+                proto = me.prototype,
+                mixins, name, mixin;
+
+            if (!listeners) {
+
+                listeners = me.listeners = [];
+
+                if (superclass.isObservable) {
+                    listeners.push(superclass.self.getDeclaredListeners());
+                }
+
+                if (proto.hasOwnProperty(&#39;mixins&#39;)) {
+
+                    mixins = proto.mixins;
+
+                    for (name in mixins) {
+
+                        mixin = mixins[name];
+
+                        if (mixin.isObservable) {
+
+                            listeners.push(mixin.self.getDeclaredListeners());
+
+                        }
+
+                    }
+
+                }
+
+            }
+
+            return listeners;
+
+        }
+
+    },
+
+    // }}}
+    // {{{ afterClassMixedIn
+
+    afterClassMixedIn: function(targetClass) {
+
+        var targetProto = targetClass.prototype,
+            targetListeners = targetProto.listeners;
+
+        // if a class mixes in Observable, and declares listeners on its class body, the
+        // listeners will not get processed as a config because the class does not have
+        // a listeners &quot;config&quot; until Observable is mixed in.  To work around this we have
+        // to add the listeners after Observable is mixed in
+        if (targetListeners) {
+
+            delete targetProto.listeners;
+
+            targetClass.getConfigurator().add({
+
+                listeners: targetListeners
+
+            });
+
+        }
+
+    },
+
+    // }}}
+    // {{{ constructor
+
+    constructor: function(config) {
+
+        var me = this;
+
+        me.initConfig(config);
+
+        // getHasListeners will assign this.hasListeners for us
+        me.getEventDispatcher().getHasListeners(me.observableType, me);
+
+        me.callParent(arguments);
+
+    },
+
+    // }}}
+    // {{{ applyListeners
+
+    applyListeners: function(listeners) {
+
+        if (listeners) {
+
+            if (listeners instanceof Array) {
+
+                CLI.each(listeners, this.applyListeners, this);
+
+            } else {
+
+                this.addListener(listeners);
+
+            }
+
+        }
+
+        return listeners;
+
+    },
+
+    // }}}
+    // {{{ resolveListenerScope
+
+<span id='global-method-resolveListenerScope'>    /**
+</span>     * This method determines the scope (the `this` pointer) of named listeners that have
+     * not be given a specific scope. For example:
+     *
+     *      component.on({
+     *          click: &#39;onClick&#39;
+     *      });
+     *
+     * The default implementation of this method returns this object. Components and other
+     * observable objects that have natural hierarchies can override this method to pick
+     * the desired scope using other means.
+     *
+     * @param {Object} [defaultScope=this] The default scope to return if none is found.
+     * @return {Object} The object on which non-scoped, named listeners should be fired.
+     * @protected
+     */
+    resolveListenerScope: function (defaultScope) {
+
+        if (defaultScope === &#39;controller&#39;) {
+            CLI.Error.raise(&#39;scope: &quot;controller&quot; can only be specified on classes that derive from CLI.Component or CLI.Widget&#39;);
+        }
+
+        if (defaultScope === &#39;this&#39;) {
+            defaultScope = null;
+        }
+
+        return defaultScope || this;
+
+    },
+
+    // }}}
+    // {{{ getOptimizedObservableId
+
+    getOptimizedObservableId: function() {
+
+        return this.observableId;
+
+    },
+
+    // }}}
+    // {{{ getObservableId
+
+    getObservableId: function() {
+
+        var me = this,
+            id, validIdRe;
+
+        if (!me.observableId) {
+
+            id = me.getUniqueId();
+            validIdRe = me.validIdRe;
+
+            // RegExp.test(string) is faster than string.test(RegExp). http://jsperf.com/regexp-test-vs-match-m5
+            // This also works with numeric IDs.
+            if (validIdRe &amp;&amp; !validIdRe.test(id)) {
+                CLI.Error.raise(&#39;Invalid unique id &quot;&#39; + id + &#39;&quot; for object of type &#39; + me.$className);
+            }
+
+            me.observableId = me.observableIdPrefix + id;
+
+            me.getObservableId = me.getOptimizedObservableId;
+        }
+
+        return me.observableId;
+
+    },
+
+    // }}}
+    // {{{ getOptimizedEventDispatcher
+
+    getOptimizedEventDispatcher: function() {
+
+        return this.eventDispatcher;
+
+    },
+
+    // }}}
+    // {{{ createEventDispatcher
+
+    createEventDispatcher: function() {
+
+        var me = this,
+            dispatcher;
+
+        me.eventDispatcher = dispatcher = CLI.event.Dispatcher.getInstance();
+        me.getEventDispatcher = me.getOptimizedEventDispatcher;
+
+        me.getListeners();
+
+        return dispatcher;
+
+    },
+
+    // }}}
+    // {{{ getEventDispatcher
+
+    getEventDispatcher: function() {
+
+        var dispatcher = this.eventDispatcher;
+
+        if (!dispatcher) {
+            dispatcher = this.createEventDispatcher();
+        }
+
+        return dispatcher;
+
+    },
+
+    // }}}
+    // {{{ getManagedListeners
+
+    getManagedListeners: function(object, eventName) {
+
+        var id = object.getUniqueId(),
+            managedListeners = this.managedListeners;
+
+        if (!managedListeners) {
+
+            this.managedListeners = managedListeners = {};
+
+        }
+
+        if (!managedListeners[id]) {
+
+            managedListeners[id] = {};
+            object.doAddListener(&#39;destroy&#39;, &#39;clearManagedListeners&#39;, this, {
+                single: true,
+                args: [object]
+            });
+
+        }
+
+        if (!managedListeners[id][eventName]) {
+
+            managedListeners[id][eventName] = [];
+
+        }
+
+        return managedListeners[id][eventName];
+
+    },
+
+    // }}}
+    // {{{ getUsedSelectors
+
+    getUsedSelectors: function() {
+
+        var selectors = this.usedSelectors;
+
+        if (!selectors) {
+
+            selectors = this.usedSelectors = [];
+            selectors.$map = {};
+
+        }
+
+        return selectors;
+    },
+
+    // }}}
+    // {{{ fireEvent
+
+<span id='global-method-fireEvent'>    /**
+</span>     * Fires the specified event with the passed parameters (minus the event name, plus the `options` object passed
+     * to {@link #addListener}).
+     *
+     * The first argument is the name of the event. Every other argument passed will be available when you listen for
+     * the event.
+     *
+     * ## Example
+     *
+     * Firstly, we set up a listener for our new event.
+     *
+     *     this.on(&#39;myevent&#39;, function(arg1, arg2, arg3, arg4, options, e) {
+     *         console.log(arg1); // true
+     *         console.log(arg2); // 2
+     *         console.log(arg3); // { test: &#39;foo&#39; }
+     *         console.log(arg4); // 14
+     *         console.log(options); // the options added when adding the listener
+     *         console.log(e); // the event object with information about the event
+     *     });
+     *
+     * And then we can fire off the event.
+     *
+     *     this.fireEvent(&#39;myevent&#39;, true, 2, { test: &#39;foo&#39; }, 14);
+     *
+     * @param {String} eventName The name of the event to fire.
+     * @param {Object...} args Variable number of parameters are passed to handlers.
+     * @return {Boolean} Returns `false` if any of the handlers return `false`.
+     */
+    fireEvent: function(eventName) {
+
+        var args = Array.prototype.slice.call(arguments, 1);
+
+        return this.doFireEvent(eventName, args);
+    },
+
+    // }}}
+    // {{{ fireEventArgs
+
+<span id='global-method-fireEventArgs'>    /**
+</span>     * Fires the specified event with the passed parameter list.
+     *
+     * @param {String} eventName The name of the event to fire.
+     * @param {Object[]} args An array of parameters which are passed to handlers.
+     * @return {Boolean} returns false if any of the handlers return false otherwise it returns true.
+     */
+    fireEventArgs: function(eventName, args) {
+
+        return this.doFireEvent(eventName, args);
+
+    },
+
+    // }}}
+    // {{{ fireAction
+
+<span id='global-method-fireAction'>    /**
+</span>     * Fires the specified event with the passed parameters and execute a function (action)
+     * at the end if there are no listeners that return `false`.
+     *
+     * @param {String} eventName The name of the event to fire.
+     * @param {Array} args Arguments to pass to handers.
+     * @param {Function} fn Action.
+     * @param {Object} scope Scope of fn.
+     * @return {Object}
+     */
+    fireAction: function(eventName, args, fn, scope, options, order) {
+
+        var fnType = typeof fn,
+            action;
+
+        if (args === undefined) {
+            args = [];
+        }
+
+        if (fnType !== &#39;undefined&#39;) {
+
+            action = {
+                fn: fn,
+                isLateBinding: fnType === &#39;string&#39;,
+                scope: scope || this,
+                options: options || {},
+                order: order
+            };
+
+        }
+
+        return this.doFireEvent(eventName, args, action);
+
+    },
+
+    // }}}
+    // {{{ doFireEvent
+
+    doFireEvent: function(eventName, args, action, connectedController) {
+
+        var me = this,
+            eventQueue = me.eventQueue,
+            eventNameMap = CLI.$eventNameMap,
+            suspendedEvents = me.suspendedEvents,
+            ret = true;
+
+        // This is inlined for performance
+        eventName = eventNameMap[eventName] || (eventNameMap[eventName] = eventName.toLowerCase());
+
+        if (me.eventFiringSuspended || (suspendedEvents &amp;&amp; suspendedEvents[eventName])) {
+
+            if (eventQueue) {
+
+                eventQueue.push([eventName, args, action, connectedController]);
+
+            }
+
+        } else {
+
+            ret = me.getEventDispatcher().dispatchEvent(me.observableType, me.getObservableId(), eventName, args, action, connectedController);
+
+        }
+
+        return ret;
+
+    },
+
+    // }}}
+    // {{{ doAddListener
+
+<span id='global-method-doAddListener'>    /**
+</span>     * @private
+     * @return {Boolean}
+     */
+    doAddListener: function(name, fn, scope, options, order) {
+
+        var me = this,
+            isManaged = (scope &amp;&amp; scope !== me &amp;&amp; scope.isIdentifiable),
+            usedSelectors = me.getUsedSelectors(),
+            usedSelectorsMap = usedSelectors.$map,
+            selector = me.getObservableId(),
+            isAdded, managedListeners, delegate;
+
+        if (!options) {
+            options = {};
+        }
+
+        if (!options.type) {  // type may have been set already (CLI.dom.Element)
+            // add type info to options object so ListenerStack can use it
+            options.type = name;
+        }
+
+        if (!scope &amp;&amp; typeof fn === &#39;function&#39;) {
+            scope = me;
+        }
+
+        if (options.delegate) {
+            delegate = options.delegate;
+            // See https://sencha.jira.com/browse/TOUCH-1579
+            selector += &#39; &#39; + delegate;
+        }
+
+        if (!(selector in usedSelectorsMap)) {
+            usedSelectorsMap[selector] = true;
+            usedSelectors.push(selector);
+        }
+
+        isAdded = me.addDispatcherListener(selector, name, fn, scope, options, order);
+
+        if (isAdded &amp;&amp; isManaged) {
+
+            managedListeners = me.getManagedListeners(scope, name);
+            managedListeners.push({
+                delegate: delegate,
+                scope: scope,
+                fn: fn,
+                order: order
+            });
+
+        }
+
+        return isAdded;
+
+    },
+
+    // }}}
+    // {{{ addDispatcherListener
+
+    addDispatcherListener: function(selector, name, fn, scope, options, order) {
+
+        return this.getEventDispatcher().addListener(this.observableType, selector, name, fn, scope, options, order, this);
+
+    },
+
+    // }}}
+    // {{{ doRemoveListener
+
+    doRemoveListener: function(name, fn, scope, options, order) {
+
+        var me = this,
+            isManaged = (scope &amp;&amp; scope !== me &amp;&amp; scope.isIdentifiable),
+            selector = me.getObservableId(),
+            isRemoved,
+            managedListeners, i, ln, listener, delegate;
+
+        if (!options) {
+            options = {};
+        }
+
+        if (!scope &amp;&amp; typeof fn === &#39;function&#39;) {
+            scope = me;
+        }
+
+        if (options.delegate) {
+            delegate = options.delegate;
+            // See https://sencha.jira.com/browse/TOUCH-1579
+            selector += &#39; &#39; + delegate;
+        }
+
+        isRemoved = me.removeDispatcherListener(selector, name, fn, scope, options, order);
+
+        if (isRemoved &amp;&amp; isManaged) {
+            managedListeners = me.getManagedListeners(scope, name);
+
+            for (i = 0,ln = managedListeners.length; i &lt; ln; i++) {
+                listener = managedListeners[i];
+
+                if (listener.fn === fn &amp;&amp; listener.scope === scope &amp;&amp; listener.delegate === delegate &amp;&amp; listener.order === order) {
+                    managedListeners.splice(i, 1);
+                    break;
+                }
+            }
+        }
+
+        return isRemoved;
+
+    },
+
+    // }}}
+    // {{{ removeDispatcherListener
+
+    removeDispatcherListener: function(selector, name, fn, scope, options, order) {
+
+        return this.getEventDispatcher().removeListener(this.observableType, selector, name, fn, scope, options, order, this);
+
+    },
+
+    // }}}
+    // {{{ clearManagedListeners
+
+    clearManagedListeners: function(object) {
+
+        var me = this,
+            managedListeners = me.managedListeners,
+            id, namedListeners, listeners, eventName, i, ln, listener, options;
+
+        if (!managedListeners) {
+            return me;
+        }
+
+        if (object) {
+
+            if (typeof object !== &#39;string&#39;) {
+
+                id = object.getUniqueId();
+
+            } else {
+
+                id = object;
+
+            }
+
+            namedListeners = managedListeners[id];
+
+            for (eventName in namedListeners) {
+
+                if (namedListeners.hasOwnProperty(eventName)) {
+
+                    listeners = namedListeners[eventName];
+
+                    for (i = 0,ln = listeners.length; i &lt; ln; i++) {
+
+                        listener = listeners[i];
+
+                        options = {};
+
+                        if (listener.delegate) {
+
+                            options.delegate = listener.delegate;
+
+                        }
+
+                        if (me.doRemoveListener(eventName, listener.fn, listener.scope, options, listener.order)) {
+
+                            i--;
+                            ln--;
+
+                        }
+
+                    }
+
+                }
+
+            }
+
+            delete managedListeners[id];
+            return me;
+
+        }
+
+        for (id in managedListeners) {
+
+            if (managedListeners.hasOwnProperty(id)) {
+
+                me.clearManagedListeners(id);
+
+            }
+
+        }
+
+    },
+
+    // }}}
+    // {{{ changeListener
+
+<span id='global-method-changeListener'>    /**
+</span>     * @private
+     */
+    changeListener: function(actionFn, eventName, fn, scope, options, order) {
+
+        var me = this,
+            eventNameMap = CLI.$eventNameMap,
+            eventNames, listeners, listenerOptionsRegex, actualOptions, isClassListener,
+            namedScopes, namedScope, innerScope, name, value, i, ln, listener, valueType;
+
+        if (typeof fn !== &#39;undefined&#39;) {
+
+            // Support for array format to add multiple listeners
+            if (typeof eventName !== &#39;string&#39;) {
+
+                for (i = 0,ln = eventName.length; i &lt; ln; i++) {
+
+                    name = eventName[i];
+                    // This is inlined for performance
+                    name = eventNameMap[name] || (eventNameMap[name] = name.toLowerCase());
+                    actionFn.call(me, name, fn, scope, options, order);
+
+                }
+
+                return me;
+
+            }
+
+            // This is inlined for performance
+            eventName = eventNameMap[eventName] || (eventNameMap[eventName] = eventName.toLowerCase());
+
+            if (options) {
+
+                // if the caller passed an options object, chain it to avoid mutating the original
+                options = CLI.Object.chain(options);
+
+            }
+
+            actionFn.call(me, eventName, fn, scope, options, order);
+
+        } else if (CLI.isArray(eventName)) {
+
+            listeners = eventName;
+
+            for (i = 0,ln = listeners.length; i &lt; ln; i++) {
+
+                listener = listeners[i];
+                eventName = listener.event;
+                // This is inlined for performance
+                eventName = eventNameMap[eventName] || (eventNameMap[eventName] = eventName.toLowerCase());
+                actionFn.call(me, eventName, listener.fn, listener.scope, listener, listener.order);
+
+            }
+
+        } else if (eventName) {
+
+            listenerOptionsRegex = me.listenerOptionsRegex;
+            options = eventName;
+            eventNames = [];
+            listeners = [];
+            actualOptions = {};
+            order = options.order;
+            scope = options.scope;
+            namedScopes = CLI._namedScopes;
+            namedScope = scope &amp;&amp; namedScopes[scope];
+            isClassListener = namedScope &amp;&amp; namedScope.isSelf;
+
+            for (name in options) {
+
+                value = options[name];
+
+                if (!listenerOptionsRegex.test(name)) {
+
+                    // This is inlined for performance
+                    name = eventNameMap[name] || (eventNameMap[name] = name.toLowerCase());
+                    valueType = typeof value;
+
+                    if (valueType !== &#39;string&#39; &amp;&amp; valueType !== &#39;function&#39;) {
+
+                        innerScope = value.scope;
+                        // for proper scope resolution, scope:&#39;controller&#39; specified on an
+                        // inner object, must be translated to &#39;self.controller&#39; if the
+                        // listeners object was declared on the class body.
+                        // see also CLI.util.Observable#prepareClass and
+                        // CLI.mixin.Inheritable#resolveListenerScope
+                        if (innerScope &amp;&amp; isClassListener) {
+                            namedScope = namedScopes[innerScope];
+                            if (namedScope &amp;&amp; namedScope.isController) {
+                                innerScope = &#39;self.controller&#39;;
+                            }
+                        }
+
+                        actionFn.call(this, name, value.fn, innerScope || scope, value, value.order || order);
+                        continue;
+                    }
+
+                    eventNames.push(name);
+                    listeners.push(value);
+
+                } else {
+
+                    actualOptions[name] = value;
+
+                }
+
+            }
+
+            for (i = 0,ln = eventNames.length; i &lt; ln; i++) {
+
+                actionFn.call(me, eventNames[i], listeners[i], scope, actualOptions, order);
+
+            }
+
+        }
+
+        return me;
+
+    },
+
+    // }}}
+    // {{{ addListener
+
+<span id='global-method-addListener'>    /**
+</span>     * Appends an event handler to this object. You can review the available handlers by looking at the &#39;events&#39;
+     * section of the documentation for the component you are working with.
+     *
+     * ## Combining Options
+     *
+     * Using the options argument, it is possible to combine different types of listeners:
+     *
+     * A delayed, one-time listener:
+     *
+     *     container.addListener(&#39;tap&#39;, this.handleTap, this, {
+     *         single: true,
+     *         delay: 100
+     *     });
+     *
+     * ## Attaching multiple handlers in 1 call
+     *
+     * The method also allows for a single argument to be passed which is a config object containing properties which
+     * specify multiple events. For example:
+     *
+     *     container.addListener({
+     *         tap  : this.onTap,
+     *         swipe: this.onSwipe,
+     *
+     *         scope: this // Important. Ensure &quot;this&quot; is correct during handler execution
+     *     });
+     *
+     * One can also specify options for each event handler separately:
+     *
+     *     container.addListener({
+     *         tap  : { fn: this.onTap, scope: this, single: true },
+     *         swipe: { fn: button.onSwipe, scope: button }
+     *     });
+     *
+     * See the [Events Guide](#!/guide/events) for more.
+     *
+     * @param {String/String[]/Object} eventName The name of the event to listen for. May also be an object who&#39;s property names are
+     * event names.
+     * @param {Function/String} fn The method the event invokes.  Will be called with arguments given to
+     * {@link #fireEvent} plus the `options` parameter described below.
+     * @param {Object} [scope] The scope (`this` reference) in which the handler function is executed. **If
+     * omitted, defaults to the object which fired the event.**
+     * @param {Object} [options] An object containing handler configuration.
+     *
+     * This object may contain any of the following properties:
+     *
+     * @param {Object} [options.scope] The scope (`this` reference) in which the handler function is executed. If omitted, defaults to the object
+     * which fired the event.
+     * @param {Number} [options.delay] The number of milliseconds to delay the invocation of the handler after the event fires.
+     * @param {Boolean} [options.single] `true` to add a handler to handle just the next firing of the event, and then remove itself.
+     * @param {String} [options.order=current] The order of when the listener should be added into the listener queue.
+     *
+     * If you set an order of `before` and the event you are listening to is preventable, you can return `false` and it will stop the event.
+     *
+     * Available options are `before`, `current` and `after`.
+     *
+     * @param {Number} [options.buffer] Causes the handler to be delayed by the specified number of milliseconds. If the event fires again within that
+     * time, the original handler is _not_ invoked, but the new handler is scheduled in its place.
+     * @param {String} [options.element] If this observable is a Component, allows you to add
+     * a listener onto a element of the component using the element&#39;s reference.
+     *
+     *     CLI.create(&#39;CLI.Component&#39;, {
+     *         listeners: {
+     *             element: &#39;element&#39;,
+     *             tap: function() {
+     *                 alert(&#39;element tap!&#39;);
+     *             }
+     *         }
+     *     });
+     *
+     * In Sencha Touch, All components have the `element` reference, which is the outer
+     * most element of the component. {@link CLI.Container} also has the `innerElement`
+     * element which contains all children. In most cases `element` is adequate.
+     *
+     * @param {String} [options.delegate] For {@link CLI.dom.Element Elements}, a simple DOM selector to
+     * filter the target or look for a descendant of the target.
+     *
+     * Sencha Touch Components can use {@link CLI.ComponentQuery} selectors to filter child Components.
+     *
+     *     // Create a container with a two children; a button and a toolbar
+     *     var container = CLI.create(&#39;CLI.Container&#39;, {
+     *         items: [
+     *             {
+     *                 xtype: &#39;toolbar&#39;,
+     *                 docked: &#39;top&#39;,
+     *                 title: &#39;My Toolbar&#39;
+     *             },
+     *             {
+     *                xtype: &#39;button&#39;,
+     *                text: &#39;My Button&#39;
+     *             }
+     *         ]
+     *     });
+     *
+     *     container.addListener({
+     *         // CLI.Buttons have an xtype of &#39;button&#39;, so we use that are a selector for our delegate
+     *         delegate: &#39;button&#39;,
+     *
+     *         tap: function() {
+     *             alert(&#39;Button tapped!&#39;);
+     *         }
+     *     });
+     *
+     * @param {Boolean} options.capture `true` to initiate capture which will fire the
+     * listeners on the target Element *before* any descendant Elements. Normal events
+     * start with the target element and propagate upward to ancestor elements, whereas
+     * captured events propagate from the top of the DOM downward to descendant elements.
+     * This option achieves the same result as the useCapture parameter in the standard
+     * JavaScript addEventListener method.
+     *
+     * @param {String} [order=&#39;current&#39;] The order of when the listener should be added into the listener queue.
+     * Possible values are `before`, `current` and `after`.
+     */
+    addListener: function(eventName, fn, scope, options, order) {
+
+        var me = this,
+            destroy, out;
+
+        if (options) {
+
+            destroy = options.destroyable;
+
+        } else if (typeof eventName === &#39;object&#39;) {
+
+            destroy = eventName.destroyable;
+
+        }
+
+        out = me.changeListener(me.doAddListener, eventName, fn, scope, options, order);
+
+        if (destroy) {
+
+            out = new CLI.mixin.Observable.$ListenerRemover(me, eventName, fn, scope, options, order);
+
+        }
+
+        return out;
+    },
+
+    // }}}
+    // {{{ toggleListener
+
+    toggleListener: function(toggle, eventName, fn, scope, options, order) {
+
+        return this.changeListener(toggle ? this.doAddListener : this.doRemoveListener, eventName, fn, scope, options, order);
+
+    },
+
+    // }}}
+    // {{{ addBeforeListener
+
+<span id='global-method-addBeforeListener'>    /**
+</span>     * Appends a before-event handler.  Returning `false` from the handler will stop the event.
+     *
+     * Same as {@link #addListener} with `order` set to `&#39;before&#39;`.
+     *
+     * @param {String/String[]/Object} eventName The name of the event to listen for.
+     * @param {Function/String} fn The method the event invokes.
+     * @param {Object} [scope] The scope for `fn`.
+     * @param {Object} [options] An object containing handler configuration.
+     */
+    addBeforeListener: function(eventName, fn, scope, options) {
+
+        return this.addListener(eventName, fn, scope, options, &#39;before&#39;);
+
+    },
+
+    // }}}
+    // {{{ addAfterListener
+
+<span id='global-method-addAfterListener'>    /**
+</span>     * Appends an after-event handler.
+     *
+     * Same as {@link #addListener} with `order` set to `&#39;after&#39;`.
+     *
+     * @param {String/String[]/Object} eventName The name of the event to listen for.
+     * @param {Function/String} fn The method the event invokes.
+     * @param {Object} [scope] The scope for `fn`.
+     * @param {Object} [options] An object containing handler configuration.
+     */
+    addAfterListener: function(eventName, fn, scope, options) {
+
+        return this.addListener(eventName, fn, scope, options, &#39;after&#39;);
+
+    },
+
+    // }}}
+    // {{{ removeListener
+
+<span id='global-method-removeListener'>    /**
+</span>     * Removes an event handler.
+     *
+     * @param {String/String[]/Object} eventName The type of event the handler was associated with.
+     * @param {Function/String} fn The handler to remove. **This must be a reference to the function passed into the
+     * {@link #addListener} call.**
+     * @param {Object} [scope] The scope originally specified for the handler. It must be the same as the
+     * scope argument specified in the original call to {@link #addListener} or the listener will not be removed.
+     * @param {Object} [options] Extra options object. See {@link #addListener} for details.
+     * @param {String} [order=&#39;current&#39;] The order of the listener to remove.
+     * Possible values are `before`, `current` and `after`.
+     */
+    removeListener: function(eventName, fn, scope, options, order) {
+        return this.changeListener(this.doRemoveListener, eventName, fn, scope, options, order);
+    },
+
+    // }}}
+    // {{{ removeBeforeListener
+
+<span id='global-method-removeBeforeListener'>    /**
+</span>     * Removes a before-event handler.
+     *
+     * Same as {@link #removeListener} with `order` set to `&#39;before&#39;`.
+     *
+     * @param {String/String[]/Object} eventName The name of the event the handler was associated with.
+     * @param {Function/String} fn The handler to remove.
+     * @param {Object} [scope] The scope originally specified for `fn`.
+     * @param {Object} [options] Extra options object.
+     */
+    removeBeforeListener: function(eventName, fn, scope, options) {
+        return this.removeListener(eventName, fn, scope, options, &#39;before&#39;);
+    },
+
+    // }}}
+    // {{{ removeAfterListener
+
+<span id='global-method-removeAfterListener'>    /**
+</span>     * Removes a before-event handler.
+     *
+     * Same as {@link #removeListener} with `order` set to `&#39;after&#39;`.
+     *
+     * @param {String/String[]/Object} eventName The name of the event the handler was associated with.
+     * @param {Function/String} fn The handler to remove.
+     * @param {Object} [scope] The scope originally specified for `fn`.
+     * @param {Object} [options] Extra options object.
+     */
+    removeAfterListener: function(eventName, fn, scope, options) {
+
+        return this.removeListener(eventName, fn, scope, options, &#39;after&#39;);
+
+    },
+
+    // }}}
+    // {{{ clearListeners
+
+<span id='global-method-clearListeners'>    /**
+</span>     * Removes all listeners for this object.
+     */
+    clearListeners: function() {
+
+        var me = this,
+            usedSelectors = me.getUsedSelectors(),
+            dispatcher = me.getEventDispatcher(),
+            i, ln, selector;
+
+        for (i = 0,ln = usedSelectors.length; i &lt; ln; i++) {
+
+            selector = usedSelectors[i];
+
+            dispatcher.clearListeners(me.observableType, selector, me);
+        }
+
+    },
+
+    // }}}
+    // {{{ hasListener
+
+<span id='global-method-hasListener'>    /**
+</span>     * Checks to see if this object has any listeners for a specified event
+     *
+     * @param {String} eventName The name of the event to check for
+     * @return {Boolean} True if the event is being listened for, else false
+     */
+    hasListener: function(eventName) {
+
+        return this.getEventDispatcher().hasListener(this.observableType, this.getObservableId(), eventName);
+
+    },
+
+    // }}}
+    // {{{ isSuspended
+
+<span id='global-method-isSuspended'>    /**
+</span>     * Checks if all events, or a specific event, is suspended.
+     * @param {String} [eventName] The name of the specific event to check
+     * @return {Boolean} `true` if events are suspended
+     */
+    isSuspended: function(eventName) {
+
+        var eventNameMap = CLI.$eventNameMap,
+            suspendedEvents = this.suspendedEvents;
+
+        if (eventName) {
+
+            // This is inlined for performance
+            eventName = eventNameMap[eventName] || (eventNameMap[eventName] = eventName.toLowerCase());
+
+        }
+
+        return !!(this.eventFiringSuspended || (suspendedEvents &amp;&amp; suspendedEvents[eventName]));
+
+    },
+
+    // }}}
+    // {{{ suspendEvents
+
+<span id='global-method-suspendEvents'>    /**
+</span>     * Suspends the firing of all events. (see {@link #resumeEvents})
+     *
+     * @param {Boolean} queueSuspended `true` to queue up suspended events to be fired
+     * after the {@link #resumeEvents} call instead of discarding all suspended events.
+     */
+    suspendEvents: function(queueSuspended) {
+
+        ++this.eventFiringSuspended;
+
+        if (queueSuspended &amp;&amp; !this.eventQueue) {
+            this.eventQueue = [];
+        }
+
+    },
+
+    // }}}
+    // {{{ suspendEvent
+
+<span id='global-method-suspendEvent'>    /**
+</span>     * Suspends firing of the named event(s).
+     *
+     * After calling this method to suspend events, the events will no longer fire when requested to fire.
+     *
+     * **Note that if this is called multiple times for a certain event, the converse method
+     * {@link #resumeEvent} will have to be called the same number of times for it to resume firing.**
+     *
+     * @param  {String...} eventName Multiple event names to suspend.
+     */
+    suspendEvent: function() {
+
+        var args = arguments,
+            suspendedEvents = this.suspendedEvents,
+            eventNameMap = CLI.$eventNameMap,
+            ln = args.length,
+            i, eventName;
+
+        if (!suspendedEvents) {
+
+            suspendedEvents = this.suspendedEvents = {};
+
+        }
+
+        for (i = 0; i &lt; ln; i++) {
+
+            eventName = args[i];
+            // This is inlined for performance
+            eventName = eventNameMap[eventName] || (eventNameMap[eventName] = eventName.toLowerCase());
+
+            if (!(eventName in suspendedEvents)) {
+                suspendedEvents[eventName] = 0;
+            }
+
+            ++suspendedEvents[eventName];
+
+        }
+
+    },
+
+    // }}}
+    // {{{ resumeEvents
+
+<span id='global-method-resumeEvents'>    /**
+</span>     * Resumes firing events (see {@link #suspendEvents}).
+     *
+     * @param {Boolean} discardQueuedEvents Pass as true to discard any queued events.
+     */
+    resumeEvents: function(discardQueuedEvents) {
+
+        var me = this,
+            eventQueue = me.eventQueue || [],
+            suspendedEvents = me.suspendedEvents,
+            args, i, ln;
+
+        if (me.eventFiringSuspended &amp;&amp; !--me.eventFiringSuspended) { // only decrement if &gt; 0
+
+            //don&#39;t loop over the queue if specified to discard the queue
+            if (!discardQueuedEvents) {
+
+                for (i = 0, ln = eventQueue.length; i &lt; ln; i++) {
+
+                    args = eventQueue[i];
+
+                    if (!(suspendedEvents &amp;&amp; suspendedEvents[args[0]])) {
+
+                        me.doFireEvent.apply(me, args);
+
+                    }
+
+                }
+
+            }
+
+            //clear the queue
+            me.eventQueue = null;
+
+        }
+
+    },
+
+    // }}}
+    // {{{ resumeEvent
+
+<span id='global-method-resumeEvent'>    /**
+</span>     * Resumes firing of the named event(s).
+     *
+     * After calling this method to resume events, the events will fire when requested to fire.
+     *
+     * **Note that if the {@link #suspendEvent} method is called multiple times for a certain event,
+     * this converse method will have to be called the same number of times for it to resume firing.**
+     *
+     * @param  {String...} eventName Multiple event names to resume.
+     */
+    resumeEvent: function() {
+
+        var me = this,
+            args = arguments,
+            suspendedEvents = me.suspendedEvents,
+            eventNameMap = CLI.$eventNameMap,
+            ln = args.length,
+            i, eventName;
+
+        for (i = 0; i &lt; ln; i++) {
+
+            eventName = args[i];
+            // This is inlined for performance
+            eventName = eventNameMap[eventName] || (eventNameMap[eventName] = eventName.toLowerCase());
+
+            if (suspendedEvents &amp;&amp; suspendedEvents[eventName]) {
+
+                --suspendedEvents[eventName];
+
+            }
+
+        }
+
+        if (!me.eventFiringSuspended) {
+
+            me.resumeEvents();
+
+        }
+
+    },
+
+    // }}}
+    // {{{ relayEvents
+
+<span id='global-method-relayEvents'>    /**
+</span>     * Relays selected events from the specified Observable as if the events were fired by `this`.
+     * @param {Object} object The Observable whose events this object is to relay.
+     * @param {String/Array/Object} events Array of event names to relay.
+     */
+    relayEvents: function(object, events, prefix) {
+
+        var eventNameMap = CLI.$eventNameMap,
+            i, ln, oldName, newName;
+
+        if (typeof prefix === &#39;undefined&#39;) {
+            prefix = &#39;&#39;;
+        }
+
+        prefix = prefix.toLowerCase();
+
+        if (typeof events === &#39;string&#39;) {
+            events = [events];
+        }
+
+        if (CLI.isArray(events)) {
+
+            for (i = 0,ln = events.length; i &lt; ln; i++) {
+
+                oldName = events[i];
+                // This is inlined for performance
+                oldName = eventNameMap[oldName] || (eventNameMap[oldName] = oldName.toLowerCase());
+                newName = prefix + oldName;
+
+                object.addListener(oldName, this.createEventRelayer(newName), this);
+
+            }
+
+        } else {
+
+            for (oldName in events) {
+
+                if (events.hasOwnProperty(oldName)) {
+
+                    // This is inlined for performance
+                    oldName = eventNameMap[oldName] || (eventNameMap[oldName] = oldName.toLowerCase());
+                    newName = prefix + events[oldName];
+
+                    object.addListener(oldName, this.createEventRelayer(newName), this);
+
+                }
+
+            }
+
+        }
+
+        return this;
+
+    },
+
+    // }}}
+    // {{{ relayEvent
+
+<span id='global-method-relayEvent'>    /**
+</span>     * @private
+     */
+    relayEvent: function(args, fn, scope, options, order) {
+
+        var fnType = typeof fn,
+            controller = args[args.length - 1],
+            eventName = controller.getInfo().eventName,
+            action;
+
+        args = Array.prototype.slice.call(args, 0, -2);
+        args[0] = this;
+
+        if (fnType !== &#39;undefined&#39;) {
+            action = {
+                fn: fn,
+                scope: scope || this,
+                options: options || {},
+                order: order,
+                isLateBinding: fnType === &#39;string&#39;
+            };
+        }
+
+        return this.doFireEvent(eventName, args, action, controller);
+
+    },
+
+    // }}}
+    // {{{ createEventRelayer
+
+<span id='global-method-createEventRelayer'>    /**
+</span>     * @private
+     * Creates an event handling function which re-fires the event from this object as the passed event name.
+     * @param {String} newName
+     * @return {Function}
+     */
+    createEventRelayer: function(newName){
+
+        return function() {
+
+            return this.doFireEvent(newName, Array.prototype.slice.call(arguments, 0, -2));
+
+        };
+
+    },
+
+    // }}}
+    // {{{ destroy
+
+    destroy: function() {
+
+        var me = this;
+
+        if (me.observableId) {
+
+            me.fireEvent(&#39;destroy&#39;, me);
+            me.clearListeners();
+            me.clearManagedListeners();
+
+        }
+
+    }
+
+    // }}}
+
+}, function(Cls) {
+
+    // Private Destroyable class which removes listeners
+    var Remover = function(observable) {
+        // Passed a ListenerRemover: return it
+        if (observable instanceof Remover) {
+            return observable;
+        }
+        this.observable = observable;
+        this.args = Array.prototype.slice.call(arguments, 1);
+    };
+
+    Remover.prototype.destroy = function() {
+        var observable = this.observable;
+        observable.un.apply(observable, this.args);
+    };
+
+    Cls.$ListenerRemover = Remover;
+
+    Cls.createAlias({
+<span id='global-method-on'>        /**
+</span>         * @method
+         * Alias for {@link #addListener}.
+         * @inheritdoc CLI.mixin.Observable#addListener
+         */
+        on: &#39;addListener&#39;,
+<span id='global-method-un'>        /**
+</span>         * @method
+         * Alias for {@link #removeListener}.
+         * @inheritdoc CLI.mixin.Observable#removeListener
+         */
+        un: &#39;removeListener&#39;,
+<span id='global-method-onBefore'>        /**
+</span>         * @method
+         * Alias for {@link #addBeforeListener}.
+         * @inheritdoc CLI.mixin.Observable#addBeforeListener
+         */
+        onBefore: &#39;addBeforeListener&#39;,
+<span id='global-method-onAfter'>        /**
+</span>         * @method
+         * Alias for {@link #addAfterListener}.
+         * @inheritdoc CLI.mixin.Observable#addAfterListener
+         */
+        onAfter: &#39;addAfterListener&#39;,
+<span id='global-method-unBefore'>        /**
+</span>         * @method
+         * Alias for {@link #removeBeforeListener}.
+         * @inheritdoc CLI.mixin.Observable#removeBeforeListener
+         */
+        unBefore: &#39;removeBeforeListener&#39;,
+<span id='global-method-unAfter'>        /**
+</span>         * @method
+         * Alias for {@link #removeAfterListener}.
+         * @inheritdoc CLI.mixin.Observable#removeAfterListener
+         */
+        unAfter: &#39;removeAfterListener&#39;
+    });
+});
+
+/*
+ * Local variables:
+ * tab-width: 4
+ * c-basic-offset: 4
+ * c-hanging-comment-ender-p: nil
+ * End:
+ */
+</pre>
+</body>
+</html>

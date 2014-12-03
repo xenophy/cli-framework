@@ -467,7 +467,7 @@
             },
 
             // }}}
-            // {{{ 
+            // {{{
 
 <span id='CLI-Array-method-every'>            /**
 </span>             * Executes the specified function for each array element until the function returns a falsy value.
@@ -1134,13 +1134,13 @@
 <span id='CLI-Array-method-toMap'>            /**
 </span>             * Creates a map (object) keyed by the elements of the given array. The values in
              * the map are the index+1 of the array element. For example:
-             * 
+             *
              *      var map = CLI.Array.toMap([&#39;a&#39;,&#39;b&#39;,&#39;c&#39;]);
              *
              *      // map = { a: 1, b: 2, c: 3 };
-             * 
+             *
              * Or a key property can be specified:
-             * 
+             *
              *      var map = CLI.Array.toMap([
              *              { name: &#39;a&#39; },
              *              { name: &#39;b&#39; },
@@ -1148,9 +1148,9 @@
              *          ], &#39;name&#39;);
              *
              *      // map = { a: 1, b: 2, c: 3 };
-             * 
+             *
              * Lastly, a key extractor can be provided:
-             * 
+             *
              *      var map = CLI.Array.toMap([
              *              { name: &#39;a&#39; },
              *              { name: &#39;b&#39; },
@@ -1158,7 +1158,7 @@
              *          ], function (obj) { return obj.name.toUpperCase(); });
              *
              *      // map = { A: 1, B: 2, C: 3 };
-             * 
+             *
              * @param {Array} array The Array to create the map from.
              * @param {String/Function} [getKey] Name of the object property to use
              * as a key or a function to extract the key.
@@ -1205,13 +1205,13 @@
 <span id='CLI-Array-method-toValueMap'>            /**
 </span>             * Creates a map (object) keyed by a property of elements of the given array. The values in
              * the map are the array element. For example:
-             * 
+             *
              *      var map = CLI.Array.toMap([&#39;a&#39;,&#39;b&#39;,&#39;c&#39;]);
              *
              *      // map = { a: &#39;a&#39;, b: &#39;b&#39;, c: &#39;c&#39; };
-             * 
+             *
              * Or a key property can be specified:
-             * 
+             *
              *      var map = CLI.Array.toMap([
              *              { name: &#39;a&#39; },
              *              { name: &#39;b&#39; },
@@ -1219,9 +1219,9 @@
              *          ], &#39;name&#39;);
              *
              *      // map = { a: {name: &#39;a&#39;}, b: {name: &#39;b&#39;}, c: {name: &#39;c&#39;} };
-             * 
+             *
              * Lastly, a key extractor can be provided:
-             * 
+             *
              *      var map = CLI.Array.toMap([
              *              { name: &#39;a&#39; },
              *              { name: &#39;b&#39; },
@@ -1429,7 +1429,7 @@
 </span>             * A function used to sort an array by numeric value. By default, javascript array values
              * are coerced to strings when sorting, which can be problematic when using numeric values. To
              * ensure that the values are sorted numerically, this method can be passed to the sort method:
-             * 
+             *
              *     CLI.Array.sort(myArray, CLI.Array.numericSortFn);
              */
             numericSortFn: function(a, b) {

@@ -26,7 +26,7 @@
  *
  * This class provides help value testing methods useful for diagnostics. These are often
  * used in `debugHooks`:
- * 
+ *
  *      CLI.define(&#39;Foo.bar.Class&#39;, {
  *
  *          debugHooks: {
@@ -39,13 +39,13 @@
  *              }
  *          }
  *      });
- * 
+ *
  * **NOTE:** This class is entirely removed in production builds so all uses of it should
  * be either in `debug` conditional comments or `debugHooks`.
- * 
+ *
  * The following type detection methods from the `CLI` object are wrapped as assertions
  * by this class:
- * 
+ *
  *  * `isEmpty`
  *  * `isArray`
  *  * `isDate`
@@ -61,19 +61,19 @@
  *  * `isTextNode`
  *  * `isDefined`
  *  * `isIterable`
- * 
+ *
  * These appear both their exact name and with a &quot;Prop&quot; suffix for checking a property on
  * an object. For example, these are almost identical:
- * 
+ *
  *      CLI.Assert.isFunction(object.foo);
  *
  *      CLI.Assert.isFunctionProp(object, &#39;foo&#39;);
  *
  * The difference is the default error message generated is better in the second use case
  * than the first.
- * 
+ *
  * The above list are also expanded for &quot;Not&quot; flavors (and &quot;Not...Prop&quot;):
- * 
+ *
  *  * `isNotEmpty`
  *  * `isNotArray`
  *  * `isNotDate`

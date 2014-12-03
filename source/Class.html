@@ -35,10 +35,7 @@
  * from, see {@link CLI.Base}.
  * @private
  */
-
 (function() {
-
-    &quot;use strict&quot;;
 
     var CLIClass,
         Base = CLI.Base,
@@ -741,14 +738,14 @@
 
 <span id='CLI-Class-cfg-cachedConfig'>     /**
 </span>      * @cfg {Object} cachedConfig
-      * 
+      *
       * This configuration works in a very similar manner to the {@link #config} option.
       * The difference is that the configurations are only ever processed when the first instance
       * of that class is created. The processed value is then stored on the class prototype and
       * will not be processed on subsequent instances of the class. Getters/setters will be generated
       * in exactly the same way as {@link #config}.
-      * 
-      * This option is useful for expensive objects that can be shared across class instances. 
+      *
+      * This option is useful for expensive objects that can be shared across class instances.
       * The class itself ensures that the creation only occurs once.
       */
     CLIClass.registerPreprocessor(&#39;cachedConfig&#39;, function(Class, data) {
@@ -792,7 +789,7 @@
      *          mixins: {
      *              canSing: &#39;CanSing&#39;
      *          },
-     * 
+     *
      *          sing: function() {
      *              // delegate singing operation to mixin
      *              this.mixins.canSing.sing.call(this);

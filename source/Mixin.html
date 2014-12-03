@@ -30,9 +30,9 @@
  * It provides mixins with the ability to &quot;hook&quot; class methods of the classes in to which
  * they are mixed. For example, consider the `destroy` method pattern. If a mixin class
  * had cleanup requirements, it would need to be called as part of `destroy`.
- * 
+ *
  * Starting with a basic class we might have:
- * 
+ *
  *      CLI.define(&#39;Foo.bar.Base&#39;, {
  *          destroy: function () {
  *              console.log(&#39;B&#39;);
@@ -56,13 +56,13 @@
  * To see how using this class help, start with a &quot;normal&quot; mixin class that also needs to
  * cleanup its resources. These mixins must be called explicitly by the classes that use
  * them. For example:
- * 
+ *
  *      CLI.define(&#39;Foo.bar.Util&#39;, {
  *          destroy: function () {
  *              console.log(&#39;U&#39;);
  *          }
  *      });
- * 
+ *
  *      CLI.define(&#39;Foo.bar.Derived&#39;, {
  *          extend: &#39;Foo.bar.Base&#39;,
  *
@@ -88,11 +88,11 @@
  * This class is designed to solve the above in simpler and more reliable way.
  *
  * ## mixinConfig
- * 
+ *
  * Using `mixinConfig` the mixin class can provide &quot;before&quot; or &quot;after&quot; hooks that do not
  * involve the derived class implementation. This also means the derived class cannot
  * adjust parameters to the hook methods.
- * 
+ *
  *      CLI.define(&#39;Foo.bar.Util&#39;, {
  *          extend: &#39;CLI.Mixin&#39;,
  *
@@ -101,12 +101,12 @@
  *                  destroy: &#39;destroyUtil&#39;
  *              }
  *          },
- *          
+ *
  *          destroyUtil: function () {
  *              console.log(&#39;U&#39;);
  *          }
  *      });
- * 
+ *
  *      CLI.define(&#39;Foo.bar.Class&#39;, {
  *          mixins: {
  *              util: &#39;Foo.bar.Util&#39;
@@ -121,9 +121,9 @@
  *
  *      obj.destroy();
  *      // logs D then U
- * 
+ *
  *  If the destruction should occur in the other order, you can use `before`:
- * 
+ *
  *      CLI.define(&#39;Foo.bar.Util&#39;, {
  *          extend: &#39;CLI.Mixin&#39;,
  *
@@ -132,12 +132,12 @@
  *                  destroy: &#39;destroyUtil&#39;
  *              }
  *          },
- *          
+ *
  *          destroyUtil: function () {
  *              console.log(&#39;U&#39;);
  *          }
  *      });
- * 
+ *
  *      CLI.define(&#39;Foo.bar.Class&#39;, {
  *          mixins: {
  *              util: &#39;Foo.bar.Util&#39;
@@ -232,133 +232,195 @@
  *
  * @protected
  */
+CLI.define(&#39;CLI.Mixin&#39;, function (Mixin) {
 
-(function() {
+    return {
 
-    &quot;use strict&quot;;
+        // {{{ statics
 
-    CLI.define(&#39;CLI.Mixin&#39;, function (Mixin) { return {
+        statics: {
 
-    statics: {
-        addHook: function (hookFn, targetClass, methodName, mixinClassPrototype) {
-            var isFunc = CLI.isFunction(hookFn),
-                hook = function () {
-                    var a = arguments,
+            // {{{ addHook
+
+            addHook: function (hookFn, targetClass, methodName, mixinClassPrototype) {
+
+                var isFunc = CLI.isFunction(hookFn),
+                    hook = function () {
+                        var a = arguments,
                         fn = isFunc ? hookFn : mixinClassPrototype[hookFn],
                         result = this.callParent(a);
-                    fn.apply(this, a);
-                    return result;
-                },
-                existingFn = targetClass.hasOwnProperty(methodName) &amp;&amp;
-                             targetClass[methodName];
+                        fn.apply(this, a);
+                        return result;
+                    },
+                    existingFn = targetClass.hasOwnProperty(methodName) &amp;&amp;
+                    targetClass[methodName];
 
-            if (isFunc) {
-                hookFn.$previous = CLI.emptyFn; // no callParent for these guys
-            }
-
-            hook.$name = methodName;
-            hook.$owner = targetClass.self;
-
-            if (existingFn) {
-                hook.$previous = existingFn.$previous;
-                existingFn.$previous = hook;
-            } else {
-                targetClass[methodName] = hook;
-            }
-        }
-    },
-
-    onClassExtended: function(cls, data) {
-        var mixinConfig = data.mixinConfig,
-            hooks = data.xhooks,
-            superclass = cls.superclass,
-            onClassMixedIn = data.onClassMixedIn,
-            parentMixinConfig,
-            befores, afters, extended;
-
-        if (hooks) {
-            // Legacy way
-            delete data.xhooks;
-            (mixinConfig || (data.mixinConfig = mixinConfig = {})).on = hooks;
-        }
-
-        if (mixinConfig) {
-            parentMixinConfig = superclass.mixinConfig;
-
-            if (parentMixinConfig) {
-                data.mixinConfig = mixinConfig = CLI.merge({}, parentMixinConfig, mixinConfig);
-            }
-
-            data.mixinId = mixinConfig.id;
-
-            //&lt;debug&gt;
-            if (mixinConfig.beforeHooks) {
-                CLI.Error.raise(&#39;Use of &quot;beforeHooks&quot; is deprecated - use &quot;before&quot; instead&#39;);
-            }
-            if (mixinConfig.hooks) {
-                CLI.Error.raise(&#39;Use of &quot;hooks&quot; is deprecated - use &quot;after&quot; instead&#39;);
-            }
-            if (mixinConfig.afterHooks) {
-                CLI.Error.raise(&#39;Use of &quot;afterHooks&quot; is deprecated - use &quot;after&quot; instead&#39;);
-            }
-            //&lt;/debug&gt;
-
-            befores = mixinConfig.before;
-            afters = mixinConfig.after;
-            hooks = mixinConfig.on;
-            extended = mixinConfig.extended;
-        }
-
-        if (befores || afters || hooks || extended) {
-            // Note: tests are with CLI.Class
-            data.onClassMixedIn = function (targetClass) {
-                var mixin = this.prototype,
-                    targetProto = targetClass.prototype,
-                    key;
-
-                if (befores) {
-                    CLI.Object.each(befores, function (key, value) {
-                        targetClass.addMember(key, function () {
-                            if (mixin[value].apply(this, arguments) !== false) {
-                                return this.callParent(arguments);
-                            }
-                        });
-                    });
+                if (isFunc) {
+                    hookFn.$previous = CLI.emptyFn; // no callParent for these guys
                 }
 
-                if (afters) {
-                    CLI.Object.each(afters, function (key, value) {
-                        targetClass.addMember(key, function () {
-                            var ret = this.callParent(arguments);
-                            mixin[value].apply(this, arguments);
-                            return ret;
-                        });
-                    });
+                hook.$name = methodName;
+                hook.$owner = targetClass.self;
+
+                if (existingFn) {
+
+                    hook.$previous = existingFn.$previous;
+                    existingFn.$previous = hook;
+
+                } else {
+
+                    targetClass[methodName] = hook;
+
                 }
 
-                if (hooks) {
-                    for (key in hooks) {
-                        Mixin.addHook(hooks[key], targetProto, key, mixin);
+            }
+
+            // }}}
+
+        },
+
+        // }}}
+        // {{{ onClassExtended
+
+        onClassExtended: function(cls, data) {
+
+            var mixinConfig = data.mixinConfig,
+                hooks = data.xhooks,
+                superclass = cls.superclass,
+                onClassMixedIn = data.onClassMixedIn,
+                parentMixinConfig,
+                befores, afters, extended;
+
+            if (hooks) {
+
+                // Legacy way
+                delete data.xhooks;
+
+                (mixinConfig || (data.mixinConfig = mixinConfig = {})).on = hooks;
+
+            }
+
+            if (mixinConfig) {
+
+                parentMixinConfig = superclass.mixinConfig;
+
+                if (parentMixinConfig) {
+
+                    data.mixinConfig = mixinConfig = CLI.merge({}, parentMixinConfig, mixinConfig);
+
+                }
+
+                data.mixinId = mixinConfig.id;
+
+                if (mixinConfig.beforeHooks) {
+
+                    CLI.Error.raise(&#39;Use of &quot;beforeHooks&quot; is deprecated - use &quot;before&quot; instead&#39;);
+
+                }
+
+                if (mixinConfig.hooks) {
+
+                    CLI.Error.raise(&#39;Use of &quot;hooks&quot; is deprecated - use &quot;after&quot; instead&#39;);
+
+                }
+
+                if (mixinConfig.afterHooks) {
+
+                    CLI.Error.raise(&#39;Use of &quot;afterHooks&quot; is deprecated - use &quot;after&quot; instead&#39;);
+
+                }
+
+                befores = mixinConfig.before;
+                afters = mixinConfig.after;
+                hooks = mixinConfig.on;
+                extended = mixinConfig.extended;
+
+            }
+
+            if (befores || afters || hooks || extended) {
+
+                // Note: tests are with CLI.Class
+                data.onClassMixedIn = function (targetClass) {
+
+                    var mixin = this.prototype,
+                        targetProto = targetClass.prototype,
+                        key;
+
+                    if (befores) {
+
+                        CLI.Object.each(befores, function (key, value) {
+
+                            targetClass.addMember(key, function () {
+
+                                if (mixin[value].apply(this, arguments) !== false) {
+
+                                    return this.callParent(arguments);
+
+                                }
+
+                            });
+
+                        });
+
                     }
-                }
 
-                if (extended) {
-                    targetClass.onExtended(function () {
-                        var args = CLI.Array.slice(arguments, 0);
-                        args.unshift(targetClass);
-                        return extended.apply(this, args);
-                    }, this);
-                }
+                    if (afters) {
 
-                if (onClassMixedIn) {
-                    onClassMixedIn.apply(this, arguments);
-                }
-            };
+                        CLI.Object.each(afters, function (key, value) {
+
+                            targetClass.addMember(key, function () {
+
+                                var ret = this.callParent(arguments);
+                                    mixin[value].apply(this, arguments);
+
+                                return ret;
+
+                            });
+
+                        });
+
+                    }
+
+                    if (hooks) {
+
+                        for (key in hooks) {
+
+                            Mixin.addHook(hooks[key], targetProto, key, mixin);
+
+                        }
+
+                    }
+
+                    if (extended) {
+
+                        targetClass.onExtended(function () {
+
+                            var args = CLI.Array.slice(arguments, 0);
+                                args.unshift(targetClass);
+
+                            return extended.apply(this, args);
+
+                        }, this);
+
+                    }
+
+                    if (onClassMixedIn) {
+
+                        onClassMixedIn.apply(this, arguments);
+
+                    }
+
+                };
+
+            }
+
         }
-    }
-};});
 
-})();
+        // }}}
+
+    };
+
+});
 
 /*
  * Local variables:

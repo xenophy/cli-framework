@@ -224,9 +224,10 @@
                 }
 
                 var me = this,
-                    method = me.raise.caller,
+                //    method = me.raise.caller,
                     msg, name;
 
+                    /*
                 if (method) {
 
                     if (!err.sourceMethod &amp;&amp; (name = method.$name)) {
@@ -238,6 +239,7 @@
                     }
 
                 }
+               */
 
                 if (me.handle(err) !== true) {
 
@@ -246,7 +248,7 @@
                     CLI.log({
                         msg: msg,
                         level: &#39;error&#39;,
-                        dump: err,
+                        dump: false,//err,
                         stack: true
                     });
 

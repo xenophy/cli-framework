@@ -46,10 +46,10 @@
 </span>             * Returns a new object with the given object as the prototype chain. This method is
              * designed to mimic the ECMA standard `Object.create` method and is assigned to that
              * function when it is available.
-             * 
+             *
              * **NOTE** This method does not support the property definitions capability of the
              * `Object.create` method. Only the first argument is supported.
-             * 
+             *
              * @param {Object} object The prototype chain for the new object.
              */
             chain: Object.create,
@@ -458,6 +458,7 @@
             },
 
             // }}}
+            // {{{ eachValue
 
 <span id='CLI-Object-method-eachValue'>            /**
 </span>             * Iterates through an object and invokes the given callback function for each iteration.
@@ -481,30 +482,29 @@
              * @param {Object} [scope] The execution scope (`this`) of the callback function
              */
             eachValue: function(object, fn, scope) {
+
                 var enumerables = CLI.enumerables,
-                i, property;
+                    i, property;
 
                 scope = scope || object;
 
                 for (property in object) {
+
                     if (object.hasOwnProperty(property)) {
+
                         if (fn.call(scope, object[property]) === false) {
+
                             return;
+
                         }
+
                     }
+
                 }
 
-                if (enumerables) {
-                    for (i = enumerables.length; i--; ) {
-                        if (object.hasOwnProperty(property = enumerables[i])) {
-                            if (fn.call(scope, object[property]) === false) {
-                                return;
-                            }
-                        }
-                    }
-                }
             },
 
+            // }}}
             // {{{ merge
 
 <span id='CLI-Object-method-merge'>            /**
@@ -827,7 +827,7 @@
 
                         // Do the second check because we could have extra keys in
                         // object2 that don&#39;t exist in object1.
-                        return check(object1, object2) &amp;&amp; check(object2, object1);  
+                        return check(object1, object2) &amp;&amp; check(object2, object1);
 
                     } else if (!object1 &amp;&amp; !object2) {
 
@@ -899,6 +899,7 @@
 </span>             * @private
              */
             classify: function(object) {
+
                 var prototype = object,
                     objectProperties = [],
                     propertyClassesMap = {},

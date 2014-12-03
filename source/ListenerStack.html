@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+
+/*!
+ * This file is part of CLI Framework
+ */
+
+<span id='global-property-'>/**
+</span> * @private
+ */
+CLI.define(&#39;CLI.event.ListenerStack&#39;, {
+
+    // {{{ currentOrder
+
+    currentOrder: &#39;current&#39;,
+
+    // }}}
+    // {{{ length
+
+    length: 0,
+
+    // }}}
+    // {{{ constructor
+
+    constructor: function() {
+
+        this.listeners = {
+            before: [],
+            current: [],
+            after: []
+        };
+
+        this.lateBindingMap = {};
+
+        return this;
+
+    },
+
+    // }}}
+    // {{{ add
+
+    add: function(fn, scope, options, order, observable) {
+
+        var lateBindingMap = this.lateBindingMap,
+            listeners = this.getAll(order),
+            i = listeners.length,
+            isMethodName = typeof fn === &#39;string&#39;,
+            bindingMap, listener, id, namedScope;
+
+        if (isMethodName &amp;&amp; scope &amp;&amp; scope.isIdentifiable) {
+
+            id = scope.getId();
+
+            bindingMap = lateBindingMap[id];
+
+            if (bindingMap) {
+
+                if (bindingMap[fn]) {
+
+                    return false;
+
+                } else {
+
+                    bindingMap[fn] = true;
+
+                }
+
+            } else {
+
+                lateBindingMap[id] = bindingMap = {};
+                bindingMap[fn] = true;
+
+            }
+
+        } else {
+
+            if (i &gt; 0) {
+
+                while (i--) {
+
+                    listener = listeners[i];
+
+                    if (listener.fn === fn &amp;&amp; listener.scope === scope) {
+
+                        listener.options = options;
+                        return false;
+
+                    }
+                }
+
+            }
+
+        }
+
+        if (!isMethodName) {
+
+            namedScope = CLI._namedScopes[scope];
+
+            if (namedScope &amp;&amp; namedScope.isController) {
+
+                // If the user declared the listener fn as a function reference, not a
+                // string, controller scope is invalid
+                CLI.Error.raise(&quot;Cannot resolve scope &#39;controller&#39; for &#39;&quot; + options.type + &quot;&#39; listener declared on Observable: &#39;&quot; + observable.id + &quot;&#39;&quot;);
+
+            }
+
+            scope = (scope &amp;&amp; !namedScope) ? scope : observable;
+        }
+
+        listener = this.create(fn, scope, options, order, observable);
+
+        // Allow for {foo: &#39;onFoo&#39;, scope: &#39;this/controller&#39;}
+        if (isMethodName &amp;&amp; (!scope || scope in CLI._namedScopes)) {
+
+            listener.boundFn = this.bindDynamicScope(observable, fn, scope);
+            listener.isLateBinding = false;
+
+        }
+
+        if (options &amp;&amp; options.prepend) {
+
+            delete options.prepend;
+            listeners.unshift(listener);
+
+        } else {
+
+            listeners.push(listener);
+
+        }
+
+        this.length++;
+
+        return true;
+
+    },
+
+    // }}}
+    // {{{ bindDynamicScope
+
+    bindDynamicScope: function (observable, funcName, passedScope) {
+
+        return function () {
+
+            var scope = observable.resolveListenerScope(passedScope);
+
+            if (typeof scope[funcName] !== &#39;function&#39;) {
+                CLI.Error.raise(&#39;No such method &#39; + funcName + &#39; on &#39; + scope.$className);
+            }
+
+            return scope[funcName].apply(scope, arguments);
+
+        };
+
+    },
+
+    // }}}
+    // {{{ getAt
+
+    getAt: function (index, order) {
+
+        return this.getAll(order)[index];
+
+    },
+
+    // }}}
+    // {{{ getAll
+
+    getAll: function (order) {
+
+        return this.listeners[order || this.currentOrder];
+
+    },
+
+    // }}}
+    // {{{ count
+
+    count: function (order) {
+
+        return this.getAll(order).length;
+
+    },
+
+    // }}}
+    // {{{ create
+
+    create: function (fn, scope, options, order, observable) {
+
+        options = options || {};
+
+        return {
+            stack: this,
+            fn: fn,
+            firingFn: false,
+            boundFn: false,
+            isLateBinding: typeof fn === &#39;string&#39;,
+            scope: scope,
+            options: options,
+            order: order,
+            observable: observable,
+            type: options.type
+        };
+
+    },
+
+    // }}}
+    // {{{ remove
+
+    remove: function (fn, scope, order) {
+
+        var listeners = this.getAll(order),
+            i = listeners.length,
+            isRemoved = false,
+            lateBindingMap = this.lateBindingMap,
+            listener, id;
+
+        if (i &gt; 0) {
+
+            // Start from the end index, faster than looping from the
+            // beginning for &quot;single&quot; listeners,
+            // which are normally LIFO
+            while (i--) {
+
+                listener = listeners[i];
+
+                if (listener.fn === fn &amp;&amp; listener.scope === scope) {
+
+                    listeners.splice(i, 1);
+                    isRemoved = true;
+                    this.length--;
+
+                    if (scope &amp;&amp; scope.isIdentifiable &amp;&amp; typeof fn === &#39;string&#39;) {
+
+                        id = scope.getId();
+
+                        if (lateBindingMap[id] &amp;&amp; lateBindingMap[id][fn]) {
+
+                            delete lateBindingMap[id][fn];
+
+                        }
+
+                    }
+
+                    break;
+                }
+
+            }
+
+        }
+
+        return isRemoved;
+    }
+
+    // }}}
+
+});
+
+/*
+ * Local variables:
+ * tab-width: 4
+ * c-basic-offset: 4
+ * c-hanging-comment-ender-p: nil
+ * End:
+ */
+</pre>
+</body>
+</html>

@@ -211,10 +211,7 @@
  *
  * @singleton
  */
-
 (function() {
-
-    &quot;use strict&quot;;
 
     CLI.ClassManager = (function(Class, alias, arraySlice, arrayFrom, global) {
 
@@ -1687,7 +1684,7 @@
                 //      3: (config)
                 //      4: (xtype, component)
                 //      5: (component)
-                //      
+                //
                 var xtype = name,
                 alias, className, T;
 
@@ -1772,12 +1769,12 @@
              *              }
              *          };
              *      });
-             * 
+             *
              * _Note_ that when using override, the above syntax will not override successfully, because
-             * the passed function would need to be executed first to determine whether or not the result 
-             * is an override or defining a new object. As such, an alternative syntax that immediately 
+             * the passed function would need to be executed first to determine whether or not the result
+             * is an override or defining a new object. As such, an alternative syntax that immediately
              * invokes the function can be used:
-             * 
+             *
              *      CLI.define(&#39;MyApp.override.BaseOverride&#39;, function () {
              *          var counter = 0;
              *
@@ -1788,7 +1785,7 @@
              *              }
              *          };
              *      }());
-             * 
+             *
              *
              * When using this form of `CLI.define`, the function is passed a reference to its
              * class. This can be used as an efficient way to access any static properties you
@@ -1878,13 +1875,13 @@
              *              }
              *          }
              *      });
-             * 
+             *
              * Starting in version 4.2.2, overrides can declare their `compatibility` based
              * on the framework version or on versions of other packages. For details on the
              * syntax and options for these checks, see `CLI.checkVersion`.
-             * 
+             *
              * The simplest use case is to test framework version for compatibility:
-             * 
+             *
              *      CLI.define(&#39;App.overrides.grid.Panel&#39;, {
              *          override: &#39;CLI.grid.Panel&#39;,
              *
@@ -1892,10 +1889,10 @@
              *
              *          //...
              *      });
-             * 
+             *
              * An array is treated as an OR, so if any specs match, the override is
              * compatible.
-             * 
+             *
              *      CLI.define(&#39;App.overrides.some.Thing&#39;, {
              *          override: &#39;Foo.some.Thing&#39;,
              *
@@ -1906,9 +1903,9 @@
              *
              *          //...
              *      });
-             * 
+             *
              * To require that all specifications match, an object can be provided:
-             * 
+             *
              *      CLI.define(&#39;App.overrides.some.Thing&#39;, {
              *          override: &#39;Foo.some.Thing&#39;,
              *
@@ -1921,9 +1918,9 @@
              *
              *          //...
              *      });
-             * 
+             *
              * Because the object form is just a recursive check, these can be nested:
-             * 
+             *
              *      CLI.define(&#39;App.overrides.some.Thing&#39;, {
              *          override: &#39;Foo.some.Thing&#39;,
              *
@@ -1993,14 +1990,14 @@
 </span>             * Undefines a class defined using the #define method. Typically used
              * for unit testing where setting up and tearing down a class multiple
              * times is required.  For example:
-             * 
+             *
              *     // define a class
              *     CLI.define(&#39;Foo&#39;, {
              *        ...
              *     });
-             *     
+             *
              *     // run test
-             *     
+             *
              *     // undefine the class
              *     CLI.undefine(&#39;Foo&#39;);
              * @param {String} className The class name to undefine in string dot-namespaced format.

@@ -25,10 +25,7 @@
 </span> * @class CLI.Inventory
  * @private
  */
-
 (function() {
-
-    &quot;use strict&quot;;
 
     // {{{ CLI.Inventory
 
@@ -96,8 +93,10 @@
                 nameMapping;
 
             if (CLI.isString(name)) {
+
                 mappings = {};
                 mappings[name] = alternate;
+
             }
 
             for (cls in mappings) {
@@ -117,13 +116,17 @@
                 for (i = 0; i &lt; length; ++i) {
 
                     if (!(a = aliases[i])) {
+
                         continue;
+
                     }
 
                     if (toName[a] !== cls) {
 
                         if (toName[a]) {
+
                             CLI.log.warn(&quot;Overriding existing mapping: &#39;&quot; + a + &quot;&#39; From &#39;&quot; + toName[a] + &quot;&#39; to &#39;&quot; + cls + &quot;&#39;. Is this intentional?&quot;);
+
                         }
 
                         toName[a] = cls;
@@ -146,14 +149,18 @@
          * @return {Array} aliases
          */
         getAliasesByName: function (name) {
+
             return this.nameToAliases[name] || null;
+
         },
 
         // }}}
         // {{{ getAlternatesByName
 
         getAlternatesByName: function (name) {
+
             return this.nameToAlternates[name] || null;
+
         },
 
         // }}}
@@ -166,7 +173,9 @@
          * @return {String} className
          */
         getNameByAlias: function(alias) {
+
             return this.aliasToName[alias] || &#39;&#39;;
+
         },
 
         // }}}
@@ -179,7 +188,9 @@
          * @return {String} className
          */
         getNameByAlternate: function (alternate) {
+
             return this.alternateToName[alternate] || &#39;&#39;;
+
         },
 
         // }}}
@@ -325,6 +336,7 @@
             }
 
             return ret;
+
         },
 
         // }}}
@@ -455,25 +467,25 @@
 <span id='CLI-Inventory-method-select'>        /**
 </span>         * This method returns a selector object that produces a selection of classes and
          * delivers them to the desired `receiver`.
-         * 
+         *
          * The returned selector object has the same methods as the given `receiver` object
          * but these methods on the selector accept a first argument that expects a pattern
          * or array of patterns. The actual method on the `receiver` will be called with an
          * array of classes that match these patterns but with any patterns passed to an
          * `exclude` call removed.
-         * 
+         *
          * For example:
-         * 
+         *
          *      var sel = inventory.select({
          *              require: function (classes) {
          *                  console.log(&#39;Classes: &#39; + classes.join(&#39;,&#39;));
          *              }
          *          });
-         * 
+         *
          *      sel.exclude(&#39;CLI.chart.*&#39;).exclude(&#39;CLI.draw.*&#39;).require(&#39;*&#39;);
-         *      
+         *
          *      // Logs all classes except those in the CLI.chart and CLI.draw namespaces.
-         * 
+         *
          * @param {Object} receiver
          * @param {Object} [scope] Optional scope to use when calling `receiver` methods.
          * @return {Object} An object with the same methods as `receiver` plus `exclude`.

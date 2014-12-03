@@ -109,6 +109,17 @@ CLI._startTime = Date.now();
         identityFn: identityFn,
 
         // }}}
+        // {{{ $eventNameMap
+
+<span id='CLI-property-S-eventNameMap'>        /**
+</span>         * @property {Object} $eventNameMap
+         * A map of event names which contained the lower-cased verions of any mixed
+         * case event names.
+         * @private
+         */
+        $eventNameMap: {},
+
+        // }}}
         // {{{ privateFn
 
 <span id='CLI-property-privateFn'>        /**
@@ -171,12 +182,17 @@ CLI._startTime = Date.now();
         &#39;./class/Inventory.js&#39;,
         &#39;./class/ClassManager.js&#39;,
         &#39;./class/Loader.js&#39;,
-        &#39;./class/Mixin.js&#39;,
-        &#39;./Template.js&#39;,
+        &#39;./class/Mixin.js&#39;
 
     ].forEach(function(file) {
         require(file);
     });
+
+    CLI.require([
+        &#39;CLI.Template&#39;,
+        &#39;CLI.mixin.Observable&#39;,
+        &#39;CLI.app.Application&#39;
+    ]);
 
     // }}}
 
