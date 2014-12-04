@@ -1630,15 +1630,9 @@
                 // Still not existing at this point, try to load it via synchronous mode as the last resort
                 if (!cls) {
 
-                    // TODO: change for node
-
-                    !isNonBrowser &amp;&amp;
-                        CLI.log.warn(&quot;[CLI.Loader] Synchronously loading &#39;&quot; + name + &quot;&#39;; consider adding &quot; +
-                                     &quot;CLI.require(&#39;&quot; + name + &quot;&#39;) above CLI.onReady&quot;);
-
                     CLI.syncRequire(name);
-
                     cls = Manager.get(name);
+
                 }
 
                 if (!cls) {
@@ -2318,11 +2312,9 @@
             Manager.addAlternate(alternates);
         }
 
-
         Manager.setPath({
             CLI: require(&#39;path&#39;).normalize(__dirname + &#39;/../&#39;)
         });
-
 
         return Manager;
 
