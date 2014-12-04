@@ -844,566 +844,233 @@ describe("CLI.mixin.Observable", function() {
         });
 
         // }}}
-
-       /*
         // {{{ destroy()
 
         describe("destroy()", function() {
+
             it("should fire a 'destroy' event", function() {
-                spyOn(foo, 'fireEvent');
+
+                var spy = sinon.spy(foo, 'fireEvent');
 
                 foo.destroy();
 
-                expect(foo.fireEvent).toHaveBeenCalledWith('destroy', foo);
+                assert.equal(spy.calledWith('destroy', foo), true);
+
+                spy.restore();
+
             });
 
             it("should invoke both clearListeners() and clearManagedListeners()", function() {
-                spyOn(foo, 'clearListeners');
-                spyOn(foo, 'clearManagedListeners');
+
+                var clearListeners = sinon.spy(foo, 'clearListeners');
+                var clearManagedListeners = sinon.spy(foo, 'clearManagedListeners');
 
                 foo.destroy();
 
-                expect(foo.clearListeners).toHaveBeenCalled();
-                expect(foo.clearManagedListeners).toHaveBeenCalled();
+                assert.equal(clearListeners.called, true);
+                assert.equal(clearManagedListeners.called, true);
+
+                clearListeners.restore();
+                clearManagedListeners.restore();
+
             });
 
             it("should remove all managed listeners from the other object", function() {
+
                 var fn2 = function() {};
 
-                spyOn(foo, 'doRemoveListener');
+                var spy = sinon.spy(foo, 'doRemoveListener');
 
                 foo.on('foo', fn, bar, options, order);
                 foo.on('bar', fn2, bar, options, order);
 
                 bar.destroy();
 
-                expect(foo.doRemoveListener).toHaveBeenCalled();
-                expect(foo.doRemoveListener.callCount).toBe(3);
-                expect(foo.doRemoveListener.calls[0].args[0]).toEqual('destroy');
-                expect(foo.doRemoveListener.calls[1].args).toEqual(['foo', fn, bar, {}, order]);
-                expect(foo.doRemoveListener.calls[2].args).toEqual(['bar', fn2, bar, {}, order]);
+                assert.equal(spy.called, true);
+                assert.equal(spy.callCount, 3);
+                assert.equal(spy.args[0][0], 'destroy');
+                assert.deepEqual(spy.args[1], ['foo', fn, bar, {}, order]);
+                assert.deepEqual(spy.args[2], ['bar', fn2, bar, {}, order]);
+
+                spy.restore();
+
             });
+
         });
 
+        // }}}
         // {{{ resolveListenerScope
 
         describe("resolveListenerScope", function() {
+
             beforeEach(function() {
                 foo = new Foo();
             });
 
             it("should resolve to the observable instance by default", function() {
-                expect(foo.resolveListenerScope()).toBe(foo);
+
+                assert.equal(foo.resolveListenerScope(), foo);
+
             });
 
             it("should resolve to an object if passed", function() {
+
                 var scope = {};
-                expect(foo.resolveListenerScope(scope)).toBe(scope);
+
+                assert.equal(foo.resolveListenerScope(scope), scope);
+
             });
 
             it("should resolve to the observable instance if 'this' is passed", function() {
-                expect(foo.resolveListenerScope('this')).toBe(foo);
+
+                assert.equal(foo.resolveListenerScope('this'), foo);
+
             });
 
             it("should throw an error if 'controller' is passed", function() {
-                expect(function() {
+
+                beginSilent();
+
+                assert.throws(function() {
                     foo.resolveListenerScope('controller');
-                }).toThrow(
-                'scope: "controller" can only be specified on classes that derive from CLI.Component or CLI.Widget'
-                );
+                });
+
+                endSilent();
+
             });
+
         });
+
+        // }}}
+
     });
 
-    // This suite contains functional tests for CLI.mixin.Observable.  The true "unit"
-    // tests are located above.  The purpose of the following functional tests is to verify
-    // that end-to-end functionality works as expected.  For example, when I listen for
-    // event "x" with "y" options, I expect my handler to be called with certain parameters
-    // and scope when I trigger a dom event that should cause event "x" to fire.
-    // {{{ add/remove listener functional specs
-
-    describe("add/remove listener functional specs", function() {
-        function makeSuite(delegated) {
-
-            describe("element " + (delegated ? "(with delegated listeners)" : "(with direct listeners)"), function() {
-                var element, handler, handler2, scope, args, child, grandchild;
-
-                function getOptions(opt) {
-                    return CLI.apply({
-                        // we'll use "click" as the default event type for element observability
-                        click: handler,
-                        delegated: delegated
-                    }, opt)
-                }
-
-                function addListener(opt) {
-                    element.addListener(getOptions(opt));
-                }
-
-                function removeListener(opt) {
-                    var opt = getOptions(opt);
-                    element.removeListener(opt);
-                }
-
-                function fire(el, eventName) {
-                    jasmine.fireMouseEvent(el || element, eventName || 'click');
-                }
-
-                beforeEach(function() {
-                    handler = jasmine.createSpy();
-                    handler.andCallFake(function() {
-                        scope = this;
-                        args = arguments;
-                    });
-                    handler2 = jasmine.createSpy();
-
-                    element = CLI.getBody().createChild({
-                        id: 'parent',
-                        cn: [
-                            {
-                            id: 'child',
-                            cls: 'child',
-                            cn: { id: 'grandchild', cls: 'grandchild' }
-                        }
-                        ]
-                    });
-
-                    child = document.getElementById('child');
-                    grandchild = document.getElementById('grandchild');
-                });
-
-                afterEach(function() {
-                    element.destroy();
-                });
-
-                // {{{ addListener
-
-                describe("addListener", function() {
-                    itFiresMouseEvents("should handle an event", function() {
-                        addListener();
-                        fire();
-                        expect(handler.callCount).toBe(1);
-                        expect(args[0] instanceof CLI.event.Event).toBe(true);
-                        expect(args[1]).toBe(element.dom);
-                        expect(args[2]).toEqual({ delegated: delegated });
-                        expect(scope).toBe(element);
-                    });
-
-                    itFiresMouseEvents("should handle an event that bubbled from a descendant element", function() {
-                        addListener();
-                        fire(grandchild);
-                        expect(handler.callCount).toBe(1);
-                        expect(args[0] instanceof CLI.event.Event).toBe(true);
-                        expect(args[1]).toBe(grandchild);
-                        expect(args[2]).toEqual({ delegated: delegated });
-                        expect(scope).toBe(element);
-                    });
-
-                    itFiresMouseEvents("should attach multiple handlers to the same event", function() {
-                        addListener();
-                        addListener({ click: handler2 });
-                        fire();
-                        expect(handler.callCount).toBe(1);
-                        expect(handler2.callCount).toBe(1);
-                    });
-
-                    itFiresMouseEvents("should call the event handler with the correct scope when the scope option is used", function() {
-                        var obj = {};
-
-                        addListener({ scope: obj });
-                        fire();
-                        expect(scope).toBe(obj);
-                    });
-
-                    itFiresMouseEvents("should call the handler multiple times if the event fires more than once", function() {
-                        addListener();
-                        fire();
-                        fire();
-                        fire();
-                        expect(handler.callCount).toBe(3);
-                    });
-
-                    itFiresMouseEvents("should remove a single listener after the first fire", function() {
-                        addListener({ single: true });
-                        fire();
-                        expect(handler.callCount).toBe(1);
-                        // fire again
-                        fire();
-                        // still 1
-                        expect(handler.callCount).toBe(1);
-                    });
-
-                    itFiresMouseEvents("should delay the listener", function() {
-                        addListener({ delay: 150 });
-                        fire();
-                        waits(100);
-                        runs(function() {
-                            expect(handler).not.toHaveBeenCalled();
-                        });
-                        waits(100);
-                        runs(function() {
-                            expect(handler).toHaveBeenCalled();
-                        });
-                    });
-
-                    itFiresMouseEvents("should buffer the listener", function() {
-                        addListener({ buffer: 150 });
-                        fire();
-                        waits(100);
-                        runs(function() {
-                            expect(handler).not.toHaveBeenCalled();
-                            fire();
-                        });
-                        waits(100);
-                        runs(function() {
-                            expect(handler).not.toHaveBeenCalled();
-                        });
-                        waits(100);
-                        runs(function() {
-                            expect(handler).toHaveBeenCalled();
-                        });
-                    });
-
-                    itFiresMouseEvents("should attach listeners with a delegate selector", function() {
-                        addListener({ delegate: '.grandchild' });
-                        fire(child);
-                        expect(handler).not.toHaveBeenCalled();
-                        fire(grandchild);
-                        expect(handler).toHaveBeenCalled();
-                    });
-
-                    // {{{ propagation
-
-                    describe("propagation", function() {
-                        var results;
-
-                        beforeEach(function() {
-                            results = [];
-                            grandchild = CLI.get('grandchild');
-                            child = CLI.get('child');
-                        });
-
-                        afterEach(function() {
-                            grandchild.destroy();
-                            child.destroy();
-                        });
-
-                        itFiresMouseEvents("should fire bubble listeners in bottom-up order", function() {
-                            element.on({
-                                click: function() {
-                                    results.push(1);
-                                }
-                            });
-
-                            child.on({
-                                click: function() {
-                                    results.push(2);
-                                }
-                            });
-
-                            grandchild.on({
-                                click: function() {
-                                    results.push(3);
-                                }
-                            });
-
-                            fire(grandchild);
-
-                            expect(results).toEqual([3, 2, 1]);
-                        });
-
-                        itFiresMouseEvents("should fire capture listeners in top-down order", function() {
-                            element.on({
-                                click: function() {
-                                    results.push(1);
-                                },
-                                capture: true
-                            });
-
-                            child.on({
-                                click: function() {
-                                    results.push(2);
-                                },
-                                capture: true
-                            });
-
-                            grandchild.on({
-                                click: function() {
-                                    results.push(3);
-                                },
-                                capture: true
-                            });
-
-                            fire(grandchild);
-
-                            expect(results).toEqual([1, 2, 3]);
-                        });
-
-                        itFiresMouseEvents("should stop bubbling when stopPropagation is called", function() {
-                            element.on({
-                                click: handler
-                            });
-
-                            grandchild.on({
-                                click: function(e) {
-                                    e.stopPropagation();
-                                }
-                            });
-
-                            fire(grandchild);
-
-                            expect(handler).not.toHaveBeenCalled();
-                        });
-
-                        itFiresMouseEvents("should stop propagating when stopPropagation is called during the capture phase", function() {
-                            element.on({
-                                click: function(e) {
-                                    e.stopPropagation();
-                                },
-                                capture: true
-                            });
-
-                            grandchild.on({
-                                click: handler,
-                                capture: true
-                            });
-
-                            fire(grandchild);
-
-                            expect(handler).not.toHaveBeenCalled();
-                        });
-
-                        itFiresMouseEvents("should skip the entire bubble phase if stopPropagation is called during the capture phase", function() {
-                            element.on({
-                                click: function(e) {
-                                    e.stopPropagation();
-                                },
-                                capture: true
-                            });
-
-                            element.on({
-                                click: handler
-                            });
-
-                            grandchild.on({
-                                click: handler2
-                            });
-
-                            fire(grandchild);
-
-                            expect(handler).not.toHaveBeenCalled();
-                            expect(handler2).not.toHaveBeenCalled();
-                        });
-                    });
-                });
-
-                // {{{ removeListener
-
-                describe("removeListener", function() {
-                    it("should remove the event listener", function() {
-                        addListener();
-                        removeListener();
-                        fire();
-                        expect(handler).not.toHaveBeenCalled();
-                    });
-
-                    itFiresMouseEvents("should remove the event listener with scope", function() {
-                        var scope = {};
-                        addListener({ scope: scope });
-                        removeListener({ scope: scope });
-                        fire();
-                        expect(handler).not.toHaveBeenCalled();
-                    });
-
-                    itFiresMouseEvents("should remove multiple handlers from the same event", function() {
-                        addListener();
-                        addListener({ click: handler2 });
-                        removeListener();
-                        fire();
-                        expect(handler).not.toHaveBeenCalled();
-                        expect(handler2.callCount).toBe(1);
-                        removeListener({ click: handler2 });
-                        fire();
-                        expect(handler2.callCount).toBe(1);
-                    });
-
-
-                    itFiresMouseEvents("should remove a single event listener", function() {
-                        addListener({ single: true });
-                        removeListener();
-                        fire();
-                        expect(handler).not.toHaveBeenCalled();
-                    });
-
-                    itFiresMouseEvents("should remove a delayed event listener", function() {
-                        addListener({ delay: 50 });
-                        removeListener();
-                        fire();
-                        waits(100);
-                        runs(function() {
-                            expect(handler).not.toHaveBeenCalled();
-                        });
-                    });
-
-                    itFiresMouseEvents("should remove a buffered event listener", function() {
-                        addListener({ buffer: 50 });
-                        removeListener();
-                        fire();
-                        waits(100);
-                        runs(function() {
-                            expect(handler).not.toHaveBeenCalled();
-                        });
-                    });
-
-                    itFiresMouseEvents("should remove listeners with a delegate selector", function() {
-                        addListener({ delegate: '.grandchild' });
-                        removeListener({ delegate: '.grandchild' });
-                        fire(grandchild);
-                        expect(handler).not.toHaveBeenCalled();
-                    });
-                });
-
-                // {{{ clearListeners
-
-                describe("clearListeners", function() {
-                    itFiresMouseEvents("should remove all the listeners", function() {
-                        var handler3 = jasmine.createSpy(),
-                        handler4 = jasmine.createSpy();
-
-                        element.on({
-                            click: handler
-                        });
-
-                        element.on({
-                            click: handler2,
-                            delegate: '.grandchild'
-                        });
-
-                        element.on({
-                            click: handler3,
-                            capture: true
-                        });
-
-                        element.on({
-                            click: handler4
-                        });
-
-                        element.clearListeners();
-
-                        fire(grandchild);
-
-                        expect(handler).not.toHaveBeenCalled();
-                        expect(handler2).not.toHaveBeenCalled();
-                        expect(handler3).not.toHaveBeenCalled();
-                        expect(handler4).not.toHaveBeenCalled();
-                    });
-                });
-            });
-        }
-
-        makeSuite(true);
-        makeSuite(false);
-    });
-
+    // }}}
     // {{{ event name normalization
 
     describe("event name normalization", function() {
+
         var spy, o;
 
         beforeEach(function() {
-            spy = jasmine.createSpy();
+            spy = sinon.spy();
             o = new CLI.mixin.Observable();
         });
 
         // {{{ firing
 
         describe("firing", function() {
+
             it("should match when firing with lower case", function() {
+
                 o.on('FOO', spy);
                 o.fireEvent('foo');
-                expect(spy).toHaveBeenCalled();
+
+                assert.equal(spy.called, true);
+
             });
 
             it("should match when firing with mixed case", function() {
+
                 o.on('foo', spy);
                 o.fireEvent('FOO');
-                expect(spy).toHaveBeenCalled();
+
+                assert.equal(spy.called, true);
+
             });
+
         });
 
+        // }}}
         // {{{ removing
 
         describe("removing", function() {
+
             it("should match when removing with lower case", function() {
+
                 o.on('FOO', spy);
                 o.un('foo', spy);
                 o.fireEvent('foo');
-                expect(spy).not.toHaveBeenCalled();
+
+                assert.equal(spy.called, false);
+
             });
 
             it("should match when removing with mixed case", function() {
+
                 o.on('foo', spy);
                 o.un('FOO', spy);
                 o.fireEvent('FOO');
-                expect(spy).not.toHaveBeenCalled();
+
+                assert.equal(spy.called, false);
+
             });
+
         });
 
+        // }}}
         // {{{ hasListener(s)
 
         describe("hasListener(s)", function() {
+
             it("should use lower case for hasListeners", function() {
+
                 o.on('FOO', spy);
-                expect(o.hasListeners.foo).toBe(1);
+
+                assert.equal(o.hasListeners.foo, 1);
+
             });
 
             it("should use lower case for hasListener", function() {
+
                 o.on('FOO', spy);
-                expect(o.hasListener('foo')).toBe(true);
+
+                assert.equal(o.hasListener('foo'), true);
+
             });
+
         });
 
+        // }}}
         // {{{ suspend/resume
 
         describe("suspend/resume", function() {
+
             it("should ignore case when asking if an event is suspended", function() {
+
                 o.suspendEvent('FOO');
-                expect(o.isSuspended('foo')).toBe(true);
+
+                assert.equal(o.isSuspended('foo'), true);
+
             });
 
             it("should ignore case when resuming events", function() {
+
                 o.on('foo', spy);
                 o.suspendEvent('FOO');
                 o.fireEvent('foo');
-                expect(spy).not.toHaveBeenCalled();
+
+                assert.equal(spy.called, false);
+
                 o.resumeEvent('foo');
                 o.fireEvent('foo');
-                expect(spy).toHaveBeenCalled();
+
+                assert.equal(spy.called, true);
+
             });
+
         });
 
-        // {{{ bubbling
-
-        describe("bubbling", function() {
-            it("should ignore case when bubbling events", function() {
-                var other = new CLI.mixin.Observable();
-                other.on('foo', spy);
-                o.enableBubble('FOO');
-                o.getBubbleTarget = function() {
-                    return other;
-                }
-                o.fireEvent('foo');
-                expect(spy).toHaveBeenCalled();
-            });
-        });
     });
 
     // {{{ hasListeners
 
     describe("hasListeners", function() {
+
         var dispatcher;
 
         beforeEach(function() {
+
             CLI.define('spec.Foo', {
                 extend: 'CLI.mixin.Observable',
                 observableType: 'foo'
@@ -1418,84 +1085,112 @@ describe("CLI.mixin.Observable", function() {
 
             delete dispatcher.hasListeners.foo;
             delete dispatcher.hasListeners.bar;
+
         });
 
         afterEach(function() {
+
             CLI.undefine('spec.Foo');
             CLI.undefine('spec.Bar');
             CLI.undefine('spec.Baz');
 
             delete dispatcher.hasListeners.foo;
             delete dispatcher.hasListeners.bar;
+
         });
 
         it("should add the observableType to the dispatcher's hasListeners object when the first instance of a given observableType is created", function() {
+
             var hasListeners = dispatcher.hasListeners;
 
-            expect('foo' in hasListeners).toBe(false);
+            assert.equal('foo' in hasListeners, false);
+
             new spec.Foo();
-            expect(typeof hasListeners.foo).toBe('object');
+
+            assert.equal(typeof hasListeners.foo, 'object');
+
         });
 
         it("should chain the prototype of the observable instance's hasListeners object to the dispatchers hasListeners object for the given observableType", function() {
+
             var hasListeners = dispatcher.hasListeners,
-            foo = new spec.Foo();
+                foo = new spec.Foo();
 
             hasListeners.foo.someEvent = 5;
 
-            expect(foo.hasListeners.someEvent).toBe(5);
+            assert.equal(foo.hasListeners.someEvent, 5);
+
         });
 
         it("should not add the observableType to the dispatcher's hasListeners if it already exists", function() {
+
             var hasListeners = dispatcher.hasListeners,
-            fooListeners;
+                fooListeners;
 
             new spec.Foo();
             fooListeners = hasListeners.foo;
             new spec.Bar();  // another observable with observableType == 'foo'
-            expect(hasListeners.foo).toBe(fooListeners);
+
+            assert.equal(hasListeners.foo, fooListeners);
+
         });
 
         it("should increment or decrement the dispatcher's hasListeners when the dispatcher's addListener/removeListener is called with no observable refrence", function() {
+
             // MVC controllers do this.  unfortunately there's no way to increment the
             // observable's hasListeners, since all we have is a selector, so the best we
             // can do is increment the global hasListeners for the given observableType
             // i.e. we know there is someone of the given type listening, we just don't
             // know who.
-            function handler() {}
-            function handler2() {}
+            function handler() {};
+            function handler2() {};
+
             dispatcher.addListener('foo', '#bar', 'click', handler);
-            expect(dispatcher.hasListeners.foo.click).toBe(1);
+            assert.equal(dispatcher.hasListeners.foo.click, 1);
+
             dispatcher.addListener('foo', '#bar', 'click', handler2);
-            expect(dispatcher.hasListeners.foo.click).toBe(2);
+            assert.equal(dispatcher.hasListeners.foo.click, 2);
+
             dispatcher.removeListener('foo', '#bar', 'click', handler);
-            expect(dispatcher.hasListeners.foo.click).toBe(1);
+            assert.equal(dispatcher.hasListeners.foo.click, 1);
+
             dispatcher.removeListener('foo', '#bar', 'click', handler2);
-            expect('click' in dispatcher.hasListeners.foo).toBe(false);
+            assert.equal('click' in dispatcher.hasListeners.foo, false);
+
         });
 
         it("should increment or decrement the observable's hasListeners when the observable's addListener/removeListener is called", function() {
+
             // MVC controllers do this.  unfortunately there's no way to increment the
             // observable's hasListeners, since all we have is a selector, so the best we
             // can do is increment the global hasListeners for the given observableType
             // i.e. we know there is someone of the given type listening, we just don't
             // know who.
+
             var foo = new spec.Foo();
+
             function handler() {}
             function handler2() {}
-            expect(foo.hasListeners.hasOwnProperty('click')).toBe(false);
+
+            assert.equal(foo.hasListeners.hasOwnProperty('click'), false);
             foo.addListener('click', handler);
-            expect(foo.hasListeners.hasOwnProperty('click')).toBe(true);
-            expect(foo.hasListeners.click).toBe(1);
+
+            assert.equal(foo.hasListeners.hasOwnProperty('click'), true);
+            assert.equal(foo.hasListeners.click, 1);
+
             foo.addListener('click', handler2);
-            expect(foo.hasListeners.click).toBe(2);
+            assert.equal(foo.hasListeners.click, 2);
+
             foo.removeListener('click', handler);
-            expect(foo.hasListeners.click).toBe(1);
+            assert.equal(foo.hasListeners.click, 1);
+
             foo.removeListener('click', handler2);
-            expect(foo.hasListeners.hasOwnProperty('click')).toBe(false);
+            assert.equal(foo.hasListeners.hasOwnProperty('click'), false);
+
         });
 
         it("should delete all properties from the observable's hasListeners object when clearListeners is called", function() {
+
             var foo = new spec.Foo();
 
             foo.addListener('refresh', function() {});
@@ -1504,30 +1199,34 @@ describe("CLI.mixin.Observable", function() {
 
             foo.clearListeners();
 
-            expect(foo.hasListeners.hasOwnProperty('refresh')).toBe(false);
-            expect(foo.hasListeners.hasOwnProperty('update')).toBe(false);
+            assert.equal(foo.hasListeners.hasOwnProperty('refresh'), false);
+            assert.equal(foo.hasListeners.hasOwnProperty('update'), false);
         });
 
         it("should remove properties from the dispatcher's hasListeners object for the given observableType when the dispatcher's clearListeners() is called without an observable reference", function() {
+
             dispatcher.addListener('foo', '#bar', 'refresh', function() {});
             dispatcher.addListener('foo', '#bar', 'update', function() {});
             dispatcher.addListener('foo', '#baz', 'refresh', function() {});
 
             dispatcher.clearListeners('foo', '#bar');
 
-            expect('update' in dispatcher.hasListeners.foo).toBe(false);
-            expect(dispatcher.hasListeners.foo.refresh).toBe(1);
+            assert.equal('update' in dispatcher.hasListeners.foo, false);
+            assert.equal(dispatcher.hasListeners.foo.refresh, 1);
+
         });
 
         it('should only decrement hasListeners when a listener is actually removed', function() {
+
             var foo = new spec.Foo(),
-            event1Counter = 0;
+                event1Counter = 0;
 
             foo.addListener('event1', function() {
                 event1Counter++;
             });
             foo.fireEvent('event1');
-            expect(event1Counter).toBe(1);
+
+            assert.equal(event1Counter, 1);
 
             // Attempt to remove a nonexistent listener. Sohuld not disturb the listener stack or the hasListeners counter
             foo.removeListener('event1', CLI.emptyFn);
@@ -1535,8 +1234,9 @@ describe("CLI.mixin.Observable", function() {
             foo.fireEvent('event1');
 
             // Second firing of the event should work, and hasListeners should still be 1
-            expect(event1Counter).toBe(2);
-            expect(foo.hasListeners.event1).toBe(1);
+            assert.equal(event1Counter, 2);
+            assert.equal(foo.hasListeners.event1, 1);
+
         });
 
     });
@@ -1544,9 +1244,11 @@ describe("CLI.mixin.Observable", function() {
     // {{{ scope: this
 
     describe("scope: this", function() {
+
         var Cls;
 
         beforeEach(function() {
+
             Cls = CLI.define(null, {
                 mixins: ['CLI.mixin.Observable'],
 
@@ -1557,33 +1259,48 @@ describe("CLI.mixin.Observable", function() {
                 method1: function() {},
                 method2: function() {}
             });
+
         });
 
         it("should fire on the observable", function() {
+
             var o = new Cls();
-            spyOn(o, 'method1');
+
+            var spy = sinon.spy(o, 'method1');
+
             o.on('custom', 'method1', 'this');
             o.fireEvent('custom');
-            expect(o.method1).toHaveBeenCalled();
-            expect(o.method1.mostRecentCall.object).toBe(o);
+
+            assert.equal(spy.called, true);
+            assert.equal(getMostRecentCall(spy).thisValue, o);
+
         });
 
         it("should remove the listener", function() {
+
             var o = new Cls();
-            spyOn(o, 'method1');
+
+            var spy = sinon.spy(o, 'method1');
+
             o.on('custom', 'method1', 'this');
             o.un('custom', 'method1', 'this');
             o.fireEvent('custom');
-            expect(o.method1).not.toHaveBeenCalled();
+
+            assert.equal(spy.called, false);
+
         });
+
     });
 
+    // }}}
     // {{{ scope: controller
 
     describe("scope: controller", function() {
+
         var Cls;
 
         beforeEach(function() {
+
             Cls = CLI.define(null, {
                 mixins: ['CLI.mixin.Observable'],
 
@@ -1594,171 +1311,40 @@ describe("CLI.mixin.Observable", function() {
                 method1: function() {},
                 method2: function() {}
             });
+
         });
 
         it("should not resolve the scope", function() {
+
             // Observables can't have controllers
             var o = new Cls();
-            spyOn(o, 'method1');
+
+            var spy = sinon.spy(o, 'method1');
+
             o.on('custom', 'method1', 'controller');
-            expect(function() {
+
+            beginSilent();
+
+            assert.throws(function() {
                 o.fireEvent('custom');
-            }).toThrow();
+            });
+
+            endSilent();
+
         });
+
     });
 
-    // {{{ Event Normalization
-
-    describe("Event Normalization", function() {
-        var target, fire, events, secondaryEvents, listeners;
-
-        beforeEach(function() {
-            target = CLI.getBody().createChild();
-
-            listeners = {
-                mousedown: jasmine.createSpy(),
-                mousemove: jasmine.createSpy(),
-                mouseup: jasmine.createSpy(),
-                touchstart: jasmine.createSpy(),
-                touchmove: jasmine.createSpy(),
-                touchend: jasmine.createSpy(),
-                pointerdown: jasmine.createSpy(),
-                pointermove: jasmine.createSpy(),
-                pointerup: jasmine.createSpy()
-            };
-
-            target.on(listeners);
-        });
-
-        afterEach(function() {
-            target.destroy();
-        });
-
-        if (CLI.supports.PointerEvents) {
-            events = {
-                start: 'pointerdown',
-                move: 'pointermove',
-                end: 'pointerup'
-            };
-
-            fire = function(type) {
-                jasmine.firePointerEvent(target, events[type]);
-            };
-        } else if (CLI.supports.MSPointerEvents) {
-            events = {
-                start: 'MSPointerDown',
-                move: 'MSPointerMove',
-                end: 'MSPointerUp'
-            };
-
-            fire = function(type) {
-                jasmine.firePointerEvent(target, events[type]);
-            };
-        } else if (CLI.supports.TouchEvents) {
-            events = {
-                start: 'touchstart',
-                move: 'touchmove',
-                end: 'touchend'
-            };
-
-            secondaryEvents = {
-                start: 'mousedown',
-                move: 'mousemove',
-                end: 'mouseup'
-            };
-
-            fire = function(type, secondary) {
-                if (secondary) {
-                    jasmine.fireMouseEvent(target, secondaryEvents[type], 100, 100);
-                } else {
-                    jasmine.fireTouchEvent(target, events[type], [{ pageX: 1, pageY: 1 }]);
-                }
-            };
-        } else {
-            events = {
-                start: 'mousedown',
-                move: 'mousemove',
-                end: 'mouseup'
-            };
-
-            fire = function(type) {
-                jasmine.fireMouseEvent(target, events[type]);
-            };
-        }
-
-        it("should fire start events", function() {
-            fire('start');
-            expect(listeners.pointerdown.callCount).toBe(1);
-            expect(listeners.touchstart.callCount).toBe(1);
-            expect(listeners.mousedown.callCount).toBe(1);
-            expect(listeners.pointerdown.mostRecentCall.args[0].type).toBe('pointerdown');
-            expect(listeners.touchstart.mostRecentCall.args[0].type).toBe('touchstart');
-            expect(listeners.mousedown.mostRecentCall.args[0].type).toBe('mousedown');
-        });
-
-        it("should fire move events", function() {
-            fire('move');
-            expect(listeners.pointermove.callCount).toBe(1);
-            expect(listeners.touchmove.callCount).toBe(1);
-            expect(listeners.mousemove.callCount).toBe(1);
-            expect(listeners.pointermove.mostRecentCall.args[0].type).toBe('pointermove');
-            expect(listeners.touchmove.mostRecentCall.args[0].type).toBe('touchmove');
-            expect(listeners.mousemove.mostRecentCall.args[0].type).toBe('mousemove');
-        });
-
-        it("should fire end events", function() {
-            fire('end');
-            expect(listeners.pointerup.callCount).toBe(1);
-            expect(listeners.touchend.callCount).toBe(1);
-            expect(listeners.mouseup.callCount).toBe(1);
-            expect(listeners.pointerup.mostRecentCall.args[0].type).toBe('pointerup');
-            expect(listeners.touchend.mostRecentCall.args[0].type).toBe('touchend');
-            expect(listeners.mouseup.mostRecentCall.args[0].type).toBe('mouseup');
-        });
-
-        if (CLI.supports.TouchEvents && CLI.isWebKit && CLI.os.is.Desktop) {
-            // Touch Enabled webkit on windows 8 fires both mouse and touch events We already
-            // tested the touch events above, so make sure mouse events/ work as well.
-
-            it("should fire secondary start events", function() {
-                fire('start', true);
-                expect(listeners.pointerdown.callCount).toBe(1);
-                expect(listeners.touchstart.callCount).toBe(1);
-                expect(listeners.mousedown.callCount).toBe(1);
-                expect(listeners.pointerdown.mostRecentCall.args[0].type).toBe('pointerdown');
-                expect(listeners.touchstart.mostRecentCall.args[0].type).toBe('touchstart');
-                expect(listeners.mousedown.mostRecentCall.args[0].type).toBe('mousedown');
-            });
-
-            it("should fire secondary move events", function() {
-                fire('move', true);
-                expect(listeners.pointermove.callCount).toBe(1);
-                expect(listeners.touchmove.callCount).toBe(1);
-                expect(listeners.mousemove.callCount).toBe(1);
-                expect(listeners.pointermove.mostRecentCall.args[0].type).toBe('pointermove');
-                expect(listeners.touchmove.mostRecentCall.args[0].type).toBe('touchmove');
-                expect(listeners.mousemove.mostRecentCall.args[0].type).toBe('mousemove');
-            });
-
-            it("should fire secondary end events", function() {
-                fire('end', true);
-                expect(listeners.pointerup.callCount).toBe(1);
-                expect(listeners.touchend.callCount).toBe(1);
-                expect(listeners.mouseup.callCount).toBe(1);
-                expect(listeners.pointerup.mostRecentCall.args[0].type).toBe('pointerup');
-                expect(listeners.touchend.mostRecentCall.args[0].type).toBe('touchend');
-                expect(listeners.mouseup.mostRecentCall.args[0].type).toBe('mouseup');
-            });
-        }
-    });
-
+    // }}}
     // {{{ declarative listeners
 
     describe("declarative listeners", function() {
+
         var ParentMixin, ChildMixin, ParentClass, ChildClass,
-        result = [];
+            result = [];
 
         beforeEach(function() {
+
             ParentMixin = CLI.define(null, {
                 mixins: [ CLI.mixin.Observable ],
                 type: 'ParentMixin',
@@ -1822,6 +1408,7 @@ describe("CLI.mixin.Observable", function() {
         });
 
         it("should call all the listeners", function() {
+
             var instance = new ChildClass({
                 listeners: {
                     foo: function() {
@@ -1833,17 +1420,19 @@ describe("CLI.mixin.Observable", function() {
             instance.id = 'theId';
             instance.fireEvent('foo');
 
-            expect(result).toEqual([
+            assert.deepEqual(result, [
                 'parentMixin:theId',
                 'childMixin:theId',
                 'parentClass:theId',
                 'childClass:theId',
                 'childInstance:theId'
             ]);
+
         });
 
         it("should not call addListener if extending and no listeners are declared", function() {
-            var spy = jasmine.createSpy();
+
+            var spy = sinon.spy();
 
             var Cls = CLI.define(null, {
                 extend: 'CLI.mixin.Observable',
@@ -1854,11 +1443,14 @@ describe("CLI.mixin.Observable", function() {
                 addListener: spy
             });
             new Cls();
-            expect(spy).not.toHaveBeenCalled();
+
+            assert.equal(spy.called, false);
+
         });
 
         it("should not call addListener if mixing in and no listeners are declared", function() {
-            var spy = jasmine.createSpy();
+
+            var spy = sinon.spy();
 
             var Cls = CLI.define(null, {
                 mixins: [
@@ -1873,10 +1465,14 @@ describe("CLI.mixin.Observable", function() {
             });
 
             new Cls();
-            expect(spy).not.toHaveBeenCalled();
+
+            assert.equal(spy.called, false);
+
         });
-       */
+
     });
+
+    // }}}
 
 });
 
