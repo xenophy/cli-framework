@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "ansi": ">=0.3.0",
-    "ansi-escape-sequences",
+    "ansi-escape-sequences": ">=0.1.1",
     "colors": ">=1.0.3",
     "optimist": ">=0.6.1",
     "progress": ">=1.1.8"
