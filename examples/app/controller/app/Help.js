@@ -1,8 +1,8 @@
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 
-// {{{ MyApp.Help
+// {{{ MyApp.controller.app.Help
 
-CLI.define('MyApp.Help', {
+CLI.define('MyApp.controller.app.Help', {
 
     // {{{ extend
 
@@ -14,9 +14,9 @@ CLI.define('MyApp.Help', {
     run: function() {
 
         CLI.log([
-            'MyApp',
+            'MyApp app',
             '',
-            '  usage: myapp help',
+            '  usage: myapp help app',
             ''
         ].join("\n"));
 

@@ -1,23 +1,22 @@
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 
-// {{{ MyApp.app.build.Help
+// {{{ MyApp.controller.app.build.Main
 
-CLI.define('MyApp.app.build.Help', {
+CLI.define('MyApp.controller.app.build.Main', {
 
     // {{{ extend
 
-    extend: 'CLI.app.Help',
+    extend: 'CLI.app.Controller',
 
     // }}}
     // {{{ run
 
     run: function() {
 
+        var me = this;
+
         CLI.log([
-            'MyApp app build',
-            '',
-            '  usage: myapp help app build',
-            ''
+            'Execute app build process.'
         ].join("\n"));
 
     }
