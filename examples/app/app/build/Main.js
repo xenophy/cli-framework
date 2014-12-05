@@ -13,6 +13,11 @@ CLI.define('MyApp.app.build.Main', {
 
     run: function() {
 
+        var me = this,
+            cursor = me.cursor;
+
+        cursor.write('Hello World!')
+
         CLI.log([
             'Execute app build process.'
         ].join("\n"));
