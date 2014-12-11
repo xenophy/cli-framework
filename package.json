@@ -1,7 +1,7 @@
 {
   "name": "cli-framework",
-  "version": "0.0.16",
-  "compatVersion": "0.0.16",
+  "version": "0.0.18",
+  "compatVersion": "0.0.18",
   "description": "This is a lightweight class architecture and cli framework that is inspired by the Ext JS 5",
   "main": "index.js",
   "scripts": {
@@ -26,6 +26,7 @@
     "ansi": ">=0.3.0",
     "ansi-escape-sequences": ">=0.1.1",
     "colors": ">=1.0.3",
+    "fs-extra": ">=0.13.0",
     "optimist": ">=0.6.1",
     "progress": ">=1.1.8"
   },
