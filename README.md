@@ -23,6 +23,24 @@ after that, you can use CLI class methods.
         hoge: 2
     });
 
+If you wanna use Ext JS like class syste, you can use folloing:
+
+    CLI.define('MyApp.foo.Bar', {
+        // ...
+    });
+
+of course, you can use **extends**, **mixins** and **require**, all of Exd JS 5 base class systems.
+
+Also you can use bootpoint like Ext JS.
+
+    CLI.application({
+        appFolder: 'app',
+        launch: function() {
+        }
+    });
+
+
+
 ## License
 
 This version of "CLI Framwrok" is licensed under the terms of the The GNU General Public License v3.0.
